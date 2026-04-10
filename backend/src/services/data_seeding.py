@@ -23,7 +23,7 @@ def seed_support_services(db: Session, df: pd.DataFrame):
         db.bulk_save_objects(service_objects)
         db.commit()
         
-        logger.info("Database seeding completed successfully! Inserted {len(service_objects)} records.")
+        logger.info(f"Database seeding completed successfully! Inserted {len(service_objects)} records.")
 
     except Exception as e:
         db.rollback()
