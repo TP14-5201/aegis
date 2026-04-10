@@ -1,0 +1,20 @@
+# Backend
+backend/__pycache__/
+backend/*.pyc
+backend/.env
+backend/app.db
+backend/*.db
+backend/*.sqlite3
+backend/venv/
+backend/.venv/
+backend/.pytest_cache/
+
+# Frontend
+frontend/node_modules/
+frontend/.nuxt/
+frontend/.output/
+frontend/dist/
+frontend/.env
+
+# Jupyter Notebook
+experiments/.ipynb_checkpoints
