@@ -1,3 +1,5 @@
+import re
+
 import pandas as pd
 import numpy as np
 
@@ -52,13 +54,45 @@ def normalize_social_media(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def format_time_string(text):
+    """
+    Standardizes time patterns within a string to 'hh:mmam/pm'.
+    Example: '9am - 5.00 pm' -> '09:00am - 05:00pm'
+    """
+    if text == "Closed":
+        return text
+
+    # Regex to find: (hours) . or : (minutes optional) (space optional) (am/pm)
+    # Group 1: Hours, Group 2: Minutes (if any), Group 3: am/pm
+    time_pattern = r"(\d{1,2})(?:[:.](\d{2}))?\s*([AaPp][Mm])"
+
+    def replacement(match):
+        hours = int(match.group(1))
+        minutes = match.group(2) if match.group(2) else "00"
+        period = match.group(3).lower()
+        
+        # Ensure hh:mm format (padding the hour with a zero if needed)
+        return f"{hours:02d}:{minutes}{period}"
+
+    # Apply the replacement to all matches found in the text
+    text = re.sub(time_pattern, replacement, text)
+    # Ensure spaces in between the opening times (12:00pm-05:00pm -> 12:00pm - 05:00pm)
+    text = re.sub(r"([ap]m)-(\d)", r"\1 - \2", text)
+    
+    return text
+
+
 def clean_opening_hours_text(val):
     """Cleans the opening hours text by removing newlines and extra spaces."""
     if pd.isna(val) or str(val).lower() == 'closed':
         return "Closed"
 
-    text = str(val).replace('\n', ' ').replace('\r', ' ')
-    # Remove double spaces
+    # Normalize em dashes and hyphens
+    text = str(val).replace('\u2013', '-').replace('\u2014', '-')    
+    text = text.replace(' to ', ' - ').replace(' – ', ' - ')
+    # Normalize time format
+    text = format_time_string(text)
+    # Remove extra whitespace and newlines
     text = " ".join(text.split())
     return text
 
