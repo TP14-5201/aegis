@@ -9,4 +9,8 @@ class Settings(BaseSettings):
     OTHER_DATA_URL: str = "https://data.gov.au/data/dataset/d667403f-2016-463f-bb0a-3087ae67c57f/resource/0e32d958-3796-4dca-8312-489ef7a610f6/download/emergency-relief-provider-outlets-october-2016.csv"
     OTHER_SEP: str = ","
 
+    # Local file paths
+    MELBOURNE_RAW_PATH: str = "src/data/raw/melbourne_raw.csv"
+    DATAGOV_RAW_PATH: str = "src/data/raw/datagov_raw.csv"
+
 settings = Settings()

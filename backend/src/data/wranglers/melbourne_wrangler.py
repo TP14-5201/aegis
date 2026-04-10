@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-from .utils import initial_cleaning_pipeline, clean_na_values
+from .utils import initial_cleaning_pipeline, clean_na_values, normalize_website, select_columns, add_source_column
 
 
 def remove_missing_service_names(df: pd.DataFrame) -> pd.DataFrame:
@@ -42,16 +42,6 @@ def normalize_phone(df: pd.DataFrame) -> pd.DataFrame:
     df["phone_display"] = df.apply(_build_phone_list, axis=1)
 
     df = df.drop(columns=["phone", "phone_2", "free_call"])
-
-    return df
-
-
-def normalize_website(df: pd.DataFrame) -> pd.DataFrame:
-    """Ensures the URL is lowercase and starts with https://"""
-    url = df["website"].fillna("").astype(str).str.strip().str.lower()    
-    # Remove any existing protocol to re-add it cleanly
-    url = url.str.replace("http://", "").str.replace("https://", "")
-    df["website"] = "https://" + df['website']
 
     return df
 
@@ -122,31 +112,6 @@ def rename_columns(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def select_columns(df: pd.DataFrame) -> pd.DataFrame:
-    """Select final columns and drop the rest."""
-    included_cols = [
-        "name", 
-        "description", 
-        "target_audience", 
-        "address", 
-        "suburb",
-        "primary_phone",
-        "phone_display",
-        "email", 
-        "website", 
-        "social_media", 
-        "opening_hours", 
-        "cost",
-        "tram_routes",
-        "bus_routes",
-        "nearest_train_station",
-        "categories",
-        "longitude",
-        "latitude"
-    ]
-    return df[included_cols]
-
-
 def wrangle_melbourne(df: pd.DataFrame) -> pd.DataFrame:
     """Wrangling pipeline for Melbourne data."""
     df = initial_cleaning_pipeline(df)
@@ -159,6 +124,7 @@ def wrangle_melbourne(df: pd.DataFrame) -> pd.DataFrame:
     df = transform_categories(df)
     df = rename_columns(df)
     df = select_columns(df)
+    df = add_source_column(df, source="City of Melbourne")
     df = clean_na_values(df)
 
     return df

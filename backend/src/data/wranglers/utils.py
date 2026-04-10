@@ -39,3 +39,44 @@ def initial_cleaning_pipeline(df: pd.DataFrame) -> pd.DataFrame:
     df = clean_whitespaces(df)
     df = clean_na_values(df)
     return df
+
+
+def select_columns(df: pd.DataFrame) -> pd.DataFrame:
+    """Select final columns and drop the rest."""
+    included_cols = [
+        "name", 
+        "description", 
+        "target_audience", 
+        "address", 
+        "suburb",
+        "primary_phone",
+        "phone_display",
+        "email", 
+        "website", 
+        "social_media", 
+        "opening_hours", 
+        "cost",
+        "tram_routes",
+        "bus_routes",
+        "nearest_train_station",
+        "categories",
+        "longitude",
+        "latitude"
+    ]
+    return df[included_cols]
+
+
+def add_source_column(df: pd.DataFrame, source: str) -> pd.DataFrame:
+    """Adds a source column to the dataframe."""
+    df["source"] = source
+    return df
+
+
+def normalize_website(df: pd.DataFrame) -> pd.DataFrame:
+    """Ensures the URL is lowercase and starts with https://"""
+    url = df["website"].fillna("").astype(str).str.strip().str.lower()    
+    # Remove any existing protocol to re-add it cleanly
+    url = url.str.replace("http://", "").str.replace("https://", "")
+    df["website"] = ("https://" + url).where(url != "", "")
+
+    return df
