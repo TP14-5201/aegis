@@ -3,7 +3,7 @@ import re
 import pandas as pd
 import numpy as np
 
-from .utils import initial_cleaning_pipeline, clean_na_values, normalize_website, select_columns, add_source_column
+from .utils import initial_cleaning_pipeline, clean_na_values, normalize_website, normalize_coordinates, select_columns, add_source_column
 
 
 def filter_victoria_services(df: pd.DataFrame) -> pd.DataFrame:
@@ -65,6 +65,7 @@ def wrangle_datagov(df: pd.DataFrame) -> pd.DataFrame:
     df = filter_victoria_services(df)
     df = extract_organisation_url(df)
     df = normalize_website(df)
+    df = normalize_coordinates(df, lat_col="latitude", lon_col="longitude")
     df = create_placeholder_columns(df)
     df = select_columns(df)
     df = add_source_column(df, source="DataGov")

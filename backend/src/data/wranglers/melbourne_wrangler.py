@@ -3,7 +3,7 @@ import re
 import pandas as pd
 import numpy as np
 
-from .utils import initial_cleaning_pipeline, clean_na_values, normalize_website, select_columns, add_source_column
+from .utils import initial_cleaning_pipeline, clean_na_values, normalize_website, normalize_coordinates, select_columns, add_source_column
 
 
 def remove_missing_service_names(df: pd.DataFrame) -> pd.DataFrame:
@@ -78,7 +78,7 @@ def format_time_string(text):
     text = re.sub(time_pattern, replacement, text)
     # Ensure spaces in between the opening times (12:00pm-05:00pm -> 12:00pm - 05:00pm)
     text = re.sub(r"([ap]m)-(\d)", r"\1 - \2", text)
-    
+
     return text
 
 
@@ -154,6 +154,7 @@ def wrangle_melbourne(df: pd.DataFrame) -> pd.DataFrame:
     df = normalize_phone(df)
     df = normalize_website(df)
     df = normalize_social_media(df)
+    df = normalize_coordinates(df, lat_col="latitude", lon_col="longitude")
     df = transform_opening_hours(df)
     df = transform_categories(df)
     df = rename_columns(df)
