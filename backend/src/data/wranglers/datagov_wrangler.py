@@ -8,7 +8,7 @@ from .utils import initial_cleaning_pipeline, clean_na_values, normalize_website
 
 def filter_victoria_services(df: pd.DataFrame) -> pd.DataFrame:
     """Filters the dataframe to only include services in Victoria."""
-    is_vic = df['address'].str.contains(r'\bVIC\b', case=False, na=False)
+    is_vic = df['address'].astype(str).str.contains(r'\bVIC\b', case=False, na=False)
     # Victorian postcodes mostly start with 3 or 8
     is_vic_postcode = df['postcode'].astype(str).str.startswith(('3', '8'))
 
