@@ -13,15 +13,19 @@ def remove_missing_service_names(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def normalize_address(df: pd.DataFrame) -> pd.DataFrame:
-    """Normalizes the address column."""
-    df["address_1"] = df["address_1"].fillna("")
-    df["address_2"] = df["address_2"].fillna("")
-    df["address"] = df["address_1"] + ", " + df["address_2"] 
-    # Clean up trailing/leading commas if address_1 side was empty
-    df["address"] = df["address"].str.lstrip(", ")
+    """Normalizes the address column by combining address_1 and address_2."""
+    df["address_1"] = df["address_1"].fillna("").astype(str).str.strip()
+    df["address_2"] = df["address_2"].fillna("").astype(str).str.strip()
 
-    df = df.drop(columns=["address_1", "address_2"])    
-    
+    # Build the combined address, inserting the separator only when both parts exist
+    has_both = (df["address_1"] != "") & (df["address_2"] != "")
+    df["address"] = df["address_1"].where(~has_both, df["address_1"] + ", " + df["address_2"])
+    # If address_1 is empty but address_2 exists, use address_2
+    only_addr2 = (df["address_1"] == "") & (df["address_2"] != "")
+    df.loc[only_addr2, "address"] = df.loc[only_addr2, "address_2"]
+
+    df = df.drop(columns=["address_1", "address_2"])
+
     return df
 
 
@@ -64,13 +68,13 @@ def format_time_string(text):
 
     # Regex to find: (hours) . or : (minutes optional) (space optional) (am/pm)
     # Group 1: Hours, Group 2: Minutes (if any), Group 3: am/pm
-    time_pattern = r"(\d{1,2})(?:[:.](\d{2}))?\s*([AaPp][Mm])"
+    time_pattern = r"(\d{1,2})(?:[:.:](\d{2}))?\s*([AaPp][Mm])"
 
     def replacement(match):
         hours = int(match.group(1))
         minutes = match.group(2) if match.group(2) else "00"
         period = match.group(3).lower()
-        
+
         # Ensure hh:mm format (padding the hour with a zero if needed)
         return f"{hours:02d}:{minutes}{period}"
 
@@ -88,7 +92,7 @@ def clean_opening_hours_text(val):
         return "Closed"
 
     # Normalize em dashes and hyphens
-    text = str(val).replace('\u2013', '-').replace('\u2014', '-')    
+    text = str(val).replace('\u2013', '-').replace('\u2014', '-')
     text = text.replace(' to ', ' - ').replace(' – ', ' - ')
     # Normalize time format
     text = format_time_string(text)
@@ -111,7 +115,7 @@ def transform_opening_hours(df: pd.DataFrame):
 
     # Drop the original day columns
     df = df.drop(columns=days)
-    
+
     return df
 
 
@@ -119,18 +123,19 @@ def transform_categories(df: pd.DataFrame):
     """Transforms the categories column by collapsing and merging multiple category columns into a single list."""
     # List of the source column names
     cat_cols = [f"category_{i}" for i in range(1, 7)]
-    
+
     def _collapse_cats(row):
         # 1. Get values from all 6 columns
         # 2. Convert to string and strip whitespace
         # 3. Filter out Nones, NaNs, or empty strings
         cats = [
-            str(row[col]).strip() 
-            for col in cat_cols 
+            str(row[col]).strip()
+            for col in cat_cols
             if pd.notnull(row[col]) and str(row[col]).strip() != ""
         ]
-        # Return unique categories only
-        return list(set(cats))
+        # Return unique categories preserving insertion order (dict trick is
+        # deterministic, unlike set() which varies across Python runs)
+        return list(dict.fromkeys(cats))
 
     df["categories"] = df.apply(_collapse_cats, axis=1)
     return df
@@ -160,6 +165,8 @@ def wrangle_melbourne(df: pd.DataFrame) -> pd.DataFrame:
     df = rename_columns(df)
     df = select_columns(df)
     df = add_source_column(df, source="City of Melbourne")
+    # clean_na_values is called last so that placeholder/empty strings set
+    # during transformation are correctly converted to NaN before DB insert.
     df = clean_na_values(df)
 
     return df

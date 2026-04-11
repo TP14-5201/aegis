@@ -2,6 +2,10 @@ import pandas as pd
 import numpy as np
 
 
+# Sentinel values to treat as missing/null across all datasets
+_NA_SENTINEL_VALUES = ["", "N/A", "n/a", "None", "NULL", "https://"]
+
+
 def standardize_columns(df: pd.DataFrame) -> pd.DataFrame:
     """Converts columns to snake_case, removes special chars and whitespace."""
     df.columns = (
@@ -14,14 +18,18 @@ def standardize_columns(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def clean_whitespaces(df: pd.DataFrame) -> pd.DataFrame:
-    """Trims all strings."""
-    df = df.apply(lambda x: x.strip() if isinstance(x, str) else x)
+    """Trims leading/trailing whitespace from all string cells."""
+    # Use DataFrame.map (pandas >= 2.1) or applymap for element-wise operation.
+    # df.apply operates on columns (Series), so isinstance(col, str) is always
+    # False — the previous implementation was a no-op.
+    str_cols = df.select_dtypes(include="object").columns
+    df[str_cols] = df[str_cols].apply(lambda col: col.str.strip())
     return df
 
 
 def clean_na_values(df: pd.DataFrame) -> pd.DataFrame:
-    """Replaces 'N/A', 'n/a', 'None', 'NULL' with NaN."""
-    df = df.replace(['', 'N/A', 'n/a', 'None', 'NULL'], np.nan)
+    """Replaces common sentinel strings (and bare 'https://') with NaN."""
+    df = df.replace(_NA_SENTINEL_VALUES, np.nan)
     return df
 
 
@@ -33,28 +41,32 @@ def normalize_coordinates(df: pd.DataFrame, lat_col: str, lon_col: str) -> pd.Da
 
 
 def initial_cleaning_pipeline(df: pd.DataFrame) -> pd.DataFrame:
-    """Runs the initial cleaning pipeline."""
+    """Runs the initial structural cleaning pipeline.
+
+    Note: clean_na_values is intentionally NOT called here. It is the
+    responsibility of each wrangler to call it as the final step, after all
+    transformations (including placeholder column creation) have completed.
+    """
     df = df.copy()
     df = standardize_columns(df)
     df = clean_whitespaces(df)
-    df = clean_na_values(df)
     return df
 
 
 def select_columns(df: pd.DataFrame) -> pd.DataFrame:
     """Select final columns and drop the rest."""
     included_cols = [
-        "name", 
-        "description", 
-        "target_audience", 
-        "address", 
+        "name",
+        "description",
+        "target_audience",
+        "address",
         "suburb",
         "primary_phone",
         "phone_display",
-        "email", 
-        "website", 
-        "social_media", 
-        "opening_hours", 
+        "email",
+        "website",
+        "social_media",
+        "opening_hours",
         "cost",
         "tram_routes",
         "bus_routes",
@@ -73,10 +85,14 @@ def add_source_column(df: pd.DataFrame, source: str) -> pd.DataFrame:
 
 
 def normalize_website(df: pd.DataFrame) -> pd.DataFrame:
-    """Ensures the URL is lowercase and starts with https://"""
-    url = df["website"].fillna("").astype(str).str.strip().str.lower()    
+    """Ensures the URL is lowercase and starts with https://.
+
+    Empty or whitespace-only values are left as empty strings so that the
+    subsequent clean_na_values call can convert them to NaN uniformly.
+    """
+    url = df["website"].fillna("").astype(str).str.strip().str.lower()
     # Remove any existing protocol to re-add it cleanly
-    url = url.str.replace("http://", "").str.replace("https://", "")
+    url = url.str.replace("http://", "", regex=False).str.replace("https://", "", regex=False)
     df["website"] = ("https://" + url).where(url != "", "")
 
     return df
