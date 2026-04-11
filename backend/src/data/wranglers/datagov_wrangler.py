@@ -3,7 +3,7 @@ import re
 import pandas as pd
 import numpy as np
 
-from .utils import initial_cleaning_pipeline, clean_na_values, normalize_website, select_columns, add_source_column
+from .utils import initial_cleaning_pipeline, clean_na_values, normalize_website, normalize_coordinates, select_columns, add_source_column
 
 
 def filter_victoria_services(df: pd.DataFrame) -> pd.DataFrame:
@@ -23,7 +23,7 @@ def extract_organisation_url(df: pd.DataFrame) -> pd.DataFrame:
         # Use regex to find text between single or double quotes
         match = re.search(r"href=['\"]([^'\"]+)['\"]", str(val))
         return match.group(1) if match else val
-    
+
     df["website"] = df["website"].apply(_extract)
 
     return df
@@ -42,7 +42,11 @@ def rename_columns(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def create_placeholder_columns(df: pd.DataFrame) -> pd.DataFrame:
-    """Creates placeholder columns for the dataframe."""
+    """Creates placeholder columns for fields not present in this dataset.
+
+    These are intentionally set to empty strings here; clean_na_values (called
+    at the end of the pipeline) will convert them to NaN before DB insert.
+    """
     df["description"] = ""
     df["target_audience"] = ""
     df["primary_phone"] = ""
@@ -59,15 +63,18 @@ def create_placeholder_columns(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def wrangle_datagov(df: pd.DataFrame) -> pd.DataFrame:
-    """Wrangling pipeline for Melbourne data."""
+    """Wrangling pipeline for DataGov emergency relief services data."""
     df = initial_cleaning_pipeline(df)
     df = rename_columns(df)
     df = filter_victoria_services(df)
     df = extract_organisation_url(df)
     df = normalize_website(df)
+    df = normalize_coordinates(df, lat_col="latitude", lon_col="longitude")
     df = create_placeholder_columns(df)
     df = select_columns(df)
     df = add_source_column(df, source="DataGov")
+    # clean_na_values is called last so that placeholder/empty strings set
+    # during transformation are correctly converted to NaN before DB insert.
     df = clean_na_values(df)
 
     return df
