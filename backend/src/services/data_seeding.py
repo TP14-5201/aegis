@@ -2,7 +2,7 @@ import os
 import pandas as pd
 
 from sqlalchemy.orm import Session
-from src.database import SessionLocal, engine, Base
+from src.database import SessionLocal, engine
 from src.models import Base, SupportService
 
 from src.core.config import settings

@@ -1,7 +1,6 @@
 import re
 
 import pandas as pd
-import numpy as np
 
 from .utils import initial_cleaning_pipeline, clean_na_values, normalize_website, normalize_coordinates, select_columns, add_source_column
 
@@ -32,7 +31,6 @@ def normalize_address(df: pd.DataFrame) -> pd.DataFrame:
 def normalize_phone(df: pd.DataFrame) -> pd.DataFrame:
     """Normalizes the phone column."""
     phone1 = df["phone"].fillna("").astype(str).str.strip()
-    phone2 = df["phone_2"].fillna("").astype(str).str.strip()
     phone_free = df["free_call"].fillna("").astype(str).str.strip()
 
     # Prioritize Free Call, then Phone 1
@@ -41,9 +39,12 @@ def normalize_phone(df: pd.DataFrame) -> pd.DataFrame:
     # Alternatively, create all phones list for the UI
     def _build_phone_list(row):
         numbers = []
-        if row["free_call"]: numbers.append(f"Free Call: {str(row['free_call'])}")
-        if row["phone"]: numbers.append(f"Phone 1: {str(row['phone'])}")
-        if row["phone_2"]: numbers.append(f"Phone 2: {str(row['phone_2'])}")
+        if row["free_call"]:
+            numbers.append(f"Free Call: {str(row['free_call'])}")
+        if row["phone"]:
+            numbers.append(f"Phone 1: {str(row['phone'])}")
+        if row["phone_2"]:
+            numbers.append(f"Phone 2: {str(row['phone_2'])}")
         return " | ".join(numbers)
     df["phone_display"] = df.apply(_build_phone_list, axis=1)
 

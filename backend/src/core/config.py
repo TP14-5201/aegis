@@ -1,5 +1,6 @@
 from pydantic_settings import BaseSettings
 
+
 class Settings(BaseSettings):
     # Source 1: Melbourne API
     MELBOURNE_API_URL: str = "https://data.melbourne.vic.gov.au/api/explore/v2.1/catalog/datasets/free-and-cheap-support-services-with-opening-hours-public-transport-and-parking-/exports/csv"
@@ -12,5 +13,6 @@ class Settings(BaseSettings):
     # Local file paths
     MELBOURNE_RAW_PATH: str = "src/data/raw/melbourne_raw.csv"
     DATAGOV_RAW_PATH: str = "src/data/raw/datagov_raw.csv"
+
 
 settings = Settings()
