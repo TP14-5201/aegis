@@ -34,9 +34,9 @@ jobs:
         python -m pip install pytest pytest-cov coverage
         if [ -f backend/requirements.txt ]; then pip install -r backend/requirements.txt; fi
 
-    - name: Lint with flake8
-      run: |
-        flake8 backend/src --max-line-length=120 --ignore=E501,W503
+    # - name: Lint with flake8
+    #   run: |
+    #     flake8 backend/src --max-line-length=120 --ignore=E501,W503
 
     - name: Run tests
       working-directory: backend

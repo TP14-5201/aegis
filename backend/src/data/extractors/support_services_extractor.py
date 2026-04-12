@@ -12,5 +12,4 @@ def fetch_csv_from_url(url: str, separator: str = ","):
     logger.info(f"Fetching CSV from {url}")
     response = requests.get(url)
     response.raise_for_status()
-    
     return pd.read_csv(io.StringIO(response.text), sep=separator)

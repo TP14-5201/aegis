@@ -1,5 +1,4 @@
 import os
-import pandas as pd
 
 from src.data.extractors.support_services_extractor import fetch_csv_from_url
 from src.core.config import settings

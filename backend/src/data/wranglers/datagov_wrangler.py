@@ -1,7 +1,6 @@
 import re
 
 import pandas as pd
-import numpy as np
 
 from .utils import initial_cleaning_pipeline, clean_na_values, normalize_website, normalize_coordinates, select_columns, add_source_column
 
