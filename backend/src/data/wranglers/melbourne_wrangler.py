@@ -54,7 +54,7 @@ def normalize_phone(df: pd.DataFrame) -> pd.DataFrame:
 
 def normalize_social_media(df: pd.DataFrame) -> pd.DataFrame:
     """Normalizes the social media column."""
-    df["social_media"] = df["social_media"].str.replace(r"^acebook.com", "facebook.com", regex=True)
+    df["social_media"] = df["social_media"].astype(str).str.replace(r"^acebook.com", "facebook.com", regex=True)
     return df
 
 
