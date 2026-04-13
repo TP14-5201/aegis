@@ -10,27 +10,12 @@ from src.core.logging import logger
 from src.database import Base, engine, get_db
 from src.schemas import NearbyServiceOut
 from src.services.nearby_search import DEFAULT_KEYWORDS, find_nearby_support_services
-from src.utils.opening_hours import is_open_now
+from src.utils.opening_hours import is_open_now, _now_in_tz
 
 from sqlalchemy.orm import Session
 
-try:
-    from zoneinfo import ZoneInfo  # Python 3.9+
-except Exception:  # pragma: no cover
-    ZoneInfo = None  # type: ignore
-
 
 app = FastAPI(title="Aegis Support Services API", version="0.1.0")
-
-
-def _now_in_tz(tz: Optional[str]) -> datetime:
-    if tz and ZoneInfo is not None:
-        try:
-            return datetime.now(ZoneInfo(tz))
-        except Exception:
-            # Fall back silently if timezone name invalid/unavailable
-            pass
-    return datetime.now()
 
 
 @app.on_event("startup")
@@ -86,21 +71,15 @@ def get_nearby_services(
                 elif val is None:
                     r[key] = [] if key == "categories" else {}
 
-        # Compute real-time open status in user's timezone (if provided)
+        # Compute real-time open status in user's timezone (if provided) and filter that are closed
         now_local = _now_in_tz(tz)
         for r in results:
             try:
                 r["is_open_now"] = is_open_now(r.get("opening_hours"), now_local)
             except Exception:
                 r["is_open_now"] = None
+        results = [r for r in results if r.get("is_open_now") is True]
         return results
     except Exception as exc:
         logger.exception("Failed to fetch nearby services: %s", exc)
         raise HTTPException(status_code=500, detail="Internal error while searching for services")
-
-
-if __name__ == "__main__":
-    import uvicorn
-
-    uvicorn.run("src.main:app", host="0.0.0.0", port=8000, reload=True)
-

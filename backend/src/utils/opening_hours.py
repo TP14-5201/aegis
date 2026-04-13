@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 from typing import Dict, Optional, Tuple
+from zoneinfo import ZoneInfo
 
 DAY_KEYS = [
     "monday",
@@ -104,3 +105,13 @@ def is_open_now(opening_hours: Optional[Dict[str, str]], now_local: datetime) ->
         return today_status
 
     return None
+
+
+def _now_in_tz(tz: Optional[str]) -> datetime:
+    if tz and ZoneInfo is not None:
+        try:
+            return datetime.now(ZoneInfo(tz))
+        except Exception:
+            # Fall back silently if timezone name invalid/unavailable
+            pass
+    return datetime.now()
