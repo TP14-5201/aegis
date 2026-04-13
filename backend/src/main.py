@@ -1,41 +1,19 @@
 ﻿from __future__ import annotations
 
-from typing import Any, List, Optional
+from typing import List, Optional
+import math
 
 from fastapi import Depends, FastAPI, HTTPException, Query
-from pydantic import BaseModel, Field
 
 from src.core.logging import logger
 from src.database import Base, engine, get_db
+from src.schemas import NearbyServiceOut
 from src.services.nearby_search import DEFAULT_KEYWORDS, find_nearby_support_services
 
 from sqlalchemy.orm import Session
 
+
 app = FastAPI(title="Aegis Support Services API", version="0.1.0")
-
-
-class NearbyServiceOut(BaseModel):
-    id: int
-    name: Optional[str] = None
-    description: Optional[str] = None
-    target_audience: Optional[str] = None
-    address: Optional[str] = None
-    suburb: Optional[str] = None
-    primary_phone: Optional[str] = None
-    phone_display: Optional[str] = None
-    email: Optional[str] = None
-    website: Optional[str] = None
-    social_media: Optional[str] = None
-    opening_hours: Optional[dict] = None
-    cost: Optional[str] = None
-    tram_routes: Optional[str] = None
-    bus_routes: Optional[str] = None
-    nearest_train_station: Optional[str] = None
-    categories: Optional[List[str]] = None
-    longitude: Optional[float] = None
-    latitude: Optional[float] = None
-    source: Optional[str] = None
-    distance_km: float = Field(..., description="Distance from the user in kilometers")
 
 
 @app.on_event("startup")
@@ -80,10 +58,13 @@ def get_nearby_services(
         )
         # Coerce categories/opening_hours to expected shapes to be safe
         for r in results:
-            if r.get("categories") is None or isinstance(r.get("categories"), str):
-                r["categories"] = []
-            if r.get("opening_hours") is None or isinstance(r.get("opening_hours"), str):
-                r["opening_hours"] = {}
+            # Use isinstance(x, float) because pd.nan or np.nan crashes on strings/lists
+            for key in ["categories", "opening_hours"]:
+                val = r.get(key)
+                if isinstance(val, float) and math.isnan(val):
+                    r[key] = [] if key == "categories" else {}
+                elif val is None:
+                    r[key] = [] if key == "categories" else {}
         return results
     except Exception as exc:
         logger.exception("Failed to fetch nearby services: %s", exc)
