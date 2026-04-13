@@ -4,6 +4,7 @@ from pydantic import BaseModel, Field
 
 
 class NearbyServiceOut(BaseModel):
+    is_open_now: Optional[bool] = None
     id: int
     name: Optional[str] = None
     description: Optional[str] = None
@@ -25,3 +26,4 @@ class NearbyServiceOut(BaseModel):
     latitude: Optional[float] = None
     source: Optional[str] = None
     distance_km: float = Field(..., description="Distance from the user in kilometers")
+

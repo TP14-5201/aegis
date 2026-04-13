@@ -1,7 +1,8 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 from typing import List, Optional
 import math
+from datetime import datetime
 
 from fastapi import Depends, FastAPI, HTTPException, Query
 
@@ -9,11 +10,27 @@ from src.core.logging import logger
 from src.database import Base, engine, get_db
 from src.schemas import NearbyServiceOut
 from src.services.nearby_search import DEFAULT_KEYWORDS, find_nearby_support_services
+from src.utils.opening_hours import is_open_now
 
 from sqlalchemy.orm import Session
 
+try:
+    from zoneinfo import ZoneInfo  # Python 3.9+
+except Exception:  # pragma: no cover
+    ZoneInfo = None  # type: ignore
+
 
 app = FastAPI(title="Aegis Support Services API", version="0.1.0")
+
+
+def _now_in_tz(tz: Optional[str]) -> datetime:
+    if tz and ZoneInfo is not None:
+        try:
+            return datetime.now(ZoneInfo(tz))
+        except Exception:
+            # Fall back silently if timezone name invalid/unavailable
+            pass
+    return datetime.now()
 
 
 @app.on_event("startup")
@@ -36,12 +53,15 @@ def get_nearby_services(
     limit: int = Query(25, ge=1, le=200, description="Max number of results"),
     include_datagov: bool = Query(True, description="Include DataGov emergency relief outlets"),
     keywords: Optional[List[str]] = Query(None, description="Override default keywords to match services"),
+    tz: Optional[str] = Query(None, description="IANA timezone, e.g. Australia/Sydney"),
     db: Session = Depends(get_db),
 ):
     """Return nearby food banks and relevant welfare centres.
 
     By default, matches against common welfare/relief keywords and always
-    includes DataGov emergency relief outlets within the radius.
+    includes DataGov emergency relief outlets within the radius. When a
+    timezone is provided, each result includes an `is_open_now` flag derived
+    from its opening hours.
     """
     if keywords is not None and len(keywords) == 0:
         keywords = None
@@ -65,6 +85,14 @@ def get_nearby_services(
                     r[key] = [] if key == "categories" else {}
                 elif val is None:
                     r[key] = [] if key == "categories" else {}
+
+        # Compute real-time open status in user's timezone (if provided)
+        now_local = _now_in_tz(tz)
+        for r in results:
+            try:
+                r["is_open_now"] = is_open_now(r.get("opening_hours"), now_local)
+            except Exception:
+                r["is_open_now"] = None
         return results
     except Exception as exc:
         logger.exception("Failed to fetch nearby services: %s", exc)
@@ -75,3 +103,4 @@ if __name__ == "__main__":
     import uvicorn
 
     uvicorn.run("src.main:app", host="0.0.0.0", port=8000, reload=True)
+
