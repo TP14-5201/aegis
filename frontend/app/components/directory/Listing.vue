@@ -62,17 +62,9 @@
 </div>
 </div>
 <div class="content-area">
-<div class="map-panel map-panel--mobile" id="map-container-mobile" aria-label="Map placeholder" aria-hidden="true">
-  <div class="map-placeholder-inner">
-    <div class="map-placeholder-icon">
-      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z" fill="#4a7c2b" opacity="0.5"/>
-      </svg>
-    </div>
-    <p class="map-placeholder-text">Map coming soon</p>
-    <p class="map-placeholder-sub">Replace <code>#map-container</code> with your map API</p>
-  </div>
-</div>
+
+<div class="map-panel map-panel--mobile" id="map-container-mobile" aria-label="Map"></div>
+
 <div class="results-list">
 <div class="div-4">
 <div class="div-2" />
@@ -229,33 +221,57 @@ Food parcels and non-perishables pantry items for individuals and
 </div>
 </div>
 
-<!-- Map panel — replace this div with your map API component when ready -->
-<div class="map-panel map-panel--desktop" id="map-container" aria-label="Map placeholder">
-  <div class="map-placeholder-inner">
-    <div class="map-placeholder-icon">
-      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z" fill="#4a7c2b" opacity="0.5"/>
-      </svg>
-    </div>
-    <p class="map-placeholder-text">Map coming soon</p>
-    <p class="map-placeholder-sub">Replace <code>#map-container</code> with your map API</p>
-  </div>
-</div>
+<div class="map-panel map-panel--desktop" id="map-container" aria-label="Map"></div>
 </div>
 </div>
 </template>
+
 <script>
-import { defineProps } from "vue";
+import { onMounted } from "vue";
 
 export default {
   name: "Listing",
   props: {},
   setup() {
-    defineProps;
+    const initMap = () => {
+      const containers = ["map-container", "map-container-mobile"];
+      containers.forEach((id) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        new window.google.maps.Map(el, {
+          center: { lat: -36.3833, lng: 145.4 }, // Shepparton
+          zoom: 14,
+        });
+      });
+    };
+
+    const loadGoogleMaps = () => {
+      const config = useRuntimeConfig();
+      const apiKey = config.public.googleMapsApiKey;
+
+      if (window.google?.maps) {
+        initMap();
+        return;
+      }
+
+      window.__gmCallback = initMap;
+
+      const script = document.createElement("script");
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&callback=__gmCallback`;
+      script.async = true;
+      script.defer = true;
+      document.head.appendChild(script);
+    };
+
+    onMounted(() => {
+      loadGoogleMaps();
+    });
+
     return {};
   },
 };
 </script>
+
 <style>
 .container-subsection {
   display: flex;
@@ -597,7 +613,7 @@ export default {
 .container-subsection .content-area {
   display: flex;
   flex-direction: row;
-  gap: 0;
+  gap: 24px;
   width: 100%;
   max-width: 1209px;
   margin: 0 auto;
@@ -617,20 +633,15 @@ export default {
   box-sizing: border-box;
 }
 
-/* Map placeholder — swap with real map API div */
 .container-subsection .map-panel {
   flex: 1;
-  min-height: 380px;
+  height: 620px;
   border-radius: 12px;
   overflow: hidden;
   background-color: #e8e3db;
   position: sticky;
   top: 80px;
   align-self: flex-start;
-  border: 2px dashed #bfc9c1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .container-subsection .map-placeholder-inner {
@@ -670,6 +681,11 @@ export default {
 }
 
 /* Desktop: hide the mobile-only map clone */
+/* Hide mobile map by default */
+.container-subsection .map-panel--mobile {
+  display: none;
+}
+
 @media (min-width: 1025px) {
   .container-subsection .map-panel--mobile {
     display: none;
@@ -685,16 +701,17 @@ export default {
     width: 100%;
     padding-right: 0;
   }
-  /* On tablet/mobile the desktop map panel hides; mobile map panel shows above list */
   .container-subsection .map-panel--desktop {
     display: none;
   }
   .container-subsection .map-panel--mobile {
-    display: flex;
+    display: block !important;
     width: 100%;
-    min-height: 240px;
+    height: 280px;
+    min-height: unset;
     position: static;
-    margin-bottom: 8px;
+    margin: 16px 0;
+    border-radius: 12px;
   }
 }
 
@@ -708,7 +725,8 @@ export default {
     max-width: 100%;
   }
   .container-subsection .map-panel--mobile {
-    min-height: 200px;
+    height: 220px;
+    min-height: unset;
   }
   .container-subsection .background-2 {
     flex-direction: column;
