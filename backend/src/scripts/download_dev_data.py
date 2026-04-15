@@ -1,6 +1,6 @@
 import os
 
-from src.data.extractors.support_services_extractor import fetch_csv_from_url
+from src.data.extractors.support_services_extractor import fetch_csv_from_url, fetch_excel_from_url
 from src.core.config import settings
 from src.core.logging import logger
 
@@ -23,3 +23,7 @@ def save_local_copy() -> None:
     df_datagov = fetch_csv_from_url(settings.OTHER_DATA_URL, settings.OTHER_SEP)
     df_datagov.to_csv(settings.DATAGOV_RAW_PATH, index=False)
     logger.info(f"Local dev file saved to {settings.DATAGOV_RAW_PATH}")
+
+    df_food_insecurity = fetch_excel_from_url(settings.FOOD_INSECURITY_URL, settings.FOOD_INSECURITY_SHEET_NAME)
+    df_food_insecurity.to_excel(settings.FOOD_INSECURITY_RAW_PATH)
+    logger.info(f"Local dev file saved to {settings.FOOD_INSECURITY_RAW_PATH}")

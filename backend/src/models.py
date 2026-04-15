@@ -28,3 +28,15 @@ class SupportService(Base):
     source = Column(String)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class FoodInsecurity(Base):
+    __tablename__ = "food_insecurity"
+
+    id = Column(Integer, primary_key=True, index=True)
+    indicator = Column(String)
+    indicator_category = Column(String)
+    region = Column(String)
+    estimate_pct = Column(Float)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
