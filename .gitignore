@@ -2,8 +2,6 @@
 __pycache__/
 backend/*.pyc
 backend/.env
-backend/app.db
-backend/*.db
 backend/*.sqlite3
 backend/venv/
 backend/.venv/
