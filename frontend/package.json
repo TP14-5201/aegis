@@ -10,6 +10,11 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
+    "leaflet": "^1.9.4",
+    "papaparse": "^5.4.1",
+    "@turf/dissolve": "^7.1.0",
+    "@turf/boolean-point-in-polygon": "^7.1.0",
+    "@turf/helpers": "^7.1.0",
     "nuxt": "^4.4.2",
     "pinia": "^3.0.4",
     "vue": "^3.5.31",
