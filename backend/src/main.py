@@ -24,6 +24,7 @@ ALLOWED_ORIGINS = [
     "http://127.0.0.1:3000",
     # When in Production, replace with your actual Vercel URL once deployed
     "https://aegis-five-delta.vercel.app",
+    "https://open-door-victoria.vercel.app"
 ]
 
 app.add_middleware(
