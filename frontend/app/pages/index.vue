@@ -126,9 +126,9 @@
         <!-- Left: text content, ~58%, no background panel -->
         <div style="flex: 0 0 58%; display: flex; flex-direction: column; justify-content: flex-start; padding-top: 8px;">
           <h2 style="font-size: clamp(22px, 2.5vw, 36px); font-weight: 700; color: #171717; margin-bottom: 20px; font-family: 'Inter', sans-serif;">
-            EMERGENCY RELIEF SERVICES
+            Emergency Relief Services
           </h2>
-          <p style="font-size: clamp(14px, 1.5vw, 22px); color: #44474c; line-height: 1.6; margin-bottom: 36px; font-family: 'Inter', sans-serif; max-width: 480px;">
+          <p style="font-size: clamp(14px, 1.5vw, 22px); color: #44474c; line-height: 1.6; margin-bottom: 36px; font-family: 'Inter', sans-serif; max-width: 700px;">
             Search our comprehensive directory of food banks and emergency shelters.
             Whatever you're looking for, we're here to help you find it.
           </p>
