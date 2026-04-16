@@ -5,9 +5,11 @@ import math
 from datetime import datetime
 
 from fastapi import Depends, FastAPI, HTTPException, Query
+from fastapi.middleware.cors import CORSMiddleware
 
 from src.core.logging import logger
 from src.database import Base, engine, get_db
+from src.models import SupportService
 from src.schemas import NearbyServiceOut
 from src.services.nearby_search import DEFAULT_KEYWORDS, find_nearby_support_services
 from src.utils.opening_hours import is_open_now, _now_in_tz
@@ -16,6 +18,13 @@ from sqlalchemy.orm import Session
 
 
 app = FastAPI(title="Aegis Support Services API", version="0.1.0")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_methods=["GET"],
+    allow_headers=["*"],
+)
 
 
 @app.on_event("startup")
@@ -28,6 +37,57 @@ def on_startup() -> None:
 @app.get("/health")
 def health() -> dict:
     return {"status": "ok"}
+
+
+@app.get("/services", response_model=List[NearbyServiceOut])
+def get_all_services(
+    db: Session = Depends(get_db),
+    tz: Optional[str] = Query(None, description="IANA timezone for open/closed status"),
+):
+    """Return all support services. Used for full-map browse mode."""
+    try:
+        rows = db.query(SupportService).filter(
+            SupportService.latitude.isnot(None),
+            SupportService.longitude.isnot(None),
+        ).all()
+
+        results = []
+        now_local = _now_in_tz(tz)
+        for row in rows:
+            r = {
+                "id": row.id,
+                "name": row.name,
+                "description": row.description,
+                "target_audience": row.target_audience,
+                "address": row.address,
+                "suburb": row.suburb,
+                "primary_phone": row.primary_phone,
+                "phone_display": row.phone_display,
+                "email": row.email,
+                "website": row.website,
+                "social_media": row.social_media,
+                "opening_hours": row.opening_hours if isinstance(row.opening_hours, dict) else {},
+                "cost": row.cost,
+                "tram_routes": row.tram_routes,
+                "bus_routes": row.bus_routes,
+                "nearest_train_station": row.nearest_train_station,
+                "categories": row.categories if isinstance(row.categories, list) else [],
+                "longitude": row.longitude,
+                "latitude": row.latitude,
+                "source": row.source,
+                "distance_km": None,
+            }
+            try:
+                r["is_open_now"] = is_open_now(r["opening_hours"], now_local)
+            except Exception:
+                r["is_open_now"] = None
+            results.append(r)
+
+        results.sort(key=lambda x: x["name"] or "")
+        return results
+    except Exception as exc:
+        logger.exception("Failed to fetch all services: %s", exc)
+        raise HTTPException(status_code=500, detail="Internal error fetching services")
 
 
 @app.get("/nearby", response_model=List[NearbyServiceOut])
@@ -78,7 +138,8 @@ def get_nearby_services(
                 r["is_open_now"] = is_open_now(r.get("opening_hours"), now_local)
             except Exception:
                 r["is_open_now"] = None
-        results = [r for r in results if r.get("is_open_now") is True]
+        # Only exclude services explicitly marked closed; keep open + unknown
+        results = [r for r in results if r.get("is_open_now") is not False]
         return results
     except Exception as exc:
         logger.exception("Failed to fetch nearby services: %s", exc)

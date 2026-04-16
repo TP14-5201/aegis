@@ -9,9 +9,7 @@ from sqlalchemy.orm import Session
 from src.models import SupportService
 
 # Keywords that typically indicate food banks or welfare/relief services
-DEFAULT_KEYWORDS: List[str] = [
-    "Food"
-]
+DEFAULT_KEYWORDS: List[str] = []  # Empty = return all services in radius
 
 
 def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
