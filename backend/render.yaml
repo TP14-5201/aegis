@@ -3,7 +3,7 @@ services:
     name: aegis-api
     runtime: python
     rootDir: aegis/backend
-    buildCommand: pip install -r requirements.txt
+    buildCommand: pip install -r requirements.txt && python -m src.services.data_seeding
     startCommand: uvicorn src.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: DATABASE_URL
