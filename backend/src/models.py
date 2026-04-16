@@ -1,5 +1,6 @@
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, Float, DateTime, JSON
+from geoalchemy2 import Geometry
 from src.database import Base
 
 
@@ -36,7 +37,20 @@ class FoodInsecurity(Base):
     id = Column(Integer, primary_key=True, index=True)
     indicator = Column(String)
     indicator_category = Column(String)
-    region = Column(String)
+    vic_region_code = Column(Integer)
     estimate_pct = Column(Float)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+
+class VicBoundary(Base):
+    __tablename__ = "vic_boundaries"
+
+    ufi = Column(Integer, primary_key=True, index=True)
+    vicgov_region_code = Column(String)
+    vicgov_region_sname = Column(String)
+    vicgov_region = Column(String)
+    ufi_created = Column(DateTime)
+    geometry = Column(Geometry(geometry_type='GEOMETRY', srid=4326)) # SRID 4326 is the standard WGS84 (Lat/Long)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

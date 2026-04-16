@@ -60,7 +60,23 @@ def filter_records(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def aggregate_estimate_count(df: pd.DataFrame) -> pd.DataFrame:
-    df = df.groupby(["indicator", "indicator_category", "region"]).agg({"estimate_pct": "mean"}).reset_index()
+    df = df.groupby(["indicator", "indicator_category", "vic_region_code"]).agg({"estimate_pct": "mean"}).reset_index()
+    return df
+
+
+def add_vic_region_code(df: pd.DataFrame) -> pd.DataFrame:
+    REGION_CODES = {
+        "LGAs of Barwon South-West PHU": 10,
+        "LGAS of North Eastern PHU": 11,
+        "LGAs of Gippsland PHU": 12,
+        "LGAs of Grampians Wimmera Southern Mallee PHU": 13,
+        "LGAs of Goulburn Valley PHU": 14,
+        "LGAs of Ovens-Murray PHU": 14,
+        "LGAs of Loddon Mallee PHU": 15,
+        "LGAs of Western PHU": 16,
+        "LGAs of South East PHU": 17,
+    }
+    df["vic_region_code"] = df["region"].map(REGION_CODES)
     return df
 
 
@@ -70,6 +86,7 @@ def wrangle_food_insecurity(df: pd.DataFrame) -> pd.DataFrame:
     df = rename_columns(df)
     df = select_columns(df)
     df = impute_estimate(df)
+    df = add_vic_region_code(df)
     df = aggregate_estimate_count(df)
 
     return df

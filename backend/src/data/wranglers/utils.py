@@ -29,7 +29,7 @@ def clean_whitespaces(df: pd.DataFrame) -> pd.DataFrame:
 
 def clean_na_values(df: pd.DataFrame) -> pd.DataFrame:
     """Replaces common sentinel strings (and bare 'https://') with NaN."""
-    df = df.replace(_NA_SENTINEL_VALUES, np.nan)
+    df = df.replace(_NA_SENTINEL_VALUES, None)
     return df
 
 

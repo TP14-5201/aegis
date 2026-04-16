@@ -25,10 +25,14 @@ class Settings(BaseSettings):
         'LGAs of Barwon South-West PHU'
     ]
 
+    # Regional Victorian GDB boundaries
+    VICGOV_BOUNDARY_URL: str = "https://www.dropbox.com/scl/fo/qr05jgmxcdbdn0boev1w7/ANUNe4e7aGOSzulbbzNLqX4?rlkey=8sna6zqjt5xrw52pf2jv37r0c&st=c3sn5k9r&dl=1"
+
     # Local file paths
     MELBOURNE_RAW_PATH: str = "src/data/raw/melbourne_raw.csv"
     DATAGOV_RAW_PATH: str = "src/data/raw/datagov_raw.csv"
     FOOD_INSECURITY_RAW_PATH: str = "src/data/raw/food_insecurity_raw.xlsx"
+    VICGOV_BOUNDARY_RAW_PATH: str = "src/data/raw/vicgov_boundary_raw.csv"
 
 
 settings = Settings()
