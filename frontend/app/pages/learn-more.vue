@@ -160,34 +160,6 @@
             class="absolute inset-0 mix-blend-multiply pointer-events-none"
             style="background: linear-gradient(145deg, rgba(119,90,25,0.1) 0%, rgba(186,26,26,0.2) 100%);"
           ></div>
-          <!-- Legend -->
-          <div
-            class="absolute bottom-5 right-5 rounded p-4 flex flex-col gap-2"
-            style="backdrop-filter: blur(6px); background-color: rgba(255,255,255,0.9); box-shadow: 0 1px 2px rgba(0,0,0,0.05); min-width: 160px;"
-          >
-            <p style="font-size: 9px; font-weight: 700; color: #44474c; letter-spacing: 1px; text-transform: uppercase; font-family: sans-serif;">INSECURITY DENSITY</p>
-            <div class="flex items-center gap-2">
-              <div class="w-3 h-3 shrink-0" style="background-color: #8a9a5b;"></div>
-              <p style="font-size: 9px; color: #44474c; letter-spacing: 1px; text-transform: uppercase; font-family: sans-serif;">LOW IMPACT</p>
-            </div>
-            <div class="flex items-center gap-2">
-              <div class="w-3 h-3 shrink-0" style="background-color: #cc7e6b;"></div>
-              <p style="font-size: 9px; color: #44474c; letter-spacing: 1px; text-transform: uppercase; font-family: sans-serif;">HIGH INSECURITY</p>
-            </div>
-          </div>
-          <!-- Tooltip -->
-          <div
-            class="absolute rounded p-5"
-            style="left: 20%; top: 38%; transform: translateY(-50%); backdrop-filter: blur(6px); background-color: rgba(255,255,255,0.95); border-left: 4px solid #775a19; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); max-width: 240px;"
-          >
-            <p style="font-family: 'Noto Serif', serif; font-weight: 700; font-size: 14px; color: #041627;">Western Melbourne</p>
-            <p style="font-family: sans-serif; font-size: 12px; color: #44474c; line-height: 1.65; margin-top: 5px;">
-              <span style="color: #775a19; font-weight: 700;">1 in 9 families</span>
-              experiencing food insecurity. Estimated demand:
-              <span style="font-weight: 700;">4,200</span>
-              emergency relief searches last month.
-            </p>
-          </div>
         </div>
 
         <p
@@ -196,6 +168,19 @@
         >
           "Wherever you are in Victoria, you are not alone. These are your neighbours."
         </p>
+
+        <div class="flex justify-center mt-12">
+          <NuxtLink
+            to="/VicRegionMap"
+            class="px-8 py-4 rounded-full font-semibold text-white transition-all transform hover:-translate-y-1 hover:shadow-xl shadow-md flex items-center gap-3"
+            style="background-color: #775a19; letter-spacing: 0.5px;"
+          >
+            <span>Explore Interactive Map</span>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+            </svg>
+          </NuxtLink>
+        </div>
       </div>
     </section>
 
