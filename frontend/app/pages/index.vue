@@ -48,20 +48,20 @@
     </section>
 
     <!-- You're Not Alone Section -->
-    <section class="w-full reveal" style="background-color: #f5f3ef; padding: 56px 50px;">
-      <div style="max-width: 1280px; margin: 0 auto; display: flex; flex-direction: row; align-items: flex-start; gap: 48px;">
+    <section class="w-full reveal section-pad" style="background-color: #f5f3ef;">
+      <div class="section-inner row-layout">
 
-        <!-- Left: screenshot image, ~38%, natural proportions, no background -->
-        <div style="flex: 0 0 38%; max-width: 449px;">
+        <!-- Left: screenshot image -->
+        <div class="col-img col-img--38">
           <img
             src="/images/stat-screen.png"
             alt="Food insecurity data visualisation"
-            style="width: 100%; height: auto; display: block; max-width: none;"
+            style="width: 100%; height: auto; display: block;"
           />
         </div>
 
-        <!-- Right: heading + stats + button, ~62%, no background panel -->
-        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; padding-top: 12px;">
+        <!-- Right: heading + stats + button -->
+        <div class="col-text" style="display: flex; flex-direction: column; align-items: center; padding-top: 12px;">
           <h2 style="font-size: clamp(22px, 2.5vw, 36px); font-weight: 700; color: #171717; margin-bottom: 10px; font-family: 'Inter', sans-serif; text-align: center; width: 100%;">
             You're not alone in this struggle
           </h2>
@@ -121,11 +121,11 @@
     </section>
 
     <!-- Emergency Relief Services Section -->
-    <section class="w-full reveal" style="background-color: #fafafa; padding: 56px 50px;">
-      <div style="max-width: 1280px; margin: 0 auto; display: flex; flex-direction: row; align-items: flex-start; gap: 48px;">
+    <section class="w-full reveal section-pad" style="background-color: #fafafa;">
+      <div class="section-inner row-layout">
 
-        <!-- Left: text content, ~58%, no background panel -->
-        <div style="flex: 0 0 58%; display: flex; flex-direction: column; justify-content: flex-start; padding-top: 8px;">
+        <!-- Left: text content -->
+        <div class="col-text col-text--58" style="display: flex; flex-direction: column; justify-content: flex-start; padding-top: 8px;">
           <h2 style="font-size: clamp(22px, 2.5vw, 36px); font-weight: 700; color: #171717; margin-bottom: 20px; font-family: 'Inter', sans-serif;">
             Emergency Relief Services
           </h2>
@@ -142,12 +142,12 @@
           </NuxtLink>
         </div>
 
-        <!-- Right: relief services image, ~42%, natural proportions, no background -->
-        <div style="flex: 1;">
+        <!-- Right: relief services image -->
+        <div class="col-img col-img--42">
           <img
             src="/images/relief-services.png"
             alt="Emergency relief services"
-            style="width: 100%; height: auto; display: block; max-width: none;"
+            style="width: 100%; height: auto; display: block;"
           />
         </div>
 
@@ -200,3 +200,88 @@ onUnmounted(() => {
   window.removeEventListener('scroll', onScroll)
 })
 </script>
+
+<style scoped>
+/* ── Section layout ──────────────────────────────────── */
+.section-pad {
+  padding: 56px 50px;
+}
+
+.section-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.row-layout {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 48px;
+}
+
+.col-img--38 { flex: 0 0 38%; max-width: 449px; }
+.col-img--42 { flex: 1; }
+.col-text    { flex: 1; }
+.col-text--58 { flex: 0 0 58%; }
+
+/* ── Mobile (≤ 640px) ────────────────────────────────── */
+@media (max-width: 640px) {
+  .section-pad {
+    padding: 36px 20px;
+  }
+
+  .row-layout {
+    flex-direction: column;
+    gap: 28px;
+    align-items: center;
+  }
+
+  /* Images take full width but cap at a sensible size */
+  .col-img--38,
+  .col-img--42 {
+    flex: none;
+    width: 100%;
+    max-width: 320px;
+    order: 1;
+  }
+
+  .col-text,
+  .col-text--58 {
+    flex: none;
+    width: 100%;
+    text-align: center;
+    order: 2;
+  }
+
+  /* Centre-align buttons on mobile */
+  .col-text--58 :deep(a),
+  .col-text--58 :deep(button) {
+    align-self: center !important;
+  }
+}
+
+/* ── Tablet (641–900px) ──────────────────────────────── */
+@media (min-width: 641px) and (max-width: 900px) {
+  .section-pad {
+    padding: 48px 32px;
+  }
+
+  .row-layout {
+    gap: 32px;
+  }
+
+  .col-img--38 { flex: 0 0 30%; }
+  .col-text--58 { flex: 0 0 55%; }
+}
+
+/* ── Reveal animation ────────────────────────────────── */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.55s ease, transform 0.55s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: none;
+}
+</style>
