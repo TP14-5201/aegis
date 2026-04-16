@@ -1,15 +1,15 @@
 <template>
-  <div style="font-family:'Inter',sans-serif; display:flex; flex-direction:column; min-height:100vh; background:#fafafa;">
+  <div class="page-wrap">
     <LayoutNavbar />
 
     <!-- ── Search & Filter Header ── -->
-    <div ref="headerEl" style="background:#ede8df; padding:28px 40px 20px; border-bottom:1px solid #dfd7c7;">
+    <div ref="headerEl" class="services-header">
       <h1 style="font-family:'Noto Serif',serif; font-size:26px; font-weight:700; color:#1a1a1a; text-align:center; margin-bottom:18px;">
         Find Nearby Relief Services
       </h1>
 
       <!-- Search row -->
-      <div style="display:flex; gap:10px; max-width:860px; margin:0 auto 14px;">
+      <div class="search-row">
         <div style="flex:1; display:flex; align-items:center; background:white; border:1.5px solid #d0cbbf; border-radius:10px; padding:0 16px; gap:10px;">
           <svg width="18" height="18" fill="none" viewBox="0 0 24 24" style="flex-shrink:0;">
             <circle cx="11" cy="11" r="8" stroke="#9ca3af" stroke-width="2"/>
@@ -83,13 +83,13 @@
     </div>
 
     <!-- ── Main: Cards + Map ── -->
-    <div :style="{ display:'flex', flex:'1', height:mainHeight, overflow:'hidden' }">
+    <div class="main-panel" :style="{ height: mainHeight }">
 
       <!-- ── Left Panel ── -->
-      <div style="width:390px; min-width:340px; background:#fafafa; border-right:1px solid #e8e3da; position:relative; display:flex; flex-direction:column; overflow:hidden;">
+      <div class="left-panel">
 
         <!-- ── Directions Panel ── -->
-        <div v-show="showingDirections" style="display:flex; flex-direction:column; height:100%; overflow:hidden;">
+        <div v-show="showingDirections" style="display:flex; flex-direction:column; flex:1; min-height:0; overflow:hidden;">
           <div style="padding:14px 16px 0; flex-shrink:0;">
             <button @click="clearDirections"
               style="display:inline-flex; align-items:center; gap:6px; background:none; border:none; cursor:pointer; font-size:14px; font-weight:600; color:#2D5016; font-family:Inter,sans-serif; padding:0; margin-bottom:12px;">
@@ -134,7 +134,7 @@
           </div>
 
           <!-- Step list (rendered from OSRM) -->
-          <div style="padding:0 16px 24px; flex:1; overflow-y:auto;">
+          <div class="cards-scroll" style="padding:0 16px 24px;">
             <div v-if="directionsLoading" style="padding:20px 0; text-align:center; color:#aaa; font-size:14px;">
               Calculating route…
             </div>
@@ -157,7 +157,7 @@
         </div>
 
         <!-- ── Services List ── -->
-        <div v-show="!showingDirections" style="flex:1; overflow-y:auto; padding:16px;">
+        <div v-show="!showingDirections" class="cards-scroll">
 
           <!-- Result count -->
           <p v-if="!loading" style="font-size:13px; color:#888; margin-bottom:12px; padding:0 2px;">
@@ -264,7 +264,7 @@
       </div>
 
       <!-- ── Map Panel ── -->
-      <div style="flex:1; position:relative;">
+      <div class="map-panel">
         <div ref="mapEl" style="width:100%; height:100%;"></div>
 
         <!-- Route info bar -->
@@ -687,9 +687,8 @@ function maneuverIcon(maneuver) {
 // ── Init ───────────────────────────────────────────────────────────────────
 onMounted(async () => {
   await nextTick()
-  const navbarH = 86
-  const headerH = headerEl.value?.offsetHeight ?? 185
-  mainHeight.value = `calc(100vh - ${navbarH + headerH}px)`
+  updateLayout()
+  window.addEventListener('resize', updateLayout)
 
   // Dynamic import — Leaflet requires browser globals (window/document)
   await import('leaflet/dist/leaflet.css')
@@ -710,21 +709,147 @@ onMounted(async () => {
   await fetchAllServices()
 })
 
+function updateLayout() {
+  const headerH = headerEl.value?.offsetHeight ?? 185
+  const navbarH = 86
+  if (window.innerWidth >= 768) {
+    mainHeight.value = `calc(100vh - ${navbarH + headerH}px)`
+  } else {
+    mainHeight.value = 'auto'
+  }
+  nextTick(() => mapInstance?.invalidateSize())
+}
+
 onBeforeUnmount(() => {
+  window.removeEventListener('resize', updateLayout)
   mapInstance?.remove()
 })
 </script>
 
 <style scoped>
+/* ── Page shell ─────────────────────────────────────── */
+.page-wrap {
+  font-family: 'Inter', sans-serif;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: #fafafa;
+  overflow-x: hidden;
+}
+
+/* ── Search / filter header ─────────────────────────── */
+.services-header {
+  background: #ede8df;
+  padding: 28px 40px 20px;
+  border-bottom: 1px solid #dfd7c7;
+  flex-shrink: 0;
+}
+
+/* ── Search row ─────────────────────────────────────── */
+.search-row {
+  display: flex;
+  gap: 10px;
+  max-width: 860px;
+  margin: 0 auto 14px;
+}
+
+/* ── Main panel (cards + map side by side) ──────────── */
+.main-panel {
+  display: flex;
+  /* height is set by JS inline style (calc 100vh - navbar - header).
+     flex:1 is intentionally absent — it would let children expand the panel
+     beyond the viewport height, making the page scroll endlessly. */
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+/* ── Left card panel ─────────────────────────────────── */
+.left-panel {
+  width: 390px;
+  min-width: 340px;
+  background: #fafafa;
+  border-right: 1px solid #e8e3da;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex-shrink: 0;
+  /* Without min-height:0, flex items refuse to shrink below content height
+     — cards would expand the panel instead of scrolling inside it */
+  min-height: 0;
+}
+
+/* ── Scrollable cards list ───────────────────────────── */
+.cards-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+/* ── Map panel ───────────────────────────────────────── */
+.map-panel {
+  flex: 1;
+  position: relative;
+  min-width: 0;
+}
+
+/* ── Leaflet overrides ───────────────────────────────── */
 :deep(.leaflet-popup-content-wrapper) {
   border-radius: 10px;
   box-shadow: 0 4px 16px rgba(0,0,0,0.12);
   font-family: 'Inter', sans-serif;
 }
-:deep(.leaflet-popup-tip) {
-  background: white;
-}
-:deep(.leaflet-control-attribution) {
-  font-size: 10px;
+:deep(.leaflet-popup-tip) { background: white; }
+:deep(.leaflet-control-attribution) { font-size: 10px; }
+
+/* ── Mobile (≤ 767px) ────────────────────────────────── */
+@media (max-width: 767px) {
+  .services-header {
+    padding: 16px 16px 12px;
+  }
+
+  .services-header h1 {
+    font-size: 20px !important;
+    margin-bottom: 12px !important;
+  }
+
+  .search-row {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  /* Stack map on top, cards below */
+  .main-panel {
+    flex-direction: column;
+    height: auto !important;
+    overflow: visible;
+  }
+
+  .map-panel {
+    height: 45vh;
+    min-height: 260px;
+    order: 1;
+    width: 100%;
+  }
+
+  .left-panel {
+    width: 100%;
+    min-width: unset;
+    /* No height cap on mobile — cards expand naturally,
+       user scrolls the page to see more cards then footer */
+    height: auto;
+    overflow: visible;
+    border-right: none;
+    border-top: 1px solid #e8e3da;
+    order: 2;
+  }
+
+  /* On mobile, cards-scroll expands to full content height */
+  .left-panel .cards-scroll {
+    overflow: visible;
+    height: auto;
+    flex: none;
+  }
 }
 </style>
