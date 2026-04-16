@@ -65,19 +65,31 @@
               background: activeFilter === tab.value ? 'white' : 'transparent',
             }">{{ tab.label }}</button>
         </div>
-        <div style="display:flex; align-items:center; gap:14px; margin-left:auto;">
-          <label style="display:flex; align-items:center; gap:6px; font-size:14px; cursor:pointer; color:#444; user-select:none;">
-            <input type="checkbox" v-model="openNowFilter" style="width:15px; height:15px; accent-color:#2D5016;" />
-            Open Now
-          </label>
-          <button style="border:1px solid #ccc; background:white; border-radius:6px; padding:8px 14px; font-size:14px; cursor:pointer; display:flex; align-items:center; gap:6px; color:#444; font-family:Inter,sans-serif;">
+        <!-- Filters dropdown (hover to open) -->
+        <div class="filters-dropdown" style="margin-left:auto; position:relative;">
+          <button
+            class="filters-btn"
+            style="border:1px solid #ccc; background:white; border-radius:6px; padding:8px 14px; font-size:14px; cursor:pointer; display:flex; align-items:center; gap:6px; color:#444; font-family:Inter,sans-serif;"
+            :style="openNowFilter ? 'border-color:#2D5016; color:#2D5016; font-weight:600;' : ''"
+          >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
               <line x1="4" y1="6" x2="20" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
               <line x1="7" y1="12" x2="17" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
               <line x1="10" y1="18" x2="14" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
             </svg>
             Filters
+            <span v-if="openNowFilter"
+              style="background:#2D5016; color:white; border-radius:10px; font-size:11px; font-weight:700; padding:1px 7px; margin-left:2px;">1</span>
           </button>
+
+          <!-- Dropdown panel -->
+          <div class="filters-panel">
+            <p style="font-size:11px; font-weight:700; color:#aaa; text-transform:uppercase; letter-spacing:0.7px; margin:0 0 10px;">Availability</p>
+            <label style="display:flex; align-items:center; gap:10px; font-size:14px; cursor:pointer; color:#333; user-select:none; font-family:Inter,sans-serif;">
+              <input type="checkbox" v-model="openNowFilter" style="width:16px; height:16px; accent-color:#2D5016; cursor:pointer;" />
+              <span>Open Now</span>
+            </label>
+          </div>
         </div>
       </div>
     </div>
@@ -265,7 +277,7 @@
 
       <!-- ── Map Panel ── -->
       <div class="map-panel">
-        <div ref="mapEl" style="width:100%; height:100%;"></div>
+        <div ref="mapEl" style="position:absolute; inset:0;"></div>
 
         <!-- Route info bar -->
         <div v-if="directionsInfo"
@@ -305,9 +317,9 @@ let L = null
 
 // ── Constants ──────────────────────────────────────────────────────────────
 const CATEGORY_TABS = [
-  { value: 'both', label: 'Show Both' },
   { value: 'food', label: 'Food Aid' },
   { value: 'housing', label: 'Housing Relief' },
+  { value: 'both', label: 'Show Both' },
 ]
 
 const MOCK_SERVICES = [
@@ -717,7 +729,8 @@ function updateLayout() {
   } else {
     mainHeight.value = 'auto'
   }
-  nextTick(() => mapInstance?.invalidateSize())
+  // Delay lets the browser finish the CSS reflow before Leaflet measures the container
+  nextTick(() => setTimeout(() => mapInstance?.invalidateSize(), 50))
 }
 
 onBeforeUnmount(() => {
@@ -743,6 +756,8 @@ onBeforeUnmount(() => {
   padding: 28px 40px 20px;
   border-bottom: 1px solid #dfd7c7;
   flex-shrink: 0;
+  position: relative;
+  z-index: 1100;
 }
 
 /* ── Search row ─────────────────────────────────────── */
@@ -790,8 +805,9 @@ onBeforeUnmount(() => {
 /* ── Map panel ───────────────────────────────────────── */
 .map-panel {
   flex: 1;
-  position: relative;
+  position: relative;   /* required: map div uses position:absolute;inset:0 */
   min-width: 0;
+  min-height: 0;
 }
 
 /* ── Leaflet overrides ───────────────────────────────── */
@@ -828,9 +844,10 @@ onBeforeUnmount(() => {
 
   .map-panel {
     height: 45vh;
-    min-height: 260px;
+    min-height: 280px;
     order: 1;
     width: 100%;
+    /* position:relative already set above — map div fills this via inset:0 */
   }
 
   .left-panel {
@@ -851,5 +868,30 @@ onBeforeUnmount(() => {
     height: auto;
     flex: none;
   }
+}
+
+/* ── Filters dropdown ────────────────────────────────── */
+.filters-dropdown {
+  position: relative;
+}
+
+.filters-panel {
+  display: none;
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  background: white;
+  border: 1px solid #e0dbd2;
+  border-radius: 10px;
+  padding: 14px 16px;
+  min-width: 180px;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.11);
+  z-index: 1100;  /* above Leaflet's z-index (400–1000 range) */
+  white-space: nowrap;
+}
+
+/* Show panel on hover of either the button or the panel itself */
+.filters-dropdown:hover .filters-panel {
+  display: block;
 }
 </style>
