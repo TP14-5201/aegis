@@ -4,6 +4,12 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   modules: ['@nuxtjs/tailwindcss'],
   css: ['~/assets/css/main.css'],
+  runtimeConfig: {
+    public: {
+      googleMapsKey: '',   // set via NUXT_PUBLIC_GOOGLE_MAPS_KEY in .env
+      apiBase: 'http://localhost:8000',  // set via NUXT_PUBLIC_API_BASE in .env
+    },
+  },
   app: {
     head: {
       link: [
