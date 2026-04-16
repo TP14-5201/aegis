@@ -22,8 +22,8 @@ app = FastAPI(title="Aegis Support Services API", version="0.1.0")
 ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
-    # Production — replace with your actual Vercel URL once deployed
-   ## "https://open-door-victoria.vercel.app",
+    # When in Production, replace with your actual Vercel URL once deployed
+    "https://aegis-five-delta.vercel.app",
 ]
 
 app.add_middleware(
