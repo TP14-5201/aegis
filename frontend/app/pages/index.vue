@@ -33,12 +33,13 @@
             Immediate access to food and housing support.<br />
             No judgment, no barriers.
           </p>
-          <button
+          <NuxtLink
+            to="/services"
             class="btn-primary text-white font-extrabold rounded-[10px] shadow-lg cursor-pointer"
-            style="background-color: #2d5016; font-size: clamp(15px, 1.6vw, 18px); padding: 16px 32px;"
+            style="background-color: #2d5016; font-size: clamp(15px, 1.6vw, 18px); padding: 16px 32px; display:inline-block; text-decoration:none;"
           >
             Let's get you some help
-          </button>
+          </NuxtLink>
           <p class="mt-5" style="font-size: 13px; color: rgba(255,255,255,0.6);">
             Browse anonymously &bull; No registration needed &bull; Available 24/7
           </p>
@@ -132,12 +133,13 @@
             Search our comprehensive directory of food banks and emergency shelters.
             Whatever you're looking for, we're here to help you find it.
           </p>
-          <button
+          <NuxtLink
+            to="/services"
             class="btn-primary text-white font-extrabold rounded-[10px] shadow-lg cursor-pointer"
-            style="background-color: #2d5016; font-size: clamp(14px, 1.4vw, 18px); padding: 16px 40px; align-self: flex-start;"
+            style="background-color: #2d5016; font-size: clamp(14px, 1.4vw, 18px); padding: 16px 40px; align-self: flex-start; display:inline-block; text-decoration:none;"
           >
             NAVIGATE NOW
-          </button>
+          </NuxtLink>
         </div>
 
         <!-- Right: relief services image, ~42%, natural proportions, no background -->
