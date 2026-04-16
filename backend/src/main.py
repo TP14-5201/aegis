@@ -23,7 +23,7 @@ ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     # Production — replace with your actual Vercel URL once deployed
-    "https://open-door-victoria.vercel.app",
+   ## "https://open-door-victoria.vercel.app",
 ]
 
 app.add_middleware(
