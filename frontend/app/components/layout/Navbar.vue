@@ -21,9 +21,13 @@
 
       <!-- Nav Links -->
       <div class="flex items-center gap-6 sm:gap-8">
-        <span class="nav-link text-white font-medium hidden sm:block" style="font-size: 17px; cursor: default;">
+        <NuxtLink
+          to="/services"
+          class="nav-link text-white font-medium hidden sm:block"
+          style="font-size: 17px;"
+        >
           Find Nearby
-        </span>
+        </NuxtLink>
         <NuxtLink
           to="/learn-more"
           class="nav-link text-white font-medium hidden sm:block"
