@@ -11,6 +11,7 @@ from src.scripts.download_dev_data import save_local_copy
 from src.data.wranglers.melbourne_wrangler import wrangle_melbourne
 from src.data.wranglers.datagov_wrangler import wrangle_datagov
 from src.data.wranglers.food_insecurity_wrangler import wrangle_food_insecurity
+from src.data.wranglers.vic_boundaries_wrangler import wrangle_vic_boundaries
 
 
 def seed_support_services(db: Session, df: pd.DataFrame, model: Base) -> None:
@@ -92,7 +93,7 @@ def load_food_insecurity_dataset() -> pd.DataFrame:
 def load_vic_boundaries_dataset() -> pd.DataFrame:
     try:
         df_vic_boundaries = pd.read_csv(settings.VICGOV_BOUNDARY_RAW_PATH)
-        df_vic_boundaries.columns = df_vic_boundaries.columns.str.lower()
+        df_vic_boundaries = wrangle_vic_boundaries(df_vic_boundaries)
     except Exception as e:
         logger.error(f"Failed to read VIC boundaries raw data from '{settings.VICGOV_BOUNDARY_RAW_PATH}': {e}")
         raise
@@ -109,6 +110,7 @@ def load_dataset() -> pd.DataFrame:
 
 
 if __name__ == "__main__":
+    Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
 
     download_dataset()

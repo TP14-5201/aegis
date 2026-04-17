@@ -51,6 +51,6 @@ class VicBoundary(Base):
     vicgov_region_sname = Column(String)
     vicgov_region = Column(String)
     ufi_created = Column(DateTime)
-    geometry = Column(Geometry(geometry_type='GEOMETRY', srid=4326)) # SRID 4326 is the standard WGS84 (Lat/Long)
+    geometry = Column(Geometry(geometry_type='MULTIPOLYGON', srid=4326))
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
