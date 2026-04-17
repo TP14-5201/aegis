@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from typing import List, Optional
 import math
 from datetime import datetime
@@ -8,11 +9,14 @@ from fastapi import Depends, FastAPI, HTTPException, Query
 
 from src.core.logging import logger
 from src.database import Base, engine, get_db
-from src.schemas import NearbyServiceOut
+from src.models import VicBoundary, FoodInsecurity
+from src.schemas import NearbyServiceOut, FoodInsecurityRegion
 from src.services.nearby_search import DEFAULT_KEYWORDS, find_nearby_support_services
 from src.utils.opening_hours import is_open_now, _now_in_tz
 
+from sqlalchemy import func, Integer
 from sqlalchemy.orm import Session
+from geoalchemy2.functions import ST_AsGeoJSON
 
 
 app = FastAPI(title="Aegis Support Services API", version="0.1.0")
@@ -83,3 +87,40 @@ def get_nearby_services(
     except Exception as exc:
         logger.exception("Failed to fetch nearby services: %s", exc)
         raise HTTPException(status_code=500, detail="Internal error while searching for services")
+
+
+@app.get("/food-insecurity-insights", response_model=List[FoodInsecurityRegion])
+def get_food_insecurity(db: Session = Depends(get_db)):
+    results = (
+        db.query(
+            VicBoundary.ufi,
+            VicBoundary.vicgov_region_code,
+            VicBoundary.vicgov_region_sname,
+            VicBoundary.vicgov_region,
+            FoodInsecurity.indicator,
+            FoodInsecurity.indicator_category,
+            FoodInsecurity.vic_region_code,
+            FoodInsecurity.estimate_pct,
+            ST_AsGeoJSON(VicBoundary.geometry).label("geometry"),
+        )
+        .join(
+            FoodInsecurity,
+            func.cast(VicBoundary.vicgov_region_code, Integer) == FoodInsecurity.vic_region_code
+        )
+        .all()
+    )
+
+    return [
+        FoodInsecurityRegion(
+            ufi=r.ufi,
+            vicgov_region_code=r.vicgov_region_code,
+            vicgov_region_sname=r.vicgov_region_sname,
+            vicgov_region=r.vicgov_region,
+            indicator=r.indicator,
+            indicator_category=r.indicator_category,
+            vic_region_code=r.vic_region_code,
+            estimate_pct=r.estimate_pct,
+            geometry=json.loads(r.geometry),  # parse WKT string to JSON dict
+        )
+        for r in results
+    ]
