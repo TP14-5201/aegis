@@ -52,6 +52,7 @@ def download_dataset() -> pd.DataFrame:
 
 
 def load_dataset() -> pd.DataFrame:
+    """Load all datasets"""
     df_emergency_services = load_emergency_services_dataset()
     df_food_insecurity = load_food_insecurity_dataset()
     df_vic_boundaries = load_vic_boundaries_dataset()

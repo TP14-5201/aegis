@@ -144,7 +144,7 @@ def transform_categories(df: pd.DataFrame):
 
 
 def wrangle_melbourne(df: pd.DataFrame) -> pd.DataFrame:
-    """Wrangling pipeline for Melbourne data."""
+    """Main wrangling pipeline for Melbourne data."""
 
     MEL_COLUMN_MAP = {
         "what": "description",

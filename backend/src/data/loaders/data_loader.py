@@ -35,6 +35,7 @@ def load_emergency_services_dataset() -> pd.DataFrame:
 
 
 def load_food_insecurity_dataset() -> pd.DataFrame:
+    """Load food insecurity dataset"""
     try:
         df_food_insecurity = pd.read_excel(settings.FOOD_INSECURITY_RAW_PATH, sheet_name=0)
     except Exception as e:
@@ -47,6 +48,7 @@ def load_food_insecurity_dataset() -> pd.DataFrame:
 
 
 def load_vic_boundaries_dataset() -> pd.DataFrame:
+    """Load VIC Primary Health Networks (PHN) boundaries dataset"""
     try:
         df_vic_boundaries = pd.read_csv(settings.VICGOV_BOUNDARY_RAW_PATH)
     except Exception as e:
@@ -59,6 +61,7 @@ def load_vic_boundaries_dataset() -> pd.DataFrame:
 
 
 def load_viclga_boundaries_dataset() -> pd.DataFrame:
+    """Load VIC LGA (Local Government Area) SA4 (Statistical Area Level 4) boundaries dataset"""
     try:
         df_viclga_boundaries = pd.read_csv(settings.VICLGA_BOUNDARY_RAW_PATH)
     except Exception as e:

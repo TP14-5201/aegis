@@ -17,21 +17,25 @@ def _download_content(url: str, as_bytes: bool = True):
 
 
 def fetch_csv_from_url(url: str, separator: str = ","):
+    """Fetches CSV data from a URL and returns a pandas DataFrame."""
     content = _download_content(url, as_bytes=False)
     return pd.read_csv(io.StringIO(content), sep=separator)
 
 
 def fetch_excel_from_url(url: str, sheet_name: str = 0):
+    """Fetches Excel data from a URL and returns a pandas DataFrame."""
     content = _download_content(url)
     return pd.read_excel(io.BytesIO(content), sheet_name=sheet_name)
 
 
 def fetch_gdb_from_url(url: str):
+    """Fetches GDB data from a URL and returns a GeoDataFrame."""
     content = _download_content(url)
     return gpd.read_file(io.BytesIO(content))
 
 
 def fetch_zip_from_url(url: str):
+    """Fetches ZIP data from a URL and returns a GeoDataFrame."""
     content = _download_content(url)
     with zipfile.ZipFile(io.BytesIO(content)) as zip_ref:
         zip_ref.extractall(settings.VICLGA_BOUNDARY_RAW_UNZIP_PATH)

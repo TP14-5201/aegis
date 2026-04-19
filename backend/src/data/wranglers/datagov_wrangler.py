@@ -51,7 +51,7 @@ def create_placeholder_columns(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def wrangle_datagov(df: pd.DataFrame) -> pd.DataFrame:
-    """Wrangling pipeline for DataGov emergency relief services data."""
+    """Main wrangling pipeline for DataGov emergency relief services data."""
     
     DATAGOV_COLUMN_MAP = {
         "outlet_name": "name",

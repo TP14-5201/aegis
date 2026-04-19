@@ -51,6 +51,7 @@ def filter_records(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def add_vic_region_code(df: pd.DataFrame) -> pd.DataFrame:
+    """Add VIC Primary Health Networks (PHN) region code to the dataframe"""
     REGION_CODES = {
         "LGAs of Barwon South-West PHU": 10,
         "LGAs of North Eastern PHU": 11,
@@ -67,6 +68,7 @@ def add_vic_region_code(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def wrangle_food_insecurity(df: pd.DataFrame) -> pd.DataFrame:
+    """Main wrangling pipeline for the food insecurity data"""
     FOOD_INSECURITY_COLUMN_MAP = {
         "": "estimate_pct", # Empty string due to the initial cleaning pipeline to clean the column headers (initially was '%')
         "stratified_by": "region"
