@@ -1,3 +1,5 @@
+import os
+
 from pydantic_settings import BaseSettings
 
 
@@ -27,12 +29,19 @@ class Settings(BaseSettings):
 
     # Regional Victorian GDB boundaries
     VICGOV_BOUNDARY_URL: str = "https://www.dropbox.com/scl/fo/qr05jgmxcdbdn0boev1w7/ANUNe4e7aGOSzulbbzNLqX4?rlkey=8sna6zqjt5xrw52pf2jv37r0c&st=c3sn5k9r&dl=1"
+    VICLGA_BOUNDARY_URL: str = "https://data.gov.au/data/dataset/bdf92691-c6fe-42b9-a0e2-a4cd716fa811/resource/95079e79-37d0-43c7-9f80-10eda1b0d05f/download/vic_lga_gda2020.zip"
+
 
     # Local file paths
-    MELBOURNE_RAW_PATH: str = "src/data/raw/melbourne_raw.csv"
-    DATAGOV_RAW_PATH: str = "src/data/raw/datagov_raw.csv"
-    FOOD_INSECURITY_RAW_PATH: str = "src/data/raw/food_insecurity_raw.xlsx"
-    VICGOV_BOUNDARY_RAW_PATH: str = "src/data/raw/vicgov_boundary_raw.csv"
+    RAW_DATA_DIR: str = "src/data/raw"
 
+    MELBOURNE_RAW_PATH: str = os.path.join(RAW_DATA_DIR, "melbourne_raw.csv")
+    DATAGOV_RAW_PATH: str = os.path.join(RAW_DATA_DIR, "datagov_raw.csv")
+    FOOD_INSECURITY_RAW_PATH: str = os.path.join(RAW_DATA_DIR, "food_insecurity_raw.xlsx")
+    VICGOV_BOUNDARY_RAW_PATH: str = os.path.join(RAW_DATA_DIR, "vicgov_boundary_raw.csv")
+    
+    VICLGA_BOUNDARY_RAW_ZIP_PATH: str = os.path.join(RAW_DATA_DIR, "viclga_boundary_raw.zip")
+    VICLGA_BOUNDARY_RAW_UNZIP_PATH: str = os.path.join(RAW_DATA_DIR, "viclga_boundary_raw")
+    VICLGA_BOUNDARY_RAW_PATH: str = os.path.join(VICLGA_BOUNDARY_RAW_UNZIP_PATH, "vic_lga.csv")
 
 settings = Settings()

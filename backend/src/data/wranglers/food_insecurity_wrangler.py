@@ -12,7 +12,7 @@ def filter_by_phu(df: pd.DataFrame) -> pd.DataFrame:
 
 def filter_by_gender(df: pd.DataFrame) -> pd.DataFrame:
     """Filter the data by gender"""
-    df = df[df["gender"]=="People"]
+    df = df[df["gender"].isin(["Men", "Women"])]
     return df
 
 
@@ -28,6 +28,12 @@ def filter_by_indicator_category(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def clean_subpopulation(df: pd.DataFrame) -> pd.DataFrame:
+    """Clean the subpopulation column"""
+    df["subpopulation"] = df["subpopulation"].str.split("(").str[0].str.strip()
+    return df
+
+
 def rename_columns(df: pd.DataFrame) -> pd.DataFrame:
     """Rename the columns to be more readable"""
     df = df.rename(columns={
@@ -39,7 +45,7 @@ def rename_columns(df: pd.DataFrame) -> pd.DataFrame:
 
 def select_columns(df: pd.DataFrame) -> pd.DataFrame:
     """Select the columns needed for the data"""
-    df = df[["estimate_type", "gender", "indicator", "indicator_category", "region", "subpopulation", "estimate_pct"]]
+    df = df[["gender", "indicator", "indicator_category", "region", "subpopulation", "estimate_pct"]]
     return df
 
 
@@ -59,15 +65,10 @@ def filter_records(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def aggregate_estimate_count(df: pd.DataFrame) -> pd.DataFrame:
-    df = df.groupby(["indicator", "indicator_category", "vic_region_code"]).agg({"estimate_pct": "mean"}).reset_index()
-    return df
-
-
 def add_vic_region_code(df: pd.DataFrame) -> pd.DataFrame:
     REGION_CODES = {
         "LGAs of Barwon South-West PHU": 10,
-        "LGAS of North Eastern PHU": 11,
+        "LGAs of North Eastern PHU": 11,
         "LGAs of Gippsland PHU": 12,
         "LGAs of Grampians Wimmera Southern Mallee PHU": 13,
         "LGAs of Goulburn Valley PHU": 14,
@@ -83,10 +84,10 @@ def add_vic_region_code(df: pd.DataFrame) -> pd.DataFrame:
 def wrangle_food_insecurity(df: pd.DataFrame) -> pd.DataFrame:
     df = initial_cleaning_pipeline(df)
     df = filter_records(df)
+    df = clean_subpopulation(df)
     df = rename_columns(df)
     df = select_columns(df)
     df = impute_estimate(df)
     df = add_vic_region_code(df)
-    df = aggregate_estimate_count(df)
 
     return df

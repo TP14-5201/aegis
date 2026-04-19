@@ -1,6 +1,6 @@
 import os
 
-from src.data.extractors.support_services_extractor import fetch_csv_from_url, fetch_excel_from_url, fetch_gdb_from_url
+from src.data.extractors.support_services_extractor import fetch_csv_from_url, fetch_excel_from_url, fetch_gdb_from_url, fetch_zip_from_url
 from src.core.config import settings
 from src.core.logging import logger
 
@@ -31,3 +31,7 @@ def save_local_copy() -> None:
     df_vicgov = fetch_gdb_from_url(settings.VICGOV_BOUNDARY_URL)
     df_vicgov.to_csv(settings.VICGOV_BOUNDARY_RAW_PATH, index=False)
     logger.info(f"Local dev file saved to {settings.VICGOV_BOUNDARY_RAW_PATH}")
+
+    df_viclga = fetch_zip_from_url(settings.VICLGA_BOUNDARY_URL)
+    df_viclga.to_csv(settings.VICLGA_BOUNDARY_RAW_PATH, index=False)
+    logger.info(f"Local dev file saved to {settings.VICLGA_BOUNDARY_RAW_PATH}")

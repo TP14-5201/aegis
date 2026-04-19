@@ -2,8 +2,10 @@ import requests
 import pandas as pd
 import io
 import geopandas as gpd
+import zipfile
 
 from src.core.logging import logger
+from src.core.config import settings
 
 
 def fetch_csv_from_url(url: str, separator: str = ","):
@@ -34,3 +36,15 @@ def fetch_gdb_from_url(url: str):
     response = requests.get(url)
     response.raise_for_status()
     return gpd.read_file(io.BytesIO(response.content))
+
+
+def fetch_zip_from_url(url: str):
+    """
+    Generic function to fetch and parse a ZIP file.
+    """
+    logger.info(f"Fetching ZIP from {url}")
+    response = requests.get(url)
+    response.raise_for_status()
+    with zipfile.ZipFile(io.BytesIO(response.content)) as zip_ref:
+        zip_ref.extractall(settings.VICLGA_BOUNDARY_RAW_UNZIP_PATH)
+    return gpd.read_file(f"{settings.VICLGA_BOUNDARY_RAW_UNZIP_PATH}/VIC_LGA_GDA2020/vic_lga.shp")
