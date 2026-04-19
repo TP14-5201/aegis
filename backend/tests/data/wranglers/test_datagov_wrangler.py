@@ -165,37 +165,37 @@ class TestExtractOrganisationUrl:
 class TestRenameColumns:
     def test_renames_outlet_name_to_name(self):
         df = pd.DataFrame(columns=["outlet_name"])
-        result = rename_columns(df)
+        result = rename_columns(df, cols_rename_map={"outlet_name": "name"})
         assert "name" in result.columns
         assert "outlet_name" not in result.columns
 
     def test_renames_organistaion_website_to_website(self):
         df = pd.DataFrame(columns=["organistaion_website"])
-        result = rename_columns(df)
+        result = rename_columns(df, cols_rename_map={"organistaion_website": "website"})
         assert "website" in result.columns
         assert "organistaion_website" not in result.columns
 
     def test_renames_outlet_address_to_address(self):
         df = pd.DataFrame(columns=["outlet_address"])
-        result = rename_columns(df)
+        result = rename_columns(df, cols_rename_map={"outlet_address": "address"})
         assert "address" in result.columns
         assert "outlet_address" not in result.columns
 
     def test_renames_town_or_suburb_to_suburb(self):
         df = pd.DataFrame(columns=["town_or_suburb"])
-        result = rename_columns(df)
+        result = rename_columns(df, cols_rename_map={"town_or_suburb": "suburb"})
         assert "suburb" in result.columns
         assert "town_or_suburb" not in result.columns
 
     def test_unrelated_columns_are_unchanged(self):
         df = pd.DataFrame(columns=["outlet_name", "postcode", "latitude"])
-        result = rename_columns(df)
+        result = rename_columns(df, cols_rename_map={"outlet_name": "name"})
         assert "postcode" in result.columns
         assert "latitude" in result.columns
 
     def test_returns_dataframe(self):
         df = pd.DataFrame(columns=["outlet_name"])
-        assert isinstance(rename_columns(df), pd.DataFrame)
+        assert isinstance(rename_columns(df, cols_rename_map={"outlet_name": "name"}), pd.DataFrame)
 
 
 # ---------------------------------------------------------------------------
