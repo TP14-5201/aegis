@@ -2,7 +2,8 @@ import re
 
 import pandas as pd
 
-from .utils import initial_cleaning_pipeline, clean_na_values, normalize_website, normalize_coordinates, select_columns, add_source_column
+from .utils import initial_cleaning_pipeline, clean_na_values, normalize_website, normalize_coordinates, select_columns, rename_columns, add_source_column
+from src.core.config import settings
 
 
 def remove_missing_service_names(df: pd.DataFrame) -> pd.DataFrame:
@@ -142,18 +143,14 @@ def transform_categories(df: pd.DataFrame):
     return df
 
 
-def rename_columns(df: pd.DataFrame) -> pd.DataFrame:
-    """Renames the 'What' and 'Who' column headers to make it more descriptive"""
-    cols_rename_map = {
+def wrangle_melbourne(df: pd.DataFrame) -> pd.DataFrame:
+    """Wrangling pipeline for Melbourne data."""
+
+    MEL_COLUMN_MAP = {
         "what": "description",
         "who": "target_audience"
     }
-    df = df.rename(columns=cols_rename_map)
-    return df
 
-
-def wrangle_melbourne(df: pd.DataFrame) -> pd.DataFrame:
-    """Wrangling pipeline for Melbourne data."""
     df = initial_cleaning_pipeline(df)
     df = remove_missing_service_names(df)
     df = normalize_address(df)
@@ -163,8 +160,8 @@ def wrangle_melbourne(df: pd.DataFrame) -> pd.DataFrame:
     df = normalize_coordinates(df, lat_col="latitude", lon_col="longitude")
     df = transform_opening_hours(df)
     df = transform_categories(df)
-    df = rename_columns(df)
-    df = select_columns(df)
+    df = rename_columns(df, MEL_COLUMN_MAP)
+    df = select_columns(df, settings.EMERGENCY_INCLUDED_COLS)
     df = add_source_column(df, source="City of Melbourne")
     # clean_na_values is called last so that placeholder/empty strings set
     # during transformation are correctly converted to NaN before DB insert.

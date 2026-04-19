@@ -12,6 +12,28 @@ class Settings(BaseSettings):
     OTHER_DATA_URL: str = "https://data.gov.au/data/dataset/d667403f-2016-463f-bb0a-3087ae67c57f/resource/0e32d958-3796-4dca-8312-489ef7a610f6/download/emergency-relief-provider-outlets-october-2016.csv"
     OTHER_SEP: str = ","
 
+    # Emergency services columns
+    EMERGENCY_INCLUDED_COLS: list[str] = [
+        "name",
+        "description",
+        "target_audience",
+        "address",
+        "suburb",
+        "primary_phone",
+        "phone_display",
+        "email",
+        "website",
+        "social_media",
+        "opening_hours",
+        "cost",
+        "tram_routes",
+        "bus_routes",
+        "nearest_train_station",
+        "categories",
+        "longitude",
+        "latitude"
+    ]
+
     # Food insecurity data: VAHI (Victorian Population Health Survey)
     FOOD_INSECURITY_URL: str = "https://www.dropbox.com/scl/fi/8dj6f9knai1pvc2kuxbq8/food_insecurity_data.xlsx?rlkey=jxyaf0viyy84fnev3t3m0atod&st=7vc78ayw&dl=1"
     FOOD_INSECURITY_SHEET_NAME: any = 0

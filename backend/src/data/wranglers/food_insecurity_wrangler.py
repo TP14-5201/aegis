@@ -34,21 +34,6 @@ def clean_subpopulation(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def rename_columns(df: pd.DataFrame) -> pd.DataFrame:
-    """Rename the columns to be more readable"""
-    df = df.rename(columns={
-        "": "estimate_pct", # Empty string due to the initial cleaning pipeline to clean the column headers (initially was '%')
-        "stratified_by": "region"
-    })
-    return df
-
-
-def select_columns(df: pd.DataFrame) -> pd.DataFrame:
-    """Select the columns needed for the data"""
-    df = df[["gender", "indicator", "indicator_category", "region", "subpopulation", "estimate_pct"]]
-    return df
-
-
 def impute_estimate(df: pd.DataFrame) -> pd.DataFrame:
     """Impute the estimate column 0"""
     df["estimate_pct"] = df["estimate_pct"].fillna(0)
@@ -82,11 +67,17 @@ def add_vic_region_code(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def wrangle_food_insecurity(df: pd.DataFrame) -> pd.DataFrame:
+    FOOD_INSECURITY_COLUMN_MAP = {
+        "": "estimate_pct", # Empty string due to the initial cleaning pipeline to clean the column headers (initially was '%')
+        "stratified_by": "region"
+    }
+    FOOD_INSECURITY_INCLUDED_COLS = ["gender", "indicator", "indicator_category", "region", "subpopulation", "estimate_pct"]
+
     df = initial_cleaning_pipeline(df)
     df = filter_records(df)
     df = clean_subpopulation(df)
-    df = rename_columns(df)
-    df = select_columns(df)
+    df = rename_columns(df, FOOD_INSECURITY_COLUMN_MAP)
+    df = select_columns(df, FOOD_INSECURITY_INCLUDED_COLS)
     df = impute_estimate(df)
     df = add_vic_region_code(df)
 

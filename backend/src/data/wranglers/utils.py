@@ -53,29 +53,15 @@ def initial_cleaning_pipeline(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def select_columns(df: pd.DataFrame) -> pd.DataFrame:
+def select_columns(df: pd.DataFrame, included_cols: list) -> pd.DataFrame:
     """Select final columns and drop the rest."""
-    included_cols = [
-        "name",
-        "description",
-        "target_audience",
-        "address",
-        "suburb",
-        "primary_phone",
-        "phone_display",
-        "email",
-        "website",
-        "social_media",
-        "opening_hours",
-        "cost",
-        "tram_routes",
-        "bus_routes",
-        "nearest_train_station",
-        "categories",
-        "longitude",
-        "latitude"
-    ]
     return df[included_cols]
+
+
+def rename_columns(df: pd.DataFrame, cols_rename_map: dict) -> pd.DataFrame:
+    """Renames the columns of the dataframe."""
+    df = df.rename(columns=cols_rename_map)
+    return df
 
 
 def add_source_column(df: pd.DataFrame, source: str) -> pd.DataFrame:
