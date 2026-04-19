@@ -1,7 +1,7 @@
 import geopandas as gpd
 import pandas as pd
 
-from .utils import standardize_columns
+from .utils import initial_cleaning_pipeline,standardize_columns
 
 
 def standardise_geospatial_projection(df: pd.DataFrame) -> pd.DataFrame:
@@ -16,15 +16,17 @@ def standardise_geospatial_projection(df: pd.DataFrame) -> pd.DataFrame:
 
 def take_latest_phu_boundaries(df: pd.DataFrame) -> pd.DataFrame:
     df['ufi_created'] = pd.to_datetime(df['ufi_created'])
-    df_latest = df.sort_values('ufi_created').drop_duplicates(
-        subset=['vicgov_region'], 
-        keep='last'
+    df_latest = (
+        df
+            .sort_values('ufi_created')
+            .drop_duplicates(subset=['vicgov_region'], keep='last')
+            .reset_index(drop=True)
     )
     return df_latest
 
 
 def wrangle_vic_boundaries(df: pd.DataFrame) -> pd.DataFrame:
-    df = standardize_columns(df)
+    df = initial_cleaning_pipeline(df)
     df = take_latest_phu_boundaries(df)
     df = standardise_geospatial_projection(df)
 
