@@ -152,7 +152,7 @@ class TestFetcherCalls:
         """
         self._run_with_all_mocked(mock_csv, mock_excel, mock_gdb, mock_zip)
         first_call = mock_csv.call_args_list[0]
-        assert first_call == call(settings.MELBOURNE_API_URL, sep=settings.MELBOURNE_SEP)
+        assert first_call == call(settings.MELBOURNE_API_URL, separator=settings.MELBOURNE_SEP)
 
     @patch("src.scripts.download_dev_data.fetch_zip_from_url", return_value=SAMPLE_GDF)
     @patch("src.scripts.download_dev_data.fetch_gdb_from_url", return_value=SAMPLE_GDF)
@@ -162,7 +162,7 @@ class TestFetcherCalls:
         """Tests that the DataGov CSV is fetched with the correct URL and sep kwarg."""
         self._run_with_all_mocked(mock_csv, mock_excel, mock_gdb, mock_zip)
         second_call = mock_csv.call_args_list[1]
-        assert second_call == call(settings.OTHER_DATA_URL, sep=settings.OTHER_SEP)
+        assert second_call == call(settings.OTHER_DATA_URL, separator=settings.OTHER_SEP)
 
     @patch("src.scripts.download_dev_data.fetch_zip_from_url", return_value=SAMPLE_GDF)
     @patch("src.scripts.download_dev_data.fetch_gdb_from_url", return_value=SAMPLE_GDF)
