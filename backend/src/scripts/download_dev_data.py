@@ -1,25 +1,36 @@
+from pathlib import Path
 import os
 
-from src.data.extractors.support_services_extractor import fetch_csv_from_url
+from src.data.extractors.support_services_extractor import fetch_csv_from_url, fetch_excel_from_url, fetch_gdb_from_url, fetch_zip_from_url
 from src.core.config import settings
 from src.core.logging import logger
 
 
 def save_local_copy() -> None:
-    """Downloads raw CSVs from their source URLs and saves them locally.
+    """Downloads raw datasets and saves them locally based on source type."""
+    
+    # Check for raw data directory
+    raw_dir = Path("src/data/raw")
+    if not raw_dir.exists():
+        logger.info(f"Creating directory: {raw_dir}")
+        raw_dir.mkdir(parents=True, exist_ok=True)
 
-    Creates the raw data directory if it doesn't already exist.
-    The function has no return value; callers should read the saved files
-    directly via the paths defined in settings.
-    """
-    if not os.path.exists("src/data/raw"):
-        logger.info("Raw data directory does not exist. Creating raw data directory...")
-        os.makedirs("src/data/raw")
+    download_tasks = [
+        (fetch_csv_from_url, settings.MELBOURNE_API_URL, settings.MELBOURNE_RAW_PATH, {"separator": settings.MELBOURNE_SEP}),
+        (fetch_csv_from_url, settings.OTHER_DATA_URL, settings.DATAGOV_RAW_PATH, {"separator": settings.OTHER_SEP}),
+        (fetch_excel_from_url, settings.FOOD_INSECURITY_URL, settings.FOOD_INSECURITY_RAW_PATH, {"sheet_name": settings.FOOD_INSECURITY_SHEET_NAME}),
+        (fetch_gdb_from_url, settings.VICGOV_BOUNDARY_URL, settings.VICGOV_BOUNDARY_RAW_PATH, {}),
+        (fetch_zip_from_url, settings.VICLGA_BOUNDARY_URL, settings.VICLGA_BOUNDARY_RAW_PATH, {}),
+    ]
 
-    df_melbourne = fetch_csv_from_url(settings.MELBOURNE_API_URL, settings.MELBOURNE_SEP)
-    df_melbourne.to_csv(settings.MELBOURNE_RAW_PATH, index=False)
-    logger.info(f"Local dev file saved to {settings.MELBOURNE_RAW_PATH}")
-
-    df_datagov = fetch_csv_from_url(settings.OTHER_DATA_URL, settings.OTHER_SEP)
-    df_datagov.to_csv(settings.DATAGOV_RAW_PATH, index=False)
-    logger.info(f"Local dev file saved to {settings.DATAGOV_RAW_PATH}")
+    # Download all necessary files
+    for fetch_func, url, save_path, kwargs in download_tasks:
+        try:
+            df = fetch_func(url, **kwargs)
+            if save_path.endswith(".xlsx"):
+                df.to_excel(save_path, index=False)
+            else:
+                df.to_csv(save_path, index=False)
+            logger.info(f"Local dev file saved to {save_path}")
+        except Exception as e:
+            logger.error(f"Failed to download {url}: {e}")

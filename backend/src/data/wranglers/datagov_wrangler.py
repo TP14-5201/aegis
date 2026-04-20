@@ -2,7 +2,8 @@ import re
 
 import pandas as pd
 
-from .utils import initial_cleaning_pipeline, clean_na_values, normalize_website, normalize_coordinates, select_columns, add_source_column
+from .utils import initial_cleaning_pipeline, clean_na_values, normalize_website, normalize_coordinates, select_columns, add_source_column, rename_columns
+from src.core.config import settings
 
 
 def filter_victoria_services(df: pd.DataFrame) -> pd.DataFrame:
@@ -28,18 +29,6 @@ def extract_organisation_url(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def rename_columns(df: pd.DataFrame) -> pd.DataFrame:
-    """Renames the 'What' and 'Who' column headers to make it more descriptive"""
-    cols_rename_map = {
-        "outlet_name": "name",
-        "organistaion_website": "website",
-        "outlet_address": "address",
-        "town_or_suburb": "suburb",
-    }
-    df = df.rename(columns=cols_rename_map)
-    return df
-
-
 def create_placeholder_columns(df: pd.DataFrame) -> pd.DataFrame:
     """Creates placeholder columns for fields not present in this dataset.
 
@@ -62,15 +51,23 @@ def create_placeholder_columns(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def wrangle_datagov(df: pd.DataFrame) -> pd.DataFrame:
-    """Wrangling pipeline for DataGov emergency relief services data."""
+    """Main wrangling pipeline for DataGov emergency relief services data."""
+    
+    DATAGOV_COLUMN_MAP = {
+        "outlet_name": "name",
+        "organistaion_website": "website",
+        "outlet_address": "address",
+        "town_or_suburb": "suburb",
+    }
+
     df = initial_cleaning_pipeline(df)
-    df = rename_columns(df)
+    df = rename_columns(df, DATAGOV_COLUMN_MAP)
     df = filter_victoria_services(df)
     df = extract_organisation_url(df)
     df = normalize_website(df)
     df = normalize_coordinates(df, lat_col="latitude", lon_col="longitude")
     df = create_placeholder_columns(df)
-    df = select_columns(df)
+    df = select_columns(df, settings.EMERGENCY_INCLUDED_COLS)
     df = add_source_column(df, source="DataGov")
     # clean_na_values is called last so that placeholder/empty strings set
     # during transformation are correctly converted to NaN before DB insert.

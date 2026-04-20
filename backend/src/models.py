@@ -1,5 +1,6 @@
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, Float, DateTime, JSON
+from geoalchemy2 import Geometry
 from src.database import Base
 
 
@@ -26,5 +27,44 @@ class SupportService(Base):
     longitude = Column(Float)
     latitude = Column(Float)
     source = Column(String)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class FoodInsecurity(Base):
+    __tablename__ = "food_insecurity"
+
+    id = Column(Integer, primary_key=True, index=True)
+    gender = Column(String)
+    indicator = Column(String)
+    indicator_category = Column(String)
+    region = Column(String)
+    vic_region_code = Column(Integer)
+    subpopulation = Column(String)
+    estimate_pct = Column(Float)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+
+class VicBoundary(Base):
+    __tablename__ = "vic_boundaries"
+
+    ufi = Column(Integer, primary_key=True, index=True)
+    vicgov_region_code = Column(Integer)
+    vicgov_region_sname = Column(String)
+    vicgov_region = Column(String)
+    ufi_created = Column(DateTime)
+    geometry = Column(Geometry(geometry_type='MULTIPOLYGON', srid=4326))
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class VicLgaBoundary(Base):
+    __tablename__ = "viclga_boundaries"
+
+    lga_ply_pid = Column(String, primary_key=True, index=True)
+    lga_pid = Column(String)
+    lga_name = Column(String)
+    geometry = Column(Geometry(geometry_type='MULTIPOLYGON', srid=4326))
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

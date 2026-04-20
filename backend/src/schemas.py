@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Any
 
 from pydantic import BaseModel, Field
 
@@ -27,3 +27,17 @@ class NearbyServiceOut(BaseModel):
     source: Optional[str] = None
     distance_km: Optional[float] = Field(None, description="Distance from the user in kilometers")
 
+
+class FoodInsecurityRegion(BaseModel):
+    ufi: int
+    vicgov_region_code: str
+    vicgov_region_sname: str
+    vicgov_region: str
+    indicator: str
+    indicator_category: str
+    vic_region_code: int
+    estimate_pct: float
+    geometry: Any  # GeoJSON dict
+
+    class Config:
+        from_attributes = True
