@@ -9,7 +9,7 @@ from fastapi import Depends, FastAPI, HTTPException, Query
 
 from src.core.logging import logger
 from src.database import Base, engine, get_db
-from src.models import VicBoundary, FoodInsecurity
+from src.models import VicBoundary, FoodInsecurity, VicLgaBoundary
 from src.schemas import NearbyServiceOut, FoodInsecurityRegion
 from src.services.nearby_search import DEFAULT_KEYWORDS, find_nearby_support_services
 from src.utils.opening_hours import is_open_now, _now_in_tz
@@ -89,38 +89,74 @@ def get_nearby_services(
         raise HTTPException(status_code=500, detail="Internal error while searching for services")
 
 
-@app.get("/food-insecurity-insights", response_model=List[FoodInsecurityRegion])
-def get_food_insecurity(db: Session = Depends(get_db)):
+@app.get("/boundaries/phu")
+def get_phu_boundaries(db: Session = Depends(get_db)):
+    results = db.query(
+        VicBoundary.vicgov_region_code,
+        ST_AsGeoJSON(VicBoundary.geometry).label("geometry")
+    ).all()
+
+    return {
+        "type": "FeatureCollection",
+        "features": [
+            {
+                "type": "Feature",
+                "properties": {"code": r.vicgov_region_code},
+                "geometry": json.loads(r.geometry) # Convert string to JSON object
+            } for r in results
+        ]
+    }
+
+
+@app.get("/boundaries/lga/{phu_code}")
+def get_lga_boundaries(phu_code: int, db: Session = Depends(get_db)):
     results = (
         db.query(
-            VicBoundary.ufi,
-            VicBoundary.vicgov_region_code,
-            VicBoundary.vicgov_region_sname,
-            VicBoundary.vicgov_region,
-            FoodInsecurity.indicator,
-            FoodInsecurity.indicator_category,
-            FoodInsecurity.vic_region_code,
-            FoodInsecurity.estimate_pct,
-            ST_AsGeoJSON(VicBoundary.geometry).label("geometry"),
+            VicLgaBoundary.lga_name,
+            ST_AsGeoJSON(VicLgaBoundary.geometry).label("geometry")
         )
-        .join(
-            FoodInsecurity,
-            func.cast(VicBoundary.vicgov_region_code, Integer) == FoodInsecurity.vic_region_code
-        )
+        .join(FoodInsecurity, VicLgaBoundary.lga_name == FoodInsecurity.subpopulation)
+        .filter(FoodInsecurity.vic_region_code == phu_code)
+        .distinct(VicLgaBoundary.lga_name) # One polygon per suburb
         .all()
     )
 
+    if not results:
+        return {"type": "FeatureCollection", "features": [], "message": "No boundaries found"}
+
+    # Construct the GeoJSON FeatureCollection
+    return {
+        "type": "FeatureCollection",
+        "features": [
+            {
+                "type": "Feature",
+                "properties": {
+                    "lga_name": r.lga_name,
+                },
+                "geometry": json.loads(r.geometry)
+            } for r in results
+        ]
+    }
+
+
+@app.get("/food-insecurity/all-data")
+def get_all_food_data(db: Session = Depends(get_db)):
+    results = db.query(
+        FoodInsecurity.subpopulation,
+        FoodInsecurity.vic_region_code,
+        FoodInsecurity.gender,
+        FoodInsecurity.indicator,
+        FoodInsecurity.indicator_category,
+        FoodInsecurity.estimate_pct
+    ).all()
+    
     return [
-        FoodInsecurityRegion(
-            ufi=r.ufi,
-            vicgov_region_code=r.vicgov_region_code,
-            vicgov_region_sname=r.vicgov_region_sname,
-            vicgov_region=r.vicgov_region,
-            indicator=r.indicator,
-            indicator_category=r.indicator_category,
-            vic_region_code=r.vic_region_code,
-            estimate_pct=r.estimate_pct,
-            geometry=json.loads(r.geometry),  # parse WKT string to JSON dict
-        )
-        for r in results
+        {
+            "subpopulation": r.subpopulation,
+            "vic_region_code": r.vic_region_code,
+            "gender": r.gender,
+            "indicator": r.indicator,
+            "indicator_category": r.indicator_category,
+            "estimate_pct": r.estimate_pct
+        } for r in results
     ]
