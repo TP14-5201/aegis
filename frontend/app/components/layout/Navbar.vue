@@ -1,275 +1,101 @@
 <template>
-<div class="main-navigation-menu-subsection">
-  <!-- Logo -->
-  <div class="logo">
-    <img
-      class="OPEN-DOOR-VICTORIA"
-      alt="Open DOOR VICTORIA"
-      src="/images/open-door-victoria-1-4@2x.png"
-    />
-    <div class="logo-text">
-      <div class="logo-opendoor">Open Door</div>
-      <div class="logo-victoria">VICTORIA</div>
+  <nav
+    class="w-full sticky top-0 z-50"
+    style="background-color: #2D5016; font-family: 'Noto Serif', serif;"
+  >
+    <div class="w-full px-6 sm:px-10 h-[86px] flex items-center justify-between">
+      <!-- Logo -->
+      <NuxtLink to="/" class="flex items-center gap-3 shrink-0 cursor-pointer">
+        <div style="width: 46px; height: 56px; position: relative; overflow: hidden; flex-shrink: 0;">
+          <img
+            src="/images/logo.png"
+            alt="Open Door Victoria"
+            style="position: absolute; max-width: none; width: 283.99%; height: 240.96%; top: -48.28%; left: -92.05%; pointer-events: none;"
+          />
+        </div>
+        <div style="display: flex; flex-direction: column; line-height: 1;">
+          <span style="color: white; font-weight: 700; font-size: 28px;">Open Door</span>
+          <span style="color: #ffb900; font-weight: 700; font-size: 18px; letter-spacing: 1px;">VICTORIA</span>
+        </div>
+      </NuxtLink>
+
+      <!-- Desktop nav links (hidden on mobile) -->
+      <div class="hidden sm:flex items-center gap-6 sm:gap-8">
+        <NuxtLink to="/services" class="nav-link text-white font-medium" style="font-size: 17px;">
+          Find food/shelter near you
+        </NuxtLink>
+        <NuxtLink to="/learn-more" class="nav-link text-white font-medium" style="font-size: 17px;">
+          Learn More
+        </NuxtLink>
+        <button
+          @click="quickExit"
+          class="btn-exit flex items-center gap-2 rounded-[10px] shadow-lg cursor-pointer"
+          style="background-color: #e7000b; padding: 8px 16px;"
+        >
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+            <path d="M15 5L5 15" stroke="white" stroke-width="1.67" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M5 5L15 15" stroke="white" stroke-width="1.67" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span style="color: white; font-weight: 500; font-size: 16px;">Quick Exit</span>
+        </button>
+      </div>
+
+      <!-- Mobile: hamburger + quick exit -->
+      <div class="flex sm:hidden items-center gap-3">
+        <button
+          @click="quickExit"
+          class="btn-exit flex items-center gap-2 rounded-[10px] shadow-lg cursor-pointer"
+          style="background-color: #e7000b; padding: 6px 12px;"
+        >
+          <svg width="14" height="14" viewBox="0 0 20 20" fill="none">
+            <path d="M15 5L5 15" stroke="white" stroke-width="1.67" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M5 5L15 15" stroke="white" stroke-width="1.67" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span style="color: white; font-weight: 500; font-size: 14px;">Quick Exit</span>
+        </button>
+
+        <button
+          @click="menuOpen = !menuOpen"
+          class="flex flex-col justify-center items-center gap-[5px] cursor-pointer"
+          style="background: none; border: none; padding: 4px;"
+          aria-label="Menu"
+        >
+          <span
+            v-for="i in 3" :key="i"
+            style="display: block; width: 22px; height: 2px; background: white; border-radius: 2px;"
+          />
+        </button>
+      </div>
     </div>
-  </div>
 
-  <!-- Desktop / Tablet center nav -->
-  <nav class="navigation desktop-nav">
-    <NuxtLink class="nav-link" to="/home-page">Home</NuxtLink>
-    <NuxtLink class="nav-link" to="/directory">Directory</NuxtLink>
+    <!-- Mobile dropdown menu -->
+    <div
+      v-if="menuOpen"
+      class="sm:hidden"
+      style="background-color: #243f11; border-top: 1px solid rgba(255,255,255,0.1);"
+    >
+      <NuxtLink
+        to="/services"
+        @click="menuOpen = false"
+        style="display: block; padding: 16px 24px; color: white; font-size: 16px; font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.08); text-decoration: none;"
+      >
+        Find food/shelter near you
+      </NuxtLink>
+      <NuxtLink
+        to="/learn-more"
+        @click="menuOpen = false"
+        style="display: block; padding: 16px 24px; color: white; font-size: 16px; font-weight: 600; text-decoration: none;"
+      >
+        Learn More
+      </NuxtLink>
+    </div>
   </nav>
-
-  <!-- Quick Exit + hamburger row -->
-  <div class="right-actions">
-    <button class="button-quick-exit" @click="quickExit">
-      <img class="icon" alt="Icon" src="/images/icon-2.svg" />
-      <span class="qe-text">Quick Exit</span>
-    </button>
-
-    <!-- Hamburger (mobile only) -->
-    <button class="hamburger" @click="menuOpen = !menuOpen" aria-label="Toggle menu">
-      <span></span><span></span><span></span>
-    </button>
-  </div>
-
-  <!-- Mobile dropdown -->
-  <div class="mobile-menu" :class="{ open: menuOpen }">
-    <NuxtLink class="mobile-link" to="/home-page" @click="menuOpen = false">Home</NuxtLink>
-    <NuxtLink class="mobile-link" to="/directory" @click="menuOpen = false">Directory</NuxtLink>
-  </div>
-</div>
 </template>
 
-<script>
-import { defineComponent, ref } from "vue";
+<script setup lang="ts">
+const menuOpen = ref(false)
 
-export default defineComponent({
-  name: "Navbar",
-  
-  setup() {
-    const menuOpen = ref(false);
-    function quickExit() {
-      window.location.replace("https://www.google.com");
-    }
-    return { menuOpen, quickExit };
-  },
-});
+function quickExit() {
+  window.location.href = 'https://www.google.com'
+}
 </script>
-
-<style scoped>
-/* ── Base (all sizes) ─────────────────────────────────── */
-.main-navigation-menu-subsection {
-  align-items: center;
-  background-color: #1e35104c;
-  border-radius: 10px;
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 8px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 10px 16px;
-  position: absolute;
-  top: 22px;
-  width: min(1054px, calc(100% - 32px));
-  box-sizing: border-box;
-  z-index: 100;
-}
-
-/* Logo */
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-shrink: 0;
-  flex: 1;
-  min-width: 0;
-  position: relative;
-}
-
-.OPEN-DOOR-VICTORIA {
-  height: 66px;
-  width: 56px;
-  flex-shrink: 0;
-}
-
-.logo-text {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.1;
-}
-
-.logo-opendoor {
-  color: #ffffff;
-  font-family: "Inter", Helvetica;
-  font-size: clamp(18px, 2.5vw, 30px);
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.logo-victoria {
-  color: #ffb900;
-  font-family: "Inter", Helvetica;
-  font-size: clamp(12px, 1.6vw, 20px);
-  font-weight: 700;
-  letter-spacing: 1px;
-  white-space: nowrap;
-}
-
-/* Center nav (tablet + desktop) */
-.desktop-nav {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-  flex: 2;
-  justify-content: center;
-}
-
-.nav-link {
-  color: #ffffff;
-  font-family: "Inter", Helvetica;
-  font-size: 18px;
-  font-weight: 500;
-  text-decoration: none;
-  white-space: nowrap;
-}
-
-/* Right side */
-.right-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-  margin-left: auto;
-}
-
-/* Quick Exit */
-.button-quick-exit {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background-color: #e7000b;
-  border: none;
-  border-radius: 10px;
-  box-shadow: 0px 4px 6px -4px #0000001a, 0px 10px 15px -3px #0000001a;
-  cursor: pointer;
-  height: 40px;
-  padding: 0 12px;
-  flex-shrink: 0;
-  min-width: 0;
-}
-
-.button-quick-exit .icon {
-  height: 20px;
-  width: 20px;
-  flex-shrink: 0;
-}
-
-.qe-text {
-  color: #ffffff;
-  font-family: "Inter", Helvetica;
-  font-size: 16px;
-  font-weight: 500;
-  white-space: nowrap;
-}
-
-/* Hamburger (hidden on tablet+) */
-.hamburger {
-  display: none;
-  flex-direction: column;
-  justify-content: space-between;
-  width: 28px;
-  height: 20px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  flex-shrink: 0;
-}
-
-.hamburger span {
-  display: block;
-  height: 3px;
-  width: 100%;
-  background: #ffffff;
-  border-radius: 2px;
-}
-
-/* Mobile dropdown */
-.mobile-menu {
-  display: none;
-  width: 100%;
-  flex-direction: column;
-  gap: 12px;
-  padding: 8px 0 4px;
-  /* break out of the nowrap row onto its own line */
-  order: 99;
-  flex-basis: 100%;
-}
-
-.mobile-menu.open {
-  display: flex;
-}
-
-.mobile-link {
-  color: #ffffff;
-  font-family: "Inter", Helvetica;
-  font-size: 18px;
-  font-weight: 500;
-  text-decoration: none;
-  padding: 6px 4px;
-}
-
-/* ── Mobile  (≤ 640px) ────────────────────────────────── */
-@media (max-width: 640px) {
-  .main-navigation-menu-subsection {
-    /* keep everything on one row even on tiny screens */
-    flex-wrap: wrap;
-  }
-
-  .desktop-nav {
-    display: none;
-  }
-
-  .hamburger {
-    display: flex;
-  }
-
-  .logo {
-    flex: 1;
-  }
-
-  .OPEN-DOOR-VICTORIA {
-    height: 44px;
-    width: 37px;
-  }
-
-  .logo-opendoor {
-    font-size: 16px;
-  }
-
-  .logo-victoria {
-    font-size: 11px;
-  }
-
-  .qe-text {
-    font-size: 13px;
-  }
-
-  .button-quick-exit {
-    padding: 0 8px;
-    height: 34px;
-  }
-
-  .right-actions {
-    margin-left: auto;
-    flex-shrink: 0;
-  }
-}
-
-/* ── Tablet (641 – 1024px) ───────────────────────────── */
-@media (min-width: 641px) and (max-width: 1024px) {
-  .main-navigation-menu-subsection {
-    gap: 16px;
-  }
-}
-</style>

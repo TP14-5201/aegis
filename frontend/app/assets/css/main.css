@@ -1,1 +1,120 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Global Reset ───────────────────────────────────────── */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  overflow-x: hidden;
+}
+
+/* ─── Scroll Reveal Animations ───────────────────────────── */
+.reveal {
+  opacity: 0;
+  transform: translateY(48px);
+  transition: opacity 0.75s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.75s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+.reveal-delay-4 { transition-delay: 0.4s; }
+
+/* ─── Parallax Exit ──────────────────────────────────────── */
+.parallax-section {
+  will-change: transform;
+}
+
+/* ─── Navbar Button Hover ────────────────────────────────── */
+.nav-link {
+  position: relative;
+  transition: color 0.2s ease;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -3px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: #ffb900;
+  transition: width 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.nav-link:hover::after {
+  width: 100%;
+}
+
+.nav-link:hover {
+  color: #ffb900;
+}
+
+/* ─── CTA Button Hover ───────────────────────────────────── */
+.btn-primary {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 30px -4px rgba(0, 0, 0, 0.25);
+  background-color: #3a6a1e !important;
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-exit {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.btn-exit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px -4px rgba(231, 0, 11, 0.45);
+  background-color: #c00009 !important;
+}
+
+.btn-exit:active {
+  transform: translateY(0);
+}
+
+/* ─── Image Hover Float + Glow ───────────────────────────── */
+.img-hover-card {
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+              filter 0.35s ease;
+  cursor: pointer;
+}
+
+.img-hover-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 24px 60px -8px rgba(119, 90, 25, 0.35),
+              0 0 0 1px rgba(119, 90, 25, 0.12);
+  filter: brightness(1.06);
+}
+
+/* ─── Footer Link Hover ──────────────────────────────────── */
+.footer-link {
+  transition: color 0.2s ease;
+}
+
+.footer-link:hover {
+  color: rgba(255, 255, 255, 0.9) !important;
+}

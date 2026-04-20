@@ -25,7 +25,7 @@ class NearbyServiceOut(BaseModel):
     longitude: Optional[float] = None
     latitude: Optional[float] = None
     source: Optional[str] = None
-    distance_km: float = Field(..., description="Distance from the user in kilometers")
+    distance_km: Optional[float] = Field(None, description="Distance from the user in kilometers")
 
 
 class FoodInsecurityRegion(BaseModel):
