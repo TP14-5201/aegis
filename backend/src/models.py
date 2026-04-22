@@ -42,6 +42,8 @@ class FoodInsecurity(Base):
     vic_region_code = Column(Integer)
     subpopulation = Column(String)
     estimate_pct = Column(Float)
+    lga = Column(String)
+    emergency_services_count = Column(Integer)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     

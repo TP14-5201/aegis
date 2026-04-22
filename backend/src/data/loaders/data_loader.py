@@ -2,6 +2,7 @@ import pandas as pd
 from typing import Callable
 from src.core.config import settings
 from src.core.logging import logger
+from src.data.wranglers.utils import initial_cleaning_pipeline
 from src.data.wranglers.melbourne_wrangler import wrangle_melbourne
 from src.data.wranglers.datagov_wrangler import wrangle_datagov
 from src.data.wranglers.food_insecurity_wrangler import wrangle_food_insecurity
@@ -31,11 +32,36 @@ def load_emergency_services_dataset() -> pd.DataFrame:
 
 def load_food_insecurity_dataset() -> pd.DataFrame:
     """Load food insecurity dataset (Excel)."""
-    return _load_and_wrangle(
+
+    def _get_lga_service_counts() -> pd.DataFrame:
+        """Internal helper to calculate emergency service counts per LGA."""
+        df = pd.read_csv(settings.DATAGOV_RAW_PATH)
+        df = initial_cleaning_pipeline(df)
+        
+        # Process LGA names and aggregate
+        counts = (
+            df.assign(lga=df["lga"].astype(str).str.split("(").str[0].str.strip())
+            .groupby("lga")
+            .size()
+            .reset_index(name="emergency_services_count")
+        )
+        return counts
+
+    food_insecurity_df = _load_and_wrangle(
         settings.FOOD_INSECURITY_RAW_PATH, 
         wrangle_food_insecurity, 
         "food insecurity", 
         is_excel=True
+    )
+    lga_counts = _get_lga_service_counts()
+
+    # Merge and filter for valid LGAs only
+    return pd.merge(
+        food_insecurity_df, 
+        lga_counts, 
+        left_on="subpopulation", 
+        right_on="lga", 
+        how="inner"
     )
 
 def load_vic_boundaries_dataset() -> pd.DataFrame:

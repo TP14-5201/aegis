@@ -24,7 +24,7 @@ def filter_by_estimate_type(df: pd.DataFrame) -> pd.DataFrame:
 
 def filter_by_indicator_category(df: pd.DataFrame) -> pd.DataFrame:
     """"""
-    df = df[df["indicator_category"].isin(["Yes", "Yes, definitely"])]
+    df = df[df["indicator_category"].isin(["Yes", "Yes, definitely", "Sometimes"])]
     return df
 
 

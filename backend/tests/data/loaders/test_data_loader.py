@@ -28,9 +28,70 @@ def make_sample_df(name_values: list[str] | None = None) -> pd.DataFrame:
 
 MELBOURNE_DF = make_sample_df(["Zed Service", "Alpha Service"])
 DATAGOV_DF   = make_sample_df(["Middle Service"])
-FOOD_DF      = pd.DataFrame({"indicator": ["food"], "estimate_pct": [10.0]})
 VIC_DF       = pd.DataFrame({"vicgov_region": ["South East"], "geometry": ["POLYGON(...)"]})
 LGA_DF       = pd.DataFrame({"lga_name": ["Melbourne"], "geometry": ["POLYGON(...)"]})
+
+# ---------------------------------------------------------------------------
+# Shared food insecurity fixtures
+#
+# load_food_insecurity_dataset now runs in three phases:
+#   1. Read + wrangle the food insecurity Excel  → food_insecurity_df
+#   2. _get_lga_service_counts: read the DataGov CSV via pd.read_csv,
+#      run initial_cleaning_pipeline, split "lga" on "(", strip, groupby
+#      → DataFrame with ["lga", "emergency_services_count"]
+#   3. inner-join food_insecurity_df with lga_counts on subpopulation == lga
+#
+# Three DataFrames cover these phases in tests:
+#   DATAGOV_RAW_DF   — returned by pd.read_csv inside _get_lga_service_counts
+#   FOOD_WRANGLED_DF — returned by wrangle_food_insecurity (has "subpopulation")
+# ---------------------------------------------------------------------------
+
+# Raw DataGov CSV fed to _get_lga_service_counts.
+# After split("(").str[0].str.strip():
+#   "Melbourne (City)" -> "Melbourne"  (×2 → count 2)
+#   "Yarra (City)"     -> "Yarra"      (×1 → count 1)
+#   "No Parens"        -> "No Parens"  (×1 → count 1)
+DATAGOV_RAW_DF = pd.DataFrame({
+    "lga": [
+        "Melbourne (City)",
+        "Melbourne (City)",
+        "Yarra (City)",
+        "No Parens",
+    ]
+})
+
+# Wrangled food insecurity DataFrame (output of wrangle_food_insecurity).
+# "subpopulation" is the join key against "lga" in lga_counts.
+# "No Match" has no corresponding LGA → dropped by the inner join → 2 rows remain.
+FOOD_WRANGLED_DF = pd.DataFrame({
+    "subpopulation": ["Melbourne", "Yarra", "No Match"],
+    "indicator":     ["food insecurity"] * 3,
+    "estimate_pct":  [10.0, 15.0, 5.0],
+})
+
+
+def _run_food_loader(
+    *,
+    food_wrangled: pd.DataFrame | None = None,
+    datagov_raw: pd.DataFrame | None = None,
+) -> pd.DataFrame:
+    """
+    Runs load_food_insecurity_dataset() with all external calls mocked.
+
+    food_wrangled — DataFrame returned by wrangle_food_insecurity
+    datagov_raw   — DataFrame returned by pd.read_csv (DataGov file)
+
+    initial_cleaning_pipeline is stubbed as an identity function so the
+    raw datagov_raw DataFrame passes through unchanged.
+    """
+    food_wrangled = food_wrangled if food_wrangled is not None else FOOD_WRANGLED_DF
+    datagov_raw   = datagov_raw   if datagov_raw   is not None else DATAGOV_RAW_DF
+
+    with patch("src.data.loaders.data_loader.pd.read_excel", return_value=food_wrangled), \
+         patch("src.data.loaders.data_loader.wrangle_food_insecurity", return_value=food_wrangled), \
+         patch("src.data.loaders.data_loader.pd.read_csv", return_value=datagov_raw), \
+         patch("src.data.loaders.data_loader.initial_cleaning_pipeline", side_effect=lambda df: df):
+        return load_food_insecurity_dataset()
 
 
 # ---------------------------------------------------------------------------
@@ -109,11 +170,7 @@ class TestLoadAndWrangle:
         )
 
     def test_reraises_exception_after_logging(self):
-        """Tests that exceptions are re-raised after logging — NOT swallowed.
-
-        This is the opposite behaviour from download_dev_data, which uses
-        try/except without re-raise. Here, callers receive the exception.
-        """
+        """Tests that exceptions are re-raised after logging — NOT swallowed."""
         error = FileNotFoundError("missing")
 
         with patch("src.data.loaders.data_loader.pd.read_csv", side_effect=error), \
@@ -172,7 +229,6 @@ class TestLoadEmergencyServicesDataset:
         with patch("src.data.loaders.data_loader.pd.read_csv") as mock_read_csv, \
              patch("src.data.loaders.data_loader.wrangle_melbourne", return_value=mel_df), \
              patch("src.data.loaders.data_loader.wrangle_datagov", return_value=gov_df):
-            # read_csv is called twice; return different DFs for each call
             mock_read_csv.side_effect = [mel_df, gov_df]
             return load_emergency_services_dataset()
 
@@ -252,50 +308,221 @@ class TestLoadEmergencyServicesDataset:
 
 # ---------------------------------------------------------------------------
 # load_food_insecurity_dataset
+#
+# CHANGED BEHAVIOUR — this function now:
+#   1. Reads + wrangles the food insecurity Excel (unchanged)
+#   2. Reads the DataGov CSV via pd.read_csv (NEW — _get_lga_service_counts)
+#   3. Applies initial_cleaning_pipeline to the DataGov DF (NEW)
+#   4. Strips parenthetical suffixes from "lga" values (NEW)
+#   5. Counts services per LGA (NEW)
+#   6. Inner-joins food_insecurity_df with lga_counts on subpopulation == lga (NEW)
+#
+# BUGS IN IMPLEMENTATION:
+#   - Dead code: `return food_insecurity_df` after `return pd.merge(...)` is
+#     unreachable — leftover from before the feature was added; should be removed.
+#   - `filter_victoria_services` is imported but never used.
+#
+# PATCHING NOTE:
+#   pd.read_csv is now called inside _get_lga_service_counts, so any test
+#   that previously asserted mock_csv.assert_not_called() was wrong and has
+#   been corrected.
 # ---------------------------------------------------------------------------
 
 class TestLoadFoodInsecurityDataset:
+
+    # --- Return type & output structure --------------------------------------
+
     def test_returns_dataframe(self):
         """Tests that the function returns a DataFrame."""
-        with patch("src.data.loaders.data_loader.pd.read_excel", return_value=FOOD_DF), \
-             patch("src.data.loaders.data_loader.wrangle_food_insecurity", return_value=FOOD_DF):
-            result = load_food_insecurity_dataset()
+        result = _run_food_loader()
         assert isinstance(result, pd.DataFrame)
 
-    def test_reads_from_correct_path(self):
-        """Tests that the food insecurity Excel is read from the configured path."""
-        with patch("src.data.loaders.data_loader.pd.read_excel", return_value=FOOD_DF) as mock_read_excel, \
-             patch("src.data.loaders.data_loader.wrangle_food_insecurity", return_value=FOOD_DF):
+    def test_result_contains_food_insecurity_columns(self):
+        """Tests that food insecurity columns (indicator, estimate_pct) survive the merge."""
+        result = _run_food_loader()
+        assert "indicator" in result.columns
+        assert "estimate_pct" in result.columns
+
+    def test_result_contains_emergency_services_count_column(self):
+        """Tests that the lga_counts column is present after the merge."""
+        result = _run_food_loader()
+        assert "emergency_services_count" in result.columns
+
+    def test_result_contains_lga_column(self):
+        """Tests that the 'lga' column from lga_counts is present in the merged output."""
+        result = _run_food_loader()
+        assert "lga" in result.columns
+
+    # --- Food insecurity Excel read ------------------------------------------
+
+    def test_reads_food_insecurity_from_correct_excel_path(self):
+        """Tests that pd.read_excel is called with the configured food insecurity path."""
+        with patch("src.data.loaders.data_loader.pd.read_excel", return_value=FOOD_WRANGLED_DF) as mock_excel, \
+             patch("src.data.loaders.data_loader.wrangle_food_insecurity", return_value=FOOD_WRANGLED_DF), \
+             patch("src.data.loaders.data_loader.pd.read_csv", return_value=DATAGOV_RAW_DF), \
+             patch("src.data.loaders.data_loader.initial_cleaning_pipeline", side_effect=lambda df: df):
             load_food_insecurity_dataset()
 
-        mock_read_excel.assert_called_once_with(settings.FOOD_INSECURITY_RAW_PATH, sheet_name=0)
+        mock_excel.assert_called_once_with(settings.FOOD_INSECURITY_RAW_PATH, sheet_name=0)
 
-    def test_uses_excel_reader_not_csv(self):
-        """Tests that pd.read_excel is used (is_excel=True), not pd.read_csv."""
-        with patch("src.data.loaders.data_loader.pd.read_excel", return_value=FOOD_DF) as mock_excel, \
-             patch("src.data.loaders.data_loader.pd.read_csv") as mock_csv, \
-             patch("src.data.loaders.data_loader.wrangle_food_insecurity", return_value=FOOD_DF):
+    def test_uses_excel_reader_for_food_insecurity_file(self):
+        """Tests that pd.read_excel is called exactly once for the food insecurity file.
+
+        NOTE: pd.read_csv IS also called (for the DataGov file in _get_lga_service_counts).
+        The old test incorrectly asserted read_csv was never called — that was
+        only true before this feature was added.
+        """
+        with patch("src.data.loaders.data_loader.pd.read_excel", return_value=FOOD_WRANGLED_DF) as mock_excel, \
+             patch("src.data.loaders.data_loader.wrangle_food_insecurity", return_value=FOOD_WRANGLED_DF), \
+             patch("src.data.loaders.data_loader.pd.read_csv", return_value=DATAGOV_RAW_DF), \
+             patch("src.data.loaders.data_loader.initial_cleaning_pipeline", side_effect=lambda df: df):
             load_food_insecurity_dataset()
 
         mock_excel.assert_called_once()
-        mock_csv.assert_not_called()
 
-    def test_passes_result_through_food_insecurity_wrangler(self):
-        """Tests that the raw DataFrame is passed to wrangle_food_insecurity."""
-        raw_df = FOOD_DF.copy()
-        wrangled_df = FOOD_DF.copy()
-        mock_wrangler = MagicMock(return_value=wrangled_df)
+    def test_passes_raw_excel_df_to_food_insecurity_wrangler(self):
+        """Tests that the DataFrame read from Excel is passed to wrangle_food_insecurity."""
+        raw_excel_df = FOOD_WRANGLED_DF.copy()
+        mock_wrangler = MagicMock(return_value=FOOD_WRANGLED_DF)
 
-        with patch("src.data.loaders.data_loader.pd.read_excel", return_value=raw_df), \
-             patch("src.data.loaders.data_loader.wrangle_food_insecurity", mock_wrangler):
-            result = load_food_insecurity_dataset()
+        with patch("src.data.loaders.data_loader.pd.read_excel", return_value=raw_excel_df), \
+             patch("src.data.loaders.data_loader.wrangle_food_insecurity", mock_wrangler), \
+             patch("src.data.loaders.data_loader.pd.read_csv", return_value=DATAGOV_RAW_DF), \
+             patch("src.data.loaders.data_loader.initial_cleaning_pipeline", side_effect=lambda df: df):
+            load_food_insecurity_dataset()
 
-        mock_wrangler.assert_called_once_with(raw_df)
-        assert result is wrangled_df
+        mock_wrangler.assert_called_once_with(raw_excel_df)
 
-    def test_propagates_exception_on_missing_file(self):
-        """Tests that a FileNotFoundError propagates to the caller."""
+    # --- DataGov LGA counts (_get_lga_service_counts) -----------------------
+
+    def test_reads_datagov_csv_for_lga_counts(self):
+        """Tests that pd.read_csv is called with the DataGov path inside _get_lga_service_counts."""
+        with patch("src.data.loaders.data_loader.pd.read_excel", return_value=FOOD_WRANGLED_DF), \
+             patch("src.data.loaders.data_loader.wrangle_food_insecurity", return_value=FOOD_WRANGLED_DF), \
+             patch("src.data.loaders.data_loader.pd.read_csv", return_value=DATAGOV_RAW_DF) as mock_csv, \
+             patch("src.data.loaders.data_loader.initial_cleaning_pipeline", side_effect=lambda df: df):
+            load_food_insecurity_dataset()
+
+        mock_csv.assert_called_once_with(settings.DATAGOV_RAW_PATH)
+
+    def test_applies_initial_cleaning_pipeline_to_datagov_csv(self):
+        """Tests that initial_cleaning_pipeline is called on the raw DataGov DataFrame."""
+        mock_pipeline = MagicMock(return_value=DATAGOV_RAW_DF)
+
+        with patch("src.data.loaders.data_loader.pd.read_excel", return_value=FOOD_WRANGLED_DF), \
+             patch("src.data.loaders.data_loader.wrangle_food_insecurity", return_value=FOOD_WRANGLED_DF), \
+             patch("src.data.loaders.data_loader.pd.read_csv", return_value=DATAGOV_RAW_DF), \
+             patch("src.data.loaders.data_loader.initial_cleaning_pipeline", mock_pipeline):
+            load_food_insecurity_dataset()
+
+        mock_pipeline.assert_called_once_with(DATAGOV_RAW_DF)
+
+    def test_lga_parenthetical_suffix_is_stripped_before_counting(self):
+        """Tests that 'Melbourne (City)' is reduced to 'Melbourne' so it can match
+        food insecurity subpopulation values which have no parenthetical."""
+        datagov_raw = pd.DataFrame({
+            "lga": ["Melbourne (City)", "Melbourne (City)", "Yarra (City)"]
+        })
+        food_wrangled = pd.DataFrame({
+            "subpopulation": ["Melbourne", "Yarra"],
+            "indicator":     ["food", "food"],
+            "estimate_pct":  [10.0, 15.0],
+        })
+        result = _run_food_loader(food_wrangled=food_wrangled, datagov_raw=datagov_raw)
+        assert "Melbourne" in result["lga"].values
+        assert not any("(" in str(v) for v in result["lga"].values)
+
+    def test_lga_counts_aggregate_correctly(self):
+        """Tests that emergency_services_count reflects the correct per-LGA frequency."""
+        datagov_raw = pd.DataFrame({
+            "lga": ["Melbourne (City)", "Melbourne (City)", "Yarra (City)"]
+        })
+        food_wrangled = pd.DataFrame({
+            "subpopulation": ["Melbourne", "Yarra"],
+            "indicator":     ["food", "food"],
+            "estimate_pct":  [10.0, 15.0],
+        })
+        result = _run_food_loader(food_wrangled=food_wrangled, datagov_raw=datagov_raw)
+
+        mel_count = result.loc[result["lga"] == "Melbourne", "emergency_services_count"].iloc[0]
+        yar_count = result.loc[result["lga"] == "Yarra", "emergency_services_count"].iloc[0]
+        assert mel_count == 2
+        assert yar_count == 1
+
+    def test_lga_name_with_no_parentheses_passes_through_unchanged(self):
+        """Tests that an LGA name without parentheses is left unmodified."""
+        datagov_raw = pd.DataFrame({"lga": ["No Parens"]})
+        food_wrangled = pd.DataFrame({
+            "subpopulation": ["No Parens"],
+            "indicator":     ["food"],
+            "estimate_pct":  [5.0],
+        })
+        result = _run_food_loader(food_wrangled=food_wrangled, datagov_raw=datagov_raw)
+        assert "No Parens" in result["lga"].values
+
+    # --- Merge behaviour -----------------------------------------------------
+
+    def test_inner_join_drops_unmatched_food_insecurity_rows(self):
+        """Tests that subpopulations with no matching LGA are excluded from the result.
+
+        FOOD_WRANGLED_DF has 'No Match' which has no LGA counterpart in
+        DATAGOV_RAW_DF — the inner join must drop it.
+        """
+        result = _run_food_loader()
+        assert "No Match" not in result["subpopulation"].values
+
+    def test_inner_join_retains_matched_rows(self):
+        """Tests that subpopulations that do have a matching LGA are kept."""
+        result = _run_food_loader()
+        assert "Melbourne" in result["subpopulation"].values
+        assert "Yarra" in result["subpopulation"].values
+
+    def test_merged_row_count_equals_number_of_matched_subpopulations(self):
+        """Tests that output row count equals matched pairs (3 food rows, 2 match → 2)."""
+        result = _run_food_loader()
+        assert len(result) == 2
+
+    def test_empty_result_when_no_subpopulations_match_any_lga(self):
+        """Tests that a completely non-overlapping join produces an empty DataFrame."""
+        food_wrangled = pd.DataFrame({
+            "subpopulation": ["No Match A", "No Match B"],
+            "indicator":     ["food", "food"],
+            "estimate_pct":  [1.0, 2.0],
+        })
+        result = _run_food_loader(food_wrangled=food_wrangled, datagov_raw=DATAGOV_RAW_DF)
+        assert isinstance(result, pd.DataFrame)
+        assert len(result) == 0
+
+    def test_result_is_merged_not_just_wrangled_food_df(self):
+        """Tests that the output is the merged DataFrame — not the raw wrangler output.
+
+        This also documents the dead code bug: `return food_insecurity_df` after
+        `return pd.merge(...)` is unreachable. The merge return always executes
+        first, so the second return is dead code that should be removed.
+        """
+        result = _run_food_loader()
+        # The merged result contains columns from both sides of the join
+        assert "emergency_services_count" in result.columns   # only from lga_counts
+        assert "estimate_pct" in result.columns               # only from food_insecurity_df
+
+    # --- Error propagation ---------------------------------------------------
+
+    def test_propagates_exception_on_missing_food_insecurity_file(self):
+        """Tests that a FileNotFoundError on the Excel read propagates to the caller."""
         with patch("src.data.loaders.data_loader.pd.read_excel", side_effect=FileNotFoundError("missing")), \
+             patch("src.data.loaders.data_loader.logger"):
+            with pytest.raises(FileNotFoundError):
+                load_food_insecurity_dataset()
+
+    def test_propagates_exception_on_missing_datagov_csv(self):
+        """Tests that a FileNotFoundError inside _get_lga_service_counts propagates up.
+
+        _get_lga_service_counts has no try/except of its own — exceptions
+        bubble through load_food_insecurity_dataset to the caller.
+        """
+        with patch("src.data.loaders.data_loader.pd.read_excel", return_value=FOOD_WRANGLED_DF), \
+             patch("src.data.loaders.data_loader.wrangle_food_insecurity", return_value=FOOD_WRANGLED_DF), \
+             patch("src.data.loaders.data_loader.pd.read_csv", side_effect=FileNotFoundError("missing")), \
              patch("src.data.loaders.data_loader.logger"):
             with pytest.raises(FileNotFoundError):
                 load_food_insecurity_dataset()
