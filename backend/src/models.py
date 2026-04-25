@@ -39,7 +39,8 @@ class FoodInsecurity(Base):
     indicator = Column(String)
     indicator_category = Column(String)
     region = Column(String)
-    vic_region_code = Column(Integer)
+    ufi = Column(Integer, index=True)        # FK → vic_boundaries.ufi
+    lga_pid = Column(String, index=True)     # FK → viclga_boundaries.lga_pid
     subpopulation = Column(String)
     estimate_pct = Column(Float)
     created_at = Column(DateTime, default=datetime.utcnow)
