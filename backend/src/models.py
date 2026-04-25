@@ -61,8 +61,7 @@ class VicBoundary(Base):
 class VicLgaBoundary(Base):
     __tablename__ = "viclga_boundaries"
 
-    lga_ply_pid = Column(String, primary_key=True, index=True)
-    lga_pid = Column(String)
+    lga_pid = Column(String, primary_key=True, index=True)
     lga_name = Column(String)
     geometry = Column(Geometry(geometry_type='MULTIPOLYGON', srid=4326))
     created_at = Column(DateTime, default=datetime.utcnow)
