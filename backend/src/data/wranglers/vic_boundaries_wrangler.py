@@ -4,7 +4,7 @@ import pandas as pd
 from .utils import initial_cleaning_pipeline,standardize_columns
 
 
-def standardise_geospatial_projection(df: pd.DataFrame) -> pd.DataFrame:
+def standardize_geospatial_projection(df: pd.DataFrame) -> pd.DataFrame:
     gdf = gpd.GeoDataFrame(df, geometry=gpd.GeoSeries.from_wkt(df["geometry"]))
     # GDA2020 (Geocentric Datum of Australia 2020) — EPSG:7899 (Lat/Long)
     gdf = gdf.set_crs(epsg=7899, allow_override=True)
@@ -14,6 +14,7 @@ def standardise_geospatial_projection(df: pd.DataFrame) -> pd.DataFrame:
     df["geometry"] = gdf["geometry"].apply(lambda g: g.wkt if g else None)
     return df
 
+
 def take_latest_phu_boundaries(df: pd.DataFrame) -> pd.DataFrame:
     df['ufi_created'] = pd.to_datetime(df['ufi_created'])
     df_latest = (
@@ -21,13 +22,20 @@ def take_latest_phu_boundaries(df: pd.DataFrame) -> pd.DataFrame:
             .sort_values('ufi_created')
             .drop_duplicates(subset=['vicgov_region'], keep='last')
             .reset_index(drop=True)
+            .drop(columns=["vicgov_region_code"])
     )
     return df_latest
 
 
+def standardize_region_names(df: pd.DataFrame) -> pd.DataFrame:
+    df["vicgov_region_sname"] = df["vicgov_region_sname"].str.title()
+    df["vicgov_region"] = df["vicgov_region"].str.title()
+    return df
+
 def wrangle_vic_boundaries(df: pd.DataFrame) -> pd.DataFrame:
     df = initial_cleaning_pipeline(df)
     df = take_latest_phu_boundaries(df)
-    df = standardise_geospatial_projection(df)
+    df = standardize_geospatial_projection(df)
+    df = standardize_region_names(df)
 
     return df

@@ -6,7 +6,8 @@ from shapely import wkt as shapely_wkt
 from shapely.geometry import Point, Polygon
 
 from src.data.wranglers.vic_boundaries_wrangler import (
-    standardise_geospatial_projection,
+    standardize_geospatial_projection,
+    standardize_region_names,
     take_latest_phu_boundaries,
     wrangle_vic_boundaries,
 )
@@ -28,7 +29,7 @@ POLYGON_WKT = (
 def make_geo_df(geometries: list[str] | None = None, **extra_cols) -> pd.DataFrame:
     """
     Minimal DataFrame with a WKT 'geometry' column, suitable for
-    standardise_geospatial_projection tests.
+    standardize_geospatial_projection tests.
     """
     if geometries is None:
         geometries = [POLYGON_WKT]
@@ -39,21 +40,30 @@ def make_geo_df(geometries: list[str] | None = None, **extra_cols) -> pd.DataFra
 
 def make_boundary_df(rows: list[dict] | None = None) -> pd.DataFrame:
     """
-    Minimal DataFrame with 'vicgov_region', 'ufi_created', and 'geometry'
-    columns, suitable for take_latest_phu_boundaries tests.
+    Minimal DataFrame with 'vicgov_region', 'vicgov_region_code', 'ufi_created',
+    and 'geometry' columns, suitable for take_latest_phu_boundaries tests.
     """
     if rows is None:
-        rows = [{"vicgov_region": "South East", "ufi_created": "2023-01-01", "geometry": POLYGON_WKT}]
+        rows = [
+            {
+                "vicgov_region": "South East",
+                "vicgov_region_code": "SE",
+                "ufi_created": "2023-01-01",
+                "geometry": POLYGON_WKT,
+            }
+        ]
     return pd.DataFrame(rows)
 
 
 def make_full_raw_df(**overrides) -> pd.DataFrame:
     """
     Minimal DataFrame for wrangle_vic_boundaries integration tests.
-    Column names are in their raw (pre-standardise) form.
+    Column names are in their raw (pre-standardize) form.
     """
     row = {
         "VICGOV_REGION": "South East",
+        "VICGOV_REGION_SNAME": "SE Region",
+        "VICGOV_REGION_CODE": "SE",
         "UFI_CREATED": "2023-06-15",
         "GEOMETRY": POLYGON_WKT,
     }
@@ -71,38 +81,38 @@ def is_valid_wkt(value: str) -> bool:
 
 
 # ---------------------------------------------------------------------------
-# standardise_geospatial_projection
+# standardize_geospatial_projection
 # ---------------------------------------------------------------------------
 
-class TestStandardiseGeospatialProjection:
+class TeststandardizeGeospatialProjection:
     def test_returns_dataframe(self):
         """Tests that the function returns a DataFrame."""
         df = make_geo_df()
-        result = standardise_geospatial_projection(df)
+        result = standardize_geospatial_projection(df)
         assert isinstance(result, pd.DataFrame)
 
     def test_geometry_column_is_preserved(self):
         """Tests that the 'geometry' column still exists after reprojection."""
         df = make_geo_df()
-        result = standardise_geospatial_projection(df)
+        result = standardize_geospatial_projection(df)
         assert "geometry" in result.columns
 
     def test_geometry_values_are_strings(self):
         """Tests that geometry values are returned as WKT strings, not geometry objects."""
         df = make_geo_df()
-        result = standardise_geospatial_projection(df)
+        result = standardize_geospatial_projection(df)
         assert isinstance(result["geometry"].iloc[0], str)
 
     def test_geometry_output_is_valid_wkt(self):
         """Tests that the output WKT string is parseable by Shapely."""
         df = make_geo_df([POLYGON_WKT])
-        result = standardise_geospatial_projection(df)
+        result = standardize_geospatial_projection(df)
         assert is_valid_wkt(result["geometry"].iloc[0])
 
     def test_point_geometry_is_valid_wkt(self):
         """Tests that a POINT geometry is correctly reprojected and returned as WKT."""
         df = make_geo_df([POINT_WKT])
-        result = standardise_geospatial_projection(df)
+        result = standardize_geospatial_projection(df)
         assert is_valid_wkt(result["geometry"].iloc[0])
 
     def test_output_coordinates_are_in_wgs84_range(self):
@@ -113,7 +123,7 @@ class TestStandardiseGeospatialProjection:
         latitude and [140, 150] longitude after reprojection.
         """
         df = make_geo_df([POINT_WKT])
-        result = standardise_geospatial_projection(df)
+        result = standardize_geospatial_projection(df)
         geom = shapely_wkt.loads(result["geometry"].iloc[0])
         lon, lat = geom.x, geom.y
         assert -39 <= lat <= -34, f"Latitude {lat} out of expected VIC range"
@@ -122,20 +132,20 @@ class TestStandardiseGeospatialProjection:
     def test_none_geometry_becomes_none(self):
         """Tests that a None/null WKT entry is preserved as None in the output."""
         df = make_geo_df([None])
-        result = standardise_geospatial_projection(df)
+        result = standardize_geospatial_projection(df)
         assert result["geometry"].iloc[0] is None
 
     def test_non_geometry_columns_are_preserved(self):
         """Tests that columns other than 'geometry' are unaffected."""
         df = make_geo_df([POLYGON_WKT], vicgov_region="South East", ufi_created="2023-01-01")
-        result = standardise_geospatial_projection(df)
+        result = standardize_geospatial_projection(df)
         assert result["vicgov_region"].iloc[0] == "South East"
         assert result["ufi_created"].iloc[0] == "2023-01-01"
 
     def test_handles_multiple_rows(self):
         """Tests that reprojection is applied to every row, not just the first."""
         df = make_geo_df([POLYGON_WKT, POINT_WKT])
-        result = standardise_geospatial_projection(df)
+        result = standardize_geospatial_projection(df)
         assert len(result) == 2
         assert is_valid_wkt(result["geometry"].iloc[0])
         assert is_valid_wkt(result["geometry"].iloc[1])
@@ -147,7 +157,7 @@ class TestStandardiseGeospatialProjection:
         """
         df = make_geo_df([POLYGON_WKT])
         original_geometry = df["geometry"].iloc[0]
-        standardise_geospatial_projection(df)
+        standardize_geospatial_projection(df)
         # After calling the function, the original df's geometry is overwritten
         # The reprojected WKT replaces the original value in-place
         assert df["geometry"].iloc[0] != original_geometry or df["geometry"].iloc[0] == original_geometry
@@ -168,8 +178,8 @@ class TestTakeLatestPhuBoundaries:
         result = take_latest_phu_boundaries(df)
         assert isinstance(result, pd.DataFrame)
 
-    def test_single_row_per_region_is_kept(self):
-        """Tests that a single-row DataFrame is returned unchanged (1 row in, 1 row out)."""
+    def test_single_row_is_returned_unchanged(self):
+        """Tests that a single-row DataFrame passes through with one row."""
         df = make_boundary_df()
         result = take_latest_phu_boundaries(df)
         assert len(result) == 1
@@ -177,9 +187,9 @@ class TestTakeLatestPhuBoundaries:
     def test_keeps_latest_record_when_duplicates_exist(self):
         """Tests that for duplicate regions, only the row with the latest date is kept."""
         df = make_boundary_df([
-            {"vicgov_region": "South East", "ufi_created": "2021-01-01", "geometry": POLYGON_WKT},
-            {"vicgov_region": "South East", "ufi_created": "2023-06-15", "geometry": POLYGON_WKT},
-            {"vicgov_region": "South East", "ufi_created": "2019-12-31", "geometry": POLYGON_WKT},
+            {"vicgov_region": "South East", "vicgov_region_code": "SE", "ufi_created": "2021-01-01", "geometry": POLYGON_WKT},
+            {"vicgov_region": "South East", "vicgov_region_code": "SE", "ufi_created": "2023-06-15", "geometry": POLYGON_WKT},
+            {"vicgov_region": "South East", "vicgov_region_code": "SE", "ufi_created": "2019-12-31", "geometry": POLYGON_WKT},
         ])
         result = take_latest_phu_boundaries(df)
         assert len(result) == 1
@@ -188,9 +198,9 @@ class TestTakeLatestPhuBoundaries:
     def test_keeps_all_unique_regions(self):
         """Tests that one row per unique region is retained."""
         df = make_boundary_df([
-            {"vicgov_region": "South East",  "ufi_created": "2023-01-01", "geometry": POLYGON_WKT},
-            {"vicgov_region": "Gippsland",   "ufi_created": "2022-06-01", "geometry": POLYGON_WKT},
-            {"vicgov_region": "Grampians",   "ufi_created": "2021-03-15", "geometry": POLYGON_WKT},
+            {"vicgov_region": "South East",  "vicgov_region_code": "SE",  "ufi_created": "2023-01-01", "geometry": POLYGON_WKT},
+            {"vicgov_region": "Gippsland",   "vicgov_region_code": "GL",  "ufi_created": "2022-06-01", "geometry": POLYGON_WKT},
+            {"vicgov_region": "Grampians",   "vicgov_region_code": "GR",  "ufi_created": "2021-03-15", "geometry": POLYGON_WKT},
         ])
         result = take_latest_phu_boundaries(df)
         assert len(result) == 3
@@ -199,10 +209,10 @@ class TestTakeLatestPhuBoundaries:
     def test_deduplicates_mixed_regions_keeping_latest_per_region(self):
         """Tests that each region independently retains its own latest row."""
         df = make_boundary_df([
-            {"vicgov_region": "South East",  "ufi_created": "2020-01-01", "geometry": POLYGON_WKT},
-            {"vicgov_region": "South East",  "ufi_created": "2023-06-15", "geometry": POLYGON_WKT},
-            {"vicgov_region": "Gippsland",   "ufi_created": "2022-01-01", "geometry": POLYGON_WKT},
-            {"vicgov_region": "Gippsland",   "ufi_created": "2019-05-10", "geometry": POLYGON_WKT},
+            {"vicgov_region": "South East",  "vicgov_region_code": "SE", "ufi_created": "2020-01-01", "geometry": POLYGON_WKT},
+            {"vicgov_region": "South East",  "vicgov_region_code": "SE", "ufi_created": "2023-06-15", "geometry": POLYGON_WKT},
+            {"vicgov_region": "Gippsland",   "vicgov_region_code": "GL", "ufi_created": "2022-01-01", "geometry": POLYGON_WKT},
+            {"vicgov_region": "Gippsland",   "vicgov_region_code": "GL", "ufi_created": "2019-05-10", "geometry": POLYGON_WKT},
         ])
         result = take_latest_phu_boundaries(df)
         assert len(result) == 2
@@ -214,7 +224,7 @@ class TestTakeLatestPhuBoundaries:
     def test_ufi_created_is_parsed_as_datetime(self):
         """Tests that ufi_created is converted to datetime dtype for correct sorting."""
         df = make_boundary_df([
-            {"vicgov_region": "South East", "ufi_created": "2023-01-01", "geometry": POLYGON_WKT},
+            {"vicgov_region": "South East", "vicgov_region_code": "SE", "ufi_created": "2023-01-01", "geometry": POLYGON_WKT},
         ])
         result = take_latest_phu_boundaries(df)
         assert pd.api.types.is_datetime64_any_dtype(result["ufi_created"])
@@ -226,8 +236,8 @@ class TestTakeLatestPhuBoundaries:
         without pd.to_datetime the wrong row would be kept.
         """
         df = make_boundary_df([
-            {"vicgov_region": "South East", "ufi_created": "2020-09-01", "geometry": POLYGON_WKT},
-            {"vicgov_region": "South East", "ufi_created": "2020-10-01", "geometry": POLYGON_WKT},
+            {"vicgov_region": "South East", "vicgov_region_code": "SE", "ufi_created": "2020-09-01", "geometry": POLYGON_WKT},
+            {"vicgov_region": "South East", "vicgov_region_code": "SE", "ufi_created": "2020-10-01", "geometry": POLYGON_WKT},
         ])
         result = take_latest_phu_boundaries(df)
         assert pd.to_datetime(result["ufi_created"].iloc[0]) == pd.Timestamp("2020-10-01")
@@ -238,8 +248,8 @@ class TestTakeLatestPhuBoundaries:
         downstream code can rely on a standard RangeIndex.
         """
         df = make_boundary_df([
-            {"vicgov_region": "South East", "ufi_created": "2020-01-01", "geometry": POLYGON_WKT},
-            {"vicgov_region": "South East", "ufi_created": "2023-06-15", "geometry": POLYGON_WKT},
+            {"vicgov_region": "South East", "vicgov_region_code": "SE", "ufi_created": "2020-01-01", "geometry": POLYGON_WKT},
+            {"vicgov_region": "South East", "vicgov_region_code": "SE", "ufi_created": "2023-06-15", "geometry": POLYGON_WKT},
         ])
         result = take_latest_phu_boundaries(df)
         # After sort + drop_duplicates(keep='last'), the kept row is the last sorted
@@ -247,13 +257,92 @@ class TestTakeLatestPhuBoundaries:
         assert list(result.index) == list(range(len(result)))
         assert result.index[0] == 0
 
+    def test_vicgov_region_code_column_is_dropped(self):
+        """Tests that the vicgov_region_code column is removed from the output."""
+        df = make_boundary_df()
+        result = take_latest_phu_boundaries(df)
+        assert "vicgov_region_code" not in result.columns
+
     def test_other_columns_are_preserved(self):
-        """Tests that columns other than vicgov_region and ufi_created are intact."""
+        """Tests that columns other than vicgov_region_code are intact."""
         df = make_boundary_df([
-            {"vicgov_region": "South East", "ufi_created": "2023-01-01", "geometry": POLYGON_WKT},
+            {"vicgov_region": "South East", "vicgov_region_code": "SE", "ufi_created": "2023-01-01", "geometry": POLYGON_WKT},
         ])
         result = take_latest_phu_boundaries(df)
         assert "geometry" in result.columns
+        assert result["geometry"].iloc[0] == POLYGON_WKT
+        assert "vicgov_region" in result.columns
+
+
+# ---------------------------------------------------------------------------
+# standardize_region_names
+# ---------------------------------------------------------------------------
+
+class TestStandardizeRegionNames:
+    def _make_df(self, vicgov_region: str, vicgov_region_sname: str) -> pd.DataFrame:
+        return pd.DataFrame([
+            {"vicgov_region": vicgov_region, "vicgov_region_sname": vicgov_region_sname}
+        ])
+
+    def test_returns_dataframe(self):
+        """Tests that the function returns a DataFrame."""
+        df = self._make_df("SOUTH EAST", "SE REGION")
+        result = standardize_region_names(df)
+        assert isinstance(result, pd.DataFrame)
+
+    def test_vicgov_region_is_title_cased(self):
+        """Tests that vicgov_region values are converted to title case."""
+        df = self._make_df("SOUTH EAST", "SE REGION")
+        result = standardize_region_names(df)
+        assert result["vicgov_region"].iloc[0] == "South East"
+
+    def test_vicgov_region_sname_is_title_cased(self):
+        """Tests that vicgov_region_sname values are converted to title case."""
+        df = self._make_df("SOUTH EAST", "SE REGION")
+        result = standardize_region_names(df)
+        assert result["vicgov_region_sname"].iloc[0] == "Se Region"
+
+    def test_already_title_cased_values_are_unchanged(self):
+        """Tests that values already in title case pass through unmodified."""
+        df = self._make_df("South East", "Se Region")
+        result = standardize_region_names(df)
+        assert result["vicgov_region"].iloc[0] == "South East"
+        assert result["vicgov_region_sname"].iloc[0] == "Se Region"
+
+    def test_lowercase_values_are_title_cased(self):
+        """Tests that fully lowercase values are correctly title-cased."""
+        df = self._make_df("south east", "se region")
+        result = standardize_region_names(df)
+        assert result["vicgov_region"].iloc[0] == "South East"
+        assert result["vicgov_region_sname"].iloc[0] == "Se Region"
+
+    def test_mixed_case_values_are_title_cased(self):
+        """Tests that arbitrarily mixed-case values are normalised to title case."""
+        df = self._make_df("sOuTh eAsT", "sE rEgIoN")
+        result = standardize_region_names(df)
+        assert result["vicgov_region"].iloc[0] == "South East"
+        assert result["vicgov_region_sname"].iloc[0] == "Se Region"
+
+    def test_handles_multiple_rows(self):
+        """Tests that title-casing is applied to every row."""
+        df = pd.DataFrame([
+            {"vicgov_region": "SOUTH EAST", "vicgov_region_sname": "SE REGION"},
+            {"vicgov_region": "gippsland",  "vicgov_region_sname": "gl region"},
+        ])
+        result = standardize_region_names(df)
+        assert result["vicgov_region"].tolist() == ["South East", "Gippsland"]
+        assert result["vicgov_region_sname"].tolist() == ["Se Region", "Gl Region"]
+
+    def test_other_columns_are_not_affected(self):
+        """Tests that columns other than the two region name columns are untouched."""
+        df = pd.DataFrame([{
+            "vicgov_region": "SOUTH EAST",
+            "vicgov_region_sname": "SE REGION",
+            "ufi_created": "2023-01-01",
+            "geometry": POLYGON_WKT,
+        }])
+        result = standardize_region_names(df)
+        assert result["ufi_created"].iloc[0] == "2023-01-01"
         assert result["geometry"].iloc[0] == POLYGON_WKT
 
 
@@ -273,6 +362,7 @@ class TestWrangleVicBoundaries:
         df = make_full_raw_df()
         result = wrangle_vic_boundaries(df)
         assert "vicgov_region" in result.columns, "Expected 'vicgov_region' (was 'VICGOV_REGION')"
+        assert "vicgov_region_sname" in result.columns, "Expected 'vicgov_region_sname' (was 'VICGOV_REGION_SNAME')"
         assert "ufi_created" in result.columns, "Expected 'ufi_created' (was 'UFI_CREATED')"
         assert "geometry" in result.columns, "Expected 'geometry' (was 'GEOMETRY')"
 
@@ -281,15 +371,23 @@ class TestWrangleVicBoundaries:
         df = make_full_raw_df()
         result = wrangle_vic_boundaries(df)
         assert "VICGOV_REGION" not in result.columns
+        assert "VICGOV_REGION_SNAME" not in result.columns
+        assert "VICGOV_REGION_CODE" not in result.columns
         assert "UFI_CREATED" not in result.columns
         assert "GEOMETRY" not in result.columns
+
+    def test_vicgov_region_code_is_dropped(self):
+        """Tests that vicgov_region_code is removed by take_latest_phu_boundaries."""
+        df = make_full_raw_df()
+        result = wrangle_vic_boundaries(df)
+        assert "vicgov_region_code" not in result.columns
 
     def test_deduplicates_to_one_row_per_region(self):
         """Tests that duplicate regions are collapsed to one row per region end-to-end."""
         df = pd.DataFrame([
-            {"VICGOV_REGION": "South East", "UFI_CREATED": "2020-01-01", "GEOMETRY": POLYGON_WKT},
-            {"VICGOV_REGION": "South East", "UFI_CREATED": "2023-06-15", "GEOMETRY": POLYGON_WKT},
-            {"VICGOV_REGION": "Gippsland",  "UFI_CREATED": "2022-03-10", "GEOMETRY": POLYGON_WKT},
+            {"VICGOV_REGION": "South East", "VICGOV_REGION_SNAME": "SE Region", "VICGOV_REGION_CODE": "SE", "UFI_CREATED": "2020-01-01", "GEOMETRY": POLYGON_WKT},
+            {"VICGOV_REGION": "South East", "VICGOV_REGION_SNAME": "SE Region", "VICGOV_REGION_CODE": "SE", "UFI_CREATED": "2023-06-15", "GEOMETRY": POLYGON_WKT},
+            {"VICGOV_REGION": "Gippsland",  "VICGOV_REGION_SNAME": "GL Region", "VICGOV_REGION_CODE": "GL", "UFI_CREATED": "2022-03-10", "GEOMETRY": POLYGON_WKT},
         ])
         result = wrangle_vic_boundaries(df)
         assert len(result) == 2
@@ -297,8 +395,8 @@ class TestWrangleVicBoundaries:
     def test_keeps_latest_row_per_region(self):
         """Tests that the most recent row per region is retained end-to-end."""
         df = pd.DataFrame([
-            {"VICGOV_REGION": "South East", "UFI_CREATED": "2020-01-01", "GEOMETRY": POLYGON_WKT},
-            {"VICGOV_REGION": "South East", "UFI_CREATED": "2023-06-15", "GEOMETRY": POLYGON_WKT},
+            {"VICGOV_REGION": "South East", "VICGOV_REGION_SNAME": "SE Region", "VICGOV_REGION_CODE": "SE", "UFI_CREATED": "2020-01-01", "GEOMETRY": POLYGON_WKT},
+            {"VICGOV_REGION": "South East", "VICGOV_REGION_SNAME": "SE Region", "VICGOV_REGION_CODE": "SE", "UFI_CREATED": "2023-06-15", "GEOMETRY": POLYGON_WKT},
         ])
         result = wrangle_vic_boundaries(df)
         assert len(result) == 1
@@ -320,6 +418,19 @@ class TestWrangleVicBoundaries:
         centroid = geom.centroid
         assert -39 <= centroid.y <= -34, f"Latitude {centroid.y} outside VIC range"
         assert 140 <= centroid.x <= 150, f"Longitude {centroid.x} outside VIC range"
+
+    def test_region_names_are_title_cased(self):
+        """Tests that vicgov_region and vicgov_region_sname are title-cased end-to-end."""
+        df = pd.DataFrame([{
+            "VICGOV_REGION": "SOUTH EAST",
+            "VICGOV_REGION_SNAME": "SE REGION",
+            "VICGOV_REGION_CODE": "SE",
+            "UFI_CREATED": "2023-06-15",
+            "GEOMETRY": POLYGON_WKT,
+        }])
+        result = wrangle_vic_boundaries(df)
+        assert result["vicgov_region"].iloc[0] == "South East"
+        assert result["vicgov_region_sname"].iloc[0] == "Se Region"
 
     def test_region_values_are_preserved(self):
         """Tests that the vicgov_region values are correctly carried through the pipeline."""

@@ -39,7 +39,8 @@ class FoodInsecurity(Base):
     indicator = Column(String)
     indicator_category = Column(String)
     region = Column(String)
-    vic_region_code = Column(Integer)
+    ufi = Column(Integer, index=True)        # FK → vic_boundaries.ufi
+    lga_pid = Column(String, index=True)     # FK → viclga_boundaries.lga_pid
     subpopulation = Column(String)
     estimate_pct = Column(Float)
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -50,7 +51,6 @@ class VicBoundary(Base):
     __tablename__ = "vic_boundaries"
 
     ufi = Column(Integer, primary_key=True, index=True)
-    vicgov_region_code = Column(Integer)
     vicgov_region_sname = Column(String)
     vicgov_region = Column(String)
     ufi_created = Column(DateTime)
@@ -62,8 +62,7 @@ class VicBoundary(Base):
 class VicLgaBoundary(Base):
     __tablename__ = "viclga_boundaries"
 
-    lga_ply_pid = Column(String, primary_key=True, index=True)
-    lga_pid = Column(String)
+    lga_pid = Column(String, primary_key=True, index=True)
     lga_name = Column(String)
     geometry = Column(Geometry(geometry_type='MULTIPOLYGON', srid=4326))
     created_at = Column(DateTime, default=datetime.utcnow)

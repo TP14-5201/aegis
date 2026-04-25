@@ -252,51 +252,168 @@ class TestLoadEmergencyServicesDataset:
 
 # ---------------------------------------------------------------------------
 # load_food_insecurity_dataset
+#
+# This function has a bespoke try/except rather than delegating to
+# _load_and_wrangle for the food insecurity file itself. It calls
+# _load_and_wrangle for the two boundary datasets (CSV), then calls
+# wrangle_food_insecurity(df_raw, df_vic, df_lga) with all three DataFrames.
 # ---------------------------------------------------------------------------
 
 class TestLoadFoodInsecurityDataset:
+
+    def _run(self, food_df=None, vic_df=None, lga_df=None, wrangled_df=None):
+        """
+        Runs load_food_insecurity_dataset with all three reads and wranglers mocked.
+
+        pd.read_excel is called once (food insecurity raw file).
+        pd.read_csv is called twice via _load_and_wrangle (vic then lga boundaries).
+        """
+        food_df    = food_df    if food_df    is not None else FOOD_DF
+        vic_df     = vic_df     if vic_df     is not None else VIC_DF
+        lga_df     = lga_df     if lga_df     is not None else LGA_DF
+        wrangled_df = wrangled_df if wrangled_df is not None else FOOD_DF
+
+        with patch("src.data.loaders.data_loader.pd.read_excel", return_value=food_df), \
+             patch("src.data.loaders.data_loader.pd.read_csv") as mock_read_csv, \
+             patch("src.data.loaders.data_loader.wrangle_vic_boundaries", return_value=vic_df), \
+             patch("src.data.loaders.data_loader.wrangle_viclga_boundaries", return_value=lga_df), \
+             patch("src.data.loaders.data_loader.wrangle_food_insecurity", return_value=wrangled_df):
+            mock_read_csv.side_effect = [vic_df, lga_df]
+            return load_food_insecurity_dataset()
+
     def test_returns_dataframe(self):
         """Tests that the function returns a DataFrame."""
-        with patch("src.data.loaders.data_loader.pd.read_excel", return_value=FOOD_DF), \
-             patch("src.data.loaders.data_loader.wrangle_food_insecurity", return_value=FOOD_DF):
-            result = load_food_insecurity_dataset()
+        result = self._run()
         assert isinstance(result, pd.DataFrame)
 
-    def test_reads_from_correct_path(self):
+    def test_reads_food_insecurity_raw_file_from_correct_path(self):
         """Tests that the food insecurity Excel is read from the configured path."""
         with patch("src.data.loaders.data_loader.pd.read_excel", return_value=FOOD_DF) as mock_read_excel, \
+             patch("src.data.loaders.data_loader.pd.read_csv") as mock_read_csv, \
+             patch("src.data.loaders.data_loader.wrangle_vic_boundaries", return_value=VIC_DF), \
+             patch("src.data.loaders.data_loader.wrangle_viclga_boundaries", return_value=LGA_DF), \
              patch("src.data.loaders.data_loader.wrangle_food_insecurity", return_value=FOOD_DF):
+            mock_read_csv.side_effect = [VIC_DF, LGA_DF]
             load_food_insecurity_dataset()
 
         mock_read_excel.assert_called_once_with(settings.FOOD_INSECURITY_RAW_PATH, sheet_name=0)
 
-    def test_uses_excel_reader_not_csv(self):
-        """Tests that pd.read_excel is used (is_excel=True), not pd.read_csv."""
+    def test_food_insecurity_raw_file_is_read_with_excel(self):
+        """Tests that pd.read_excel is used for the food insecurity raw file (is_excel=True)."""
         with patch("src.data.loaders.data_loader.pd.read_excel", return_value=FOOD_DF) as mock_excel, \
-             patch("src.data.loaders.data_loader.pd.read_csv") as mock_csv, \
+             patch("src.data.loaders.data_loader.pd.read_csv") as mock_read_csv, \
+             patch("src.data.loaders.data_loader.wrangle_vic_boundaries", return_value=VIC_DF), \
+             patch("src.data.loaders.data_loader.wrangle_viclga_boundaries", return_value=LGA_DF), \
              patch("src.data.loaders.data_loader.wrangle_food_insecurity", return_value=FOOD_DF):
+            mock_read_csv.side_effect = [VIC_DF, LGA_DF]
             load_food_insecurity_dataset()
 
         mock_excel.assert_called_once()
-        mock_csv.assert_not_called()
 
-    def test_passes_result_through_food_insecurity_wrangler(self):
-        """Tests that the raw DataFrame is passed to wrangle_food_insecurity."""
-        raw_df = FOOD_DF.copy()
-        wrangled_df = FOOD_DF.copy()
-        mock_wrangler = MagicMock(return_value=wrangled_df)
+    def test_boundary_files_are_read_with_csv(self):
+        """Tests that pd.read_csv is used for the two boundary datasets.
+
+        Unlike the food insecurity file (Excel), both vic_boundaries and
+        viclga_boundaries are CSVs loaded via _load_and_wrangle (is_excel=False).
+        """
+        with patch("src.data.loaders.data_loader.pd.read_excel", return_value=FOOD_DF), \
+             patch("src.data.loaders.data_loader.pd.read_csv") as mock_read_csv, \
+             patch("src.data.loaders.data_loader.wrangle_vic_boundaries", return_value=VIC_DF), \
+             patch("src.data.loaders.data_loader.wrangle_viclga_boundaries", return_value=LGA_DF), \
+             patch("src.data.loaders.data_loader.wrangle_food_insecurity", return_value=FOOD_DF):
+            mock_read_csv.side_effect = [VIC_DF, LGA_DF]
+            load_food_insecurity_dataset()
+
+        assert mock_read_csv.call_count == 2
+
+    def test_reads_vic_boundaries_from_correct_path(self):
+        """Tests that vic_boundaries are read from VICGOV_BOUNDARY_RAW_PATH."""
+        with patch("src.data.loaders.data_loader.pd.read_excel", return_value=FOOD_DF), \
+             patch("src.data.loaders.data_loader.pd.read_csv") as mock_read_csv, \
+             patch("src.data.loaders.data_loader.wrangle_vic_boundaries", return_value=VIC_DF), \
+             patch("src.data.loaders.data_loader.wrangle_viclga_boundaries", return_value=LGA_DF), \
+             patch("src.data.loaders.data_loader.wrangle_food_insecurity", return_value=FOOD_DF):
+            mock_read_csv.side_effect = [VIC_DF, LGA_DF]
+            load_food_insecurity_dataset()
+
+        paths_called = [c.args[0] for c in mock_read_csv.call_args_list]
+        assert settings.VICGOV_BOUNDARY_RAW_PATH in paths_called
+
+    def test_reads_viclga_boundaries_from_correct_path(self):
+        """Tests that viclga_boundaries are read from VICLGA_BOUNDARY_RAW_PATH."""
+        with patch("src.data.loaders.data_loader.pd.read_excel", return_value=FOOD_DF), \
+             patch("src.data.loaders.data_loader.pd.read_csv") as mock_read_csv, \
+             patch("src.data.loaders.data_loader.wrangle_vic_boundaries", return_value=VIC_DF), \
+             patch("src.data.loaders.data_loader.wrangle_viclga_boundaries", return_value=LGA_DF), \
+             patch("src.data.loaders.data_loader.wrangle_food_insecurity", return_value=FOOD_DF):
+            mock_read_csv.side_effect = [VIC_DF, LGA_DF]
+            load_food_insecurity_dataset()
+
+        paths_called = [c.args[0] for c in mock_read_csv.call_args_list]
+        assert settings.VICLGA_BOUNDARY_RAW_PATH in paths_called
+
+    def test_calls_wrangle_food_insecurity_with_all_three_dataframes(self):
+        """Tests that wrangle_food_insecurity is called with (df_raw, df_vic, df_lga).
+
+        The wrangler requires all three DataFrames to resolve ufi and lga_pid
+        via joins — passing only the raw food insecurity DataFrame would be wrong.
+        """
+        raw_df     = FOOD_DF.copy()
+        vic_df     = VIC_DF.copy()
+        lga_df     = LGA_DF.copy()
+        wrangled   = pd.DataFrame({"result": [1]})
+        mock_food_wrangler = MagicMock(return_value=wrangled)
 
         with patch("src.data.loaders.data_loader.pd.read_excel", return_value=raw_df), \
-             patch("src.data.loaders.data_loader.wrangle_food_insecurity", mock_wrangler):
+             patch("src.data.loaders.data_loader.pd.read_csv") as mock_read_csv, \
+             patch("src.data.loaders.data_loader.wrangle_vic_boundaries", return_value=vic_df), \
+             patch("src.data.loaders.data_loader.wrangle_viclga_boundaries", return_value=lga_df), \
+             patch("src.data.loaders.data_loader.wrangle_food_insecurity", mock_food_wrangler):
+            mock_read_csv.side_effect = [vic_df, lga_df]
             result = load_food_insecurity_dataset()
 
-        mock_wrangler.assert_called_once_with(raw_df)
-        assert result is wrangled_df
+        mock_food_wrangler.assert_called_once_with(raw_df, vic_df, lga_df)
+        assert result is wrangled
 
-    def test_propagates_exception_on_missing_file(self):
-        """Tests that a FileNotFoundError propagates to the caller."""
+    def test_logs_error_with_correct_message_on_failure(self):
+        """Tests that a failure is logged with the food-insecurity-specific message.
+
+        Unlike _load_and_wrangle (which logs 'Failed to read {label} raw data from ...'),
+        this function logs 'Failed to load food insecurity dataset: {e}'.
+        """
+        error = FileNotFoundError("missing file")
+
+        with patch("src.data.loaders.data_loader.pd.read_excel", side_effect=error), \
+             patch("src.data.loaders.data_loader.logger") as mock_logger:
+            with pytest.raises(FileNotFoundError):
+                load_food_insecurity_dataset()
+
+        mock_logger.error.assert_called_once_with(
+            f"Failed to load food insecurity dataset: {error}"
+        )
+
+    def test_propagates_exception_on_missing_food_insecurity_file(self):
+        """Tests that a FileNotFoundError from the Excel read propagates to the caller."""
         with patch("src.data.loaders.data_loader.pd.read_excel", side_effect=FileNotFoundError("missing")), \
              patch("src.data.loaders.data_loader.logger"):
+            with pytest.raises(FileNotFoundError):
+                load_food_insecurity_dataset()
+
+    def test_propagates_exception_from_vic_boundaries_load(self):
+        """Tests that a failure loading vic_boundaries propagates to the caller."""
+        with patch("src.data.loaders.data_loader.pd.read_excel", return_value=FOOD_DF), \
+             patch("src.data.loaders.data_loader.pd.read_csv", side_effect=FileNotFoundError("vic missing")), \
+             patch("src.data.loaders.data_loader.logger"):
+            with pytest.raises(FileNotFoundError):
+                load_food_insecurity_dataset()
+
+    def test_propagates_exception_from_viclga_boundaries_load(self):
+        """Tests that a failure loading viclga_boundaries propagates to the caller."""
+        with patch("src.data.loaders.data_loader.pd.read_excel", return_value=FOOD_DF), \
+             patch("src.data.loaders.data_loader.pd.read_csv") as mock_read_csv, \
+             patch("src.data.loaders.data_loader.wrangle_vic_boundaries", return_value=VIC_DF), \
+             patch("src.data.loaders.data_loader.logger"):
+            mock_read_csv.side_effect = [VIC_DF, FileNotFoundError("lga missing")]
             with pytest.raises(FileNotFoundError):
                 load_food_insecurity_dataset()
 

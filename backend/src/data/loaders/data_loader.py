@@ -30,13 +30,19 @@ def load_emergency_services_dataset() -> pd.DataFrame:
     return pd.concat([df_melbourne, df_datagov], ignore_index=True).sort_values(by="name")
 
 def load_food_insecurity_dataset() -> pd.DataFrame:
-    """Load food insecurity dataset (Excel)."""
-    return _load_and_wrangle(
-        settings.FOOD_INSECURITY_RAW_PATH, 
-        wrangle_food_insecurity, 
-        "food insecurity", 
-        is_excel=True
-    )
+    """Load food insecurity dataset (Excel).
+
+    The wrangler requires the wrangled vic_boundaries and viclga_boundaries
+    DataFrames to resolve `ufi` and `lga_pid` via joins.
+    """
+    try:
+        df_raw = pd.read_excel(settings.FOOD_INSECURITY_RAW_PATH, sheet_name=0)
+        df_vic = _load_and_wrangle(settings.VICGOV_BOUNDARY_RAW_PATH, wrangle_vic_boundaries, "VIC boundaries")
+        df_lga = _load_and_wrangle(settings.VICLGA_BOUNDARY_RAW_PATH, wrangle_viclga_boundaries, "VIC LGA boundaries")
+        return wrangle_food_insecurity(df_raw, df_vic, df_lga)
+    except Exception as e:
+        logger.error(f"Failed to load food insecurity dataset: {e}")
+        raise
 
 def load_vic_boundaries_dataset() -> pd.DataFrame:
     """Load VIC PHN boundaries dataset."""
