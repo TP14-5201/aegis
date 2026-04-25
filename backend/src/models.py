@@ -50,7 +50,6 @@ class VicBoundary(Base):
     __tablename__ = "vic_boundaries"
 
     ufi = Column(Integer, primary_key=True, index=True)
-    vicgov_region_code = Column(Integer)
     vicgov_region_sname = Column(String)
     vicgov_region = Column(String)
     ufi_created = Column(DateTime)
