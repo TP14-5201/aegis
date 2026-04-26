@@ -7,7 +7,6 @@ from src.core.logging import logger
 from src.data.wranglers.melbourne_wrangler import wrangle_melbourne
 from src.data.wranglers.datagov_wrangler import wrangle_datagov
 from src.data.wranglers.food_insecurity_wrangler import wrangle_food_insecurity
-from src.data.wranglers.vic_boundaries_wrangler import wrangle_vic_boundaries
 from src.data.wranglers.vic_lga_boundaries_wrangler import wrangle_viclga_boundaries, add_lga_pid_from_lga_population_data
 from src.data.wranglers.lga_population_wrangler import wrangle_lga_population
 
@@ -45,21 +44,15 @@ def load_food_insecurity_dataset() -> pd.DataFrame:
     """
     try:
         df_raw = pd.read_excel(settings.FOOD_INSECURITY_RAW_PATH, sheet_name=0)
-        df_vic = _load_and_wrangle(settings.VICGOV_BOUNDARY_RAW_PATH, wrangle_vic_boundaries, "VIC boundaries")
         df_lga = _load_and_wrangle(
             settings.VICLGA_BOUNDARY_RAW_PATH, 
             wrangle_viclga_boundaries, 
             "VIC LGA boundaries", 
             df_population=load_lga_population_dataset()) # Take the lga_pid from the population dataset
-        return wrangle_food_insecurity(df_raw, df_vic, df_lga)
+        return wrangle_food_insecurity(df_raw, df_lga)
     except Exception as e:
         logger.error(f"Failed to load food insecurity dataset: {e}")
         raise
-
-
-def load_vic_boundaries_dataset() -> pd.DataFrame:
-    """Load VIC PHN boundaries dataset."""
-    return _load_and_wrangle(settings.VICGOV_BOUNDARY_RAW_PATH, wrangle_vic_boundaries, "VIC boundaries")
 
 
 def load_lga_boundaries_dataset() -> pd.DataFrame:

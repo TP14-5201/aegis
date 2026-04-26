@@ -50,7 +50,6 @@ class Settings(BaseSettings):
     ]
 
     # Regional Victorian GDB boundaries
-    VICGOV_BOUNDARY_URL: str = "https://www.dropbox.com/scl/fo/qr05jgmxcdbdn0boev1w7/ANUNe4e7aGOSzulbbzNLqX4?rlkey=8sna6zqjt5xrw52pf2jv37r0c&st=c3sn5k9r&dl=1"
     VICLGA_BOUNDARY_URL: str = "https://data.gov.au/data/dataset/bdf92691-c6fe-42b9-a0e2-a4cd716fa811/resource/95079e79-37d0-43c7-9f80-10eda1b0d05f/download/vic_lga_gda2020.zip"
 
     # LGA Population
@@ -63,7 +62,6 @@ class Settings(BaseSettings):
     MELBOURNE_RAW_PATH: str = os.path.join(RAW_DATA_DIR, "melbourne_raw.csv")
     DATAGOV_RAW_PATH: str = os.path.join(RAW_DATA_DIR, "datagov_raw.csv")
     FOOD_INSECURITY_RAW_PATH: str = os.path.join(RAW_DATA_DIR, "food_insecurity_raw.xlsx")
-    VICGOV_BOUNDARY_RAW_PATH: str = os.path.join(RAW_DATA_DIR, "vicgov_boundary_raw.csv")
     
     VICLGA_BOUNDARY_RAW_ZIP_PATH: str = os.path.join(RAW_DATA_DIR, "viclga_boundary_raw.zip")
     VICLGA_BOUNDARY_RAW_UNZIP_PATH: str = os.path.join(RAW_DATA_DIR, "viclga_boundary_raw")

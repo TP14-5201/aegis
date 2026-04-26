@@ -19,7 +19,6 @@ def save_local_copy() -> None:
         (fetch_csv_from_url, settings.MELBOURNE_API_URL, settings.MELBOURNE_RAW_PATH, {"separator": settings.MELBOURNE_SEP}),
         (fetch_csv_from_url, settings.OTHER_DATA_URL, settings.DATAGOV_RAW_PATH, {"separator": settings.OTHER_SEP}),
         (fetch_excel_from_url, settings.FOOD_INSECURITY_URL, settings.FOOD_INSECURITY_RAW_PATH, {"sheet_name": settings.FOOD_INSECURITY_SHEET_NAME}),
-        (fetch_gdb_from_url, settings.VICGOV_BOUNDARY_URL, settings.VICGOV_BOUNDARY_RAW_PATH, {}),
         (fetch_zip_from_url, settings.VICLGA_BOUNDARY_URL, settings.VICLGA_BOUNDARY_RAW_PATH, {}),
         (fetch_csv_from_url, settings.LGA_POPULATION_URL, settings.LGA_POPULATION_RAW_PATH, {"separator": settings.LGA_POPULATION_SEP})
     ]
