@@ -2,7 +2,7 @@ import re
 
 import pandas as pd
 
-from .utils import initial_cleaning_pipeline, clean_na_values, normalize_website, normalize_coordinates, select_columns, add_source_column, rename_columns
+from .utils import initial_cleaning_pipeline, clean_na_values, normalize_website, normalize_coordinates, select_columns, add_source_column, rename_columns, determine_emergency_service_lga
 from src.core.config import settings
 
 
@@ -50,7 +50,7 @@ def create_placeholder_columns(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def wrangle_datagov(df: pd.DataFrame) -> pd.DataFrame:
+def wrangle_datagov(df: pd.DataFrame, df_lga_boundaries: pd.DataFrame) -> pd.DataFrame:
     """Main wrangling pipeline for DataGov emergency relief services data."""
     
     DATAGOV_COLUMN_MAP = {
@@ -72,5 +72,6 @@ def wrangle_datagov(df: pd.DataFrame) -> pd.DataFrame:
     # clean_na_values is called last so that placeholder/empty strings set
     # during transformation are correctly converted to NaN before DB insert.
     df = clean_na_values(df)
+    df = determine_emergency_service_lga(df, df_lga_boundaries)
 
     return df

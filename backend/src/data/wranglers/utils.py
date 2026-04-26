@@ -1,6 +1,9 @@
 import pandas as pd
 import numpy as np
 
+import geopandas as gpd
+from shapely import wkt
+from shapely.geometry import Point
 
 # Sentinel values to treat as missing/null across all datasets
 _NA_SENTINEL_VALUES = ["", "N/A", "n/a", "None", "NULL", "https://"]
@@ -80,5 +83,20 @@ def normalize_website(df: pd.DataFrame) -> pd.DataFrame:
     # Remove any existing protocol to re-add it cleanly
     url = url.str.replace("http://", "", regex=False).str.replace("https://", "", regex=False)
     df["website"] = ("https://" + url).where(url != "", "")
+
+    return df
+
+
+def determine_emergency_service_lga(df: pd.DataFrame, df_lga_boundaries: pd.DataFrame) -> pd.DataFrame:
+    """Determine the LGA for each emergency service."""
+    df = gpd.GeoDataFrame(
+        df,
+        geometry=gpd.points_from_xy(df.longitude, df.latitude),
+        crs="EPSG:4326"
+    )
+    df_lga_boundaries['geometry'] = df_lga_boundaries['geometry'].apply(wkt.loads)
+    df_lga_boundaries = gpd.GeoDataFrame(df_lga_boundaries, crs="EPSG:4326")
+    df = gpd.sjoin(df, df_lga_boundaries, how="left", predicate="within")
+    df = df.drop(columns=["lga_name", "geometry", "index_right"])
 
     return df

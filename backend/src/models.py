@@ -8,6 +8,7 @@ class SupportService(Base):
     __tablename__ = "support_services"
 
     id = Column(Integer, primary_key=True, index=True)
+    lga_pid = Column(String, index=True)     # FK → vic_lga_boundaries.lga_pid
     name = Column(String, index=True)
     description = Column(String)
     target_audience = Column(String)

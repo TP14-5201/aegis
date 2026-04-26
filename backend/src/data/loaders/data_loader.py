@@ -28,11 +28,33 @@ def _load_and_wrangle(
         raise
 
 
+def load_lga_population_dataset() -> pd.DataFrame:
+    """Load VIC LGA population dataset."""
+    return _load_and_wrangle(settings.LGA_POPULATION_RAW_PATH, wrangle_lga_population, "LGA population")
+
+
+def load_lga_boundaries_dataset() -> pd.DataFrame:
+    """Load VIC LGA boundaries dataset."""
+    df_boundaries = _load_and_wrangle(
+        settings.VICLGA_BOUNDARY_RAW_PATH,
+        wrangle_viclga_boundaries, 
+        "LGA boundaries", 
+        df_population=load_lga_population_dataset()) # Take the lga_pid from the population dataset
+    return df_boundaries
+
+
 def load_emergency_services_dataset() -> pd.DataFrame:
     """Load and combine Melbourne and DataGov datasets."""
-    df_melbourne = _load_and_wrangle(settings.MELBOURNE_RAW_PATH, wrangle_melbourne, "Melbourne")
-    df_datagov = _load_and_wrangle(settings.DATAGOV_RAW_PATH, wrangle_datagov, "DataGov")
-    
+    df_melbourne = _load_and_wrangle(
+        settings.MELBOURNE_RAW_PATH, 
+        wrangle_melbourne, 
+        "Melbourne",
+        df_lga_boundaries=load_lga_boundaries_dataset()) # Take the lga_pid from the population dataset
+    df_datagov = _load_and_wrangle(
+        settings.DATAGOV_RAW_PATH, 
+        wrangle_datagov, 
+        "DataGov",
+        df_lga_boundaries=load_lga_boundaries_dataset()) # Take the lga_pid from the population dataset
     return pd.concat([df_melbourne, df_datagov], ignore_index=True).sort_values(by="name")
 
 
@@ -53,18 +75,3 @@ def load_food_insecurity_dataset() -> pd.DataFrame:
     except Exception as e:
         logger.error(f"Failed to load food insecurity dataset: {e}")
         raise
-
-
-def load_lga_boundaries_dataset() -> pd.DataFrame:
-    """Load VIC LGA boundaries dataset."""
-    df_boundaries = _load_and_wrangle(
-        settings.VICLGA_BOUNDARY_RAW_PATH,
-        wrangle_viclga_boundaries, 
-        "LGA boundaries", 
-        df_population=load_lga_population_dataset()) # Take the lga_pid from the population dataset
-    return df_boundaries
-
-
-def load_lga_population_dataset() -> pd.DataFrame:
-    """Load VIC LGA population dataset."""
-    return _load_and_wrangle(settings.LGA_POPULATION_RAW_PATH, wrangle_lga_population, "LGA population")
