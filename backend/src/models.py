@@ -67,3 +67,13 @@ class VicLgaBoundary(Base):
     geometry = Column(Geometry(geometry_type='MULTIPOLYGON', srid=4326))
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class LgaPopulation(Base):
+    __tablename__ = "lga_population"
+
+    lga_pid = Column(String, primary_key=True, index=True)
+    lga_name = Column(String)
+    pop_2024_total = Column(Integer)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
