@@ -60,7 +60,7 @@ class VicBoundary(Base):
 
 
 class VicLgaBoundary(Base):
-    __tablename__ = "viclga_boundaries"
+    __tablename__ = "vic_lga_boundaries"
 
     lga_pid = Column(String, primary_key=True, index=True)
     lga_name = Column(String)
@@ -70,7 +70,7 @@ class VicLgaBoundary(Base):
 
 
 class LgaPopulation(Base):
-    __tablename__ = "lga_population"
+    __tablename__ = "vic_lga_population"
 
     lga_pid = Column(String, primary_key=True, index=True)
     lga_name = Column(String)
