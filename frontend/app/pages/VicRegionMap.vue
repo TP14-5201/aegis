@@ -2,21 +2,107 @@
   <div class="w-full min-h-screen flex flex-col font-sans bg-[#F7F9FB]">
     <LayoutNavbar />
 
+    <!-- Hero Section -->
+    <section class="w-full bg-[#F7F9FB] pt-10 pb-20 border-b border-[#D8DADC] overflow-hidden relative">
+
+      <div class="relative w-full h-[380px] mb-8">
+
+        <svg class="absolute top-[-80px] left-0 w-full h-[220px] pointer-events-none" preserveAspectRatio="none"
+          viewBox="0 0 1200 120">
+          <path d="M -50 10 Q 600 130 1250 10" stroke="#D2B48C" stroke-width="4" fill="none" stroke-dasharray="2,1"
+            class="rope-shadow" />
+        </svg>
+
+        <div class="relative flex items-center justify-center gap-2 sm:gap-6 w-full px-4 mt-16 z-10">
+          <div v-for="(img, index) in polaroids" :key="index" class="polaroid-card" :style="getCalculatedStyle(index)">
+            <div class="clip">
+              <div class="clip-inner"></div>
+            </div>
+
+            <div class="bg-gray-100 overflow-hidden mb-2 border border-[#E8EEF4]">
+              <img :src="img" class="w-full h-[100px] sm:h-[130px] object-cover" alt="Community Story" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="max-w-[1200px] mx-auto px-6 text-center relative z-20">
+        <h1 class="font-serif font-bold text-[#1A234E] mb-6" style="font-size: 56px; line-height: 1.1;">
+          The story the <span class="text-[#7392FF]">data</span> tells
+        </h1>
+        <p class="text-[#1A234E] text-[20px] max-w-2xl mx-auto leading-relaxed mb-10 opacity-90">
+          Behind every statistic is a Victorian family. Explore the reality of food insecurity,
+          malnutrition, and the cost of eating well across our state.
+        </p>
+
+        <div class="flex flex-wrap justify-center gap-6">
+          <div class="flex flex-wrap justify-center gap-6 mt-10">
+
+            <div @click="scrollToSection('map-section')"
+              class="group relative bg-white border border-[#D8DADC] rounded-2xl p-8 w-[320px] h-[360px] cursor-pointer overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
+
+              <div
+                class="absolute inset-0 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out z-0">
+                <div class="absolute inset-0 bg-cover bg-center"
+                  style="background-image: url('/visualisation/regional_map.jpg');"></div>
+                <div class="absolute inset-0 bg-[#1A234E]/50"></div>
+              </div>
+
+              <div class="relative z-10 flex flex-col items-center justify-center h-full text-center">
+                <div
+                  class="w-20 h-20 bg-[#F7F9FB] group-hover:bg-white/20 rounded-full flex items-center justify-center mb-6 transition-all duration-300">
+                  <span class="text-4xl group-hover:scale-110 transition-transform duration-300">🗺️</span>
+                </div>
+
+                <h3
+                  class="font-serif font-bold text-[#1A234E] text-2xl group-hover:text-white transition-colors duration-300">
+                  Regional Map
+                </h3>
+
+                <p
+                  class="text-base text-[#5F6368] mt-3 group-hover:text-white/90 transition-colors duration-300 leading-relaxed px-2">
+                  Explore food insecurity statistics by LGA
+                </p>
+              </div>
+            </div>
+
+            <div @click="scrollToSection('child-section')"
+              class="group relative bg-white border border-[#D8DADC] rounded-2xl p-8 w-[320px] h-[360px] cursor-pointer overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
+
+              <div
+                class="absolute inset-0 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out z-0">
+                <div class="absolute inset-0 bg-cover bg-center"
+                  style="background-image: url('/visualisation/child_nutrition.jpg');"></div>
+                <div class="absolute inset-0 bg-[#FF6B6B]/60"></div>
+              </div>
+
+              <div class="relative z-10 flex flex-col items-center justify-center h-full text-center">
+                <div
+                  class="w-20 h-20 bg-[#F7F9FB] group-hover:bg-white/20 rounded-full flex items-center justify-center mb-6 transition-all duration-300">
+                  <span class="text-4xl group-hover:scale-110 transition-transform duration-300">👶</span>
+                </div>
+
+                <h3
+                  class="font-serif font-bold text-[#1A234E] text-2xl group-hover:text-[#FFF5CC] transition-colors duration-300">
+                  Child Health
+                </h3>
+
+                <p
+                  class="text-base text-[#5F6368] mt-3 group-hover:text-white transition-colors duration-300 leading-relaxed px-2">
+                  The impact of malnutrition on young Victorians
+                </p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- 1st Section: Map -->
     <section class="relative w-full overflow-hidden" style="padding-top: 100px; padding-bottom: 80px;">
       <div class="max-w-[1200px] mx-auto px-6">
-        <!-- Text Content -->
-        <div class="text-center mb-12 mt-8">
-          <h1 class="font-serif font-bold text-[#1A234E] mb-4" style="font-size: 48px; line-height: 1.2;">
-            The story the data tells
-          </h1>
-          <p class="text-[#1A234E] text-[18px] max-w-3xl mx-auto leading-relaxed">
-            Behind every statistic is a Victorian family. Food insecurity. Malnutrition. The cost of eating well.
-            Explore what's really happening across Victoria — region by region.
-          </p>
-        </div>
-
-        <div class="mb-8">
+        <div id="map-section" class="mb-8">
           <span class="text-[#FF6B6B] font-bold text-sm tracking-wider uppercase mb-2 block">Around Us</span>
           <h2 class="font-serif font-semibold text-[#1A234E] mb-4" style="font-size: 32px;">
             It's happening right here
@@ -44,6 +130,10 @@
               <span v-if="isLoadingLocation"
                 class="animate-spin h-4 w-4 border-2 border-[#1A234E] border-t-transparent rounded-full inline-block"></span>
               <span v-else>📍</span> Use My Location
+            </button>
+            <button @click="resetMap" v-if="selectedLgaName"
+              class="flex items-center justify-center gap-2 bg-[#F7F9FB] hover:bg-[#E8EEF4] text-[#1A234E] border border-[#D8DADC] px-6 py-3 rounded-xl font-medium transition-colors shadow-sm">
+              Reset Map
             </button>
           </div>
 
@@ -155,7 +245,7 @@
     </section>
 
     <!-- 2nd Section: The Children -->
-    <section class="py-[80px] bg-white border-t border-[#D8DADC]">
+    <section id="child-section" class="py-[80px] bg-white border-t border-[#D8DADC]">
       <div class="max-w-[1200px] mx-auto px-6">
         <span class="text-[#FF6B6B] font-bold text-sm tracking-wider uppercase mb-2 block">The Children</span>
         <h2 class="font-serif font-semibold text-[#1A234E] mb-6" style="font-size: 32px;">
@@ -346,6 +436,11 @@ function getFeatureBounds(feature) {
 }
 
 function selectLga(lgaName) {
+  if (selectedLgaName.value === lgaName) {
+    resetMap()
+    return
+  }
+
   selectedLgaName.value = lgaName
 
   if (mapInstance && mapInstance.isStyleLoaded() && lgaGeojson) {
@@ -367,6 +462,33 @@ function selectLga(lgaName) {
       ['==', ['get', 'lga_name'], lgaName], 1.0,
       ['boolean', ['feature-state', 'hover'], false], 1.0,
       0.3
+    ])
+  }
+}
+
+function resetMap() {
+  selectedLgaName.value = null
+  searchQuery.value = ''
+  if (mapInstance && mapInstance.isStyleLoaded()) {
+    mapInstance.flyTo({
+      center: [144.5, -36.5],
+      zoom: 5.5,
+      duration: 1200,
+      essential: true
+    })
+
+    // Reset opacity and colors
+    mapInstance.setPaintProperty('lga-fills', 'fill-opacity', [
+      'case',
+      ['boolean', ['feature-state', 'hover'], false], 1,
+      0.75
+    ])
+
+    mapInstance.setPaintProperty('lga-fills', 'fill-color', [
+      'case',
+      ['boolean', ['feature-state', 'hover'], false],
+      '#FFFFFF',
+      getFillColorExpression()
     ])
   }
 }
@@ -393,6 +515,51 @@ function useMyLocation() {
     })
   } else {
     isLoadingLocation.value = false
+  }
+}
+
+const scrollToSection = (id) => {
+  const el = document.getElementById(id);
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+};
+
+// Hero section
+const polaroids = [
+  '/visualisation/family1.webp',
+  '/visualisation/child2.webp',
+  '/visualisation/kitchen3.webp',
+  '/visualisation/community4.webp',
+  '/visualisation/farmer5.webp',
+  '/visualisation/meal6.webp'
+]
+
+// Array to set rotation and vertical offset for each card to mimic a "hanging curve"
+const polaroidStyles = [
+  { transform: 'rotate(-8deg) translateY(20px)', zIndex: 10 },
+  { transform: 'rotate(5deg) translateY(50px)', zIndex: 11 },
+  { transform: 'rotate(-4deg) translateY(70px)', zIndex: 12 },
+  { transform: 'rotate(7deg) translateY(65px)', zIndex: 11 },
+  { transform: 'rotate(-6deg) translateY(45px)', zIndex: 10 },
+  { transform: 'rotate(9deg) translateY(15px)', zIndex: 9 },
+]
+
+function getCalculatedStyle(index) {
+  const total = polaroids.length;
+  // Normalized position from -1 to 1
+  const x = (index - (total - 1) / 2) / ((total - 1) / 2);
+
+  // Parabolic curve: y = x^2 * depth
+  // This ensures the vertical offset matches the "sag" of the SVG path
+  const verticalOffset = Math.pow(x, 2) * -60 + 70;
+
+  // Stable rotation based on index instead of Math.random to prevent flickering on scroll
+  const rotation = x * 8 + (index % 2 === 0 ? 2 : -2);
+
+  return {
+    transform: `translateY(${verticalOffset}px) rotate(${rotation}deg)`,
+    zIndex: 10 + index
   }
 }
 
@@ -654,5 +821,55 @@ onBeforeUnmount(() => {
 
 .picto-in {
   opacity: 1;
+}
+
+#map-section,
+#child-section {
+  scroll-margin-top: 150px;
+}
+
+/* Real Clothesline Rope Texture */
+.rope-shadow {
+  filter: drop-shadow(0 3px 2px rgba(0, 0, 0, 0.1));
+}
+
+.polaroid-card {
+  @apply bg-white p-2 sm:p-3 pb-5 sm:pb-8 shadow-xl border border-[#D8DADC] w-[110px] sm:w-[170px] transition-all duration-500;
+  flex-shrink: 0;
+  position: relative;
+  /* Slight rough paper texture */
+  background-image: linear-gradient(to bottom right, #ffffff, #fdfdfd);
+}
+
+.polaroid-card:hover {
+  @apply z-50;
+  transform: translateY(60px) rotate(0deg) scale(1.1) !important;
+}
+
+/* Clothespin Style */
+.clip {
+  @apply w-3 h-8 sm:w-4 sm:h-10 absolute rounded-sm shadow-sm z-20;
+  top: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #e3c193;
+  /* Wood color */
+  border: 1px solid #c9a67a;
+}
+
+/* The metal spring of the clothespin */
+.clip-inner {
+  @apply w-full h-[2px] bg-gray-400 absolute top-1/2 left-0;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+}
+
+.polaroid-card:nth-child(odd) .clip {
+  background: #FF6B6B;
+  border-color: #ee5a5a;
+}
+
+.polaroid-card:nth-child(even) .clip {
+  background: #7392FF;
+  border-color: #5f7ee8;
 }
 </style>
