@@ -250,6 +250,36 @@
             </template>
           </div>
         </div>
+
+        <!-- Data Citations -->
+        <div class="mt-12 text-[11px] text-[#6F7979] border-t border-border-grey pt-6">
+          <p class="font-bold uppercase tracking-widest mb-3 text-primary/50">Data Resources Used</p>
+          <div class="flex flex-wrap gap-x-8 gap-y-3">
+            <div class="flex items-center gap-2">
+              <span class="font-semibold text-primary/70">Food Insecurity:</span>
+              <a href="https://vahi.vic.gov.au/reports/victorian-population-health-survey-2023" target="_blank"
+                class="hover:text-bright-blue transition-colors underline decoration-border-grey underline-offset-2">VAHI (2023 Survey)</a>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="font-semibold text-primary/70">Emergency Services:</span>
+              <div class="flex gap-2">
+                <a href="https://data.melbourne.vic.gov.au/explore/dataset/free-and-cheap-support-services-with-opening-hours-public-transport-and-parking-/table/"
+                  target="_blank"
+                  class="hover:text-bright-blue transition-colors underline decoration-border-grey underline-offset-2">data.melbourne.vic.gov.au</a>
+                <span class="opacity-30">&</span>
+                <a href="https://data.gov.au/data/dataset/emergency-relief-provider-outlets/resource/0e32d958-3796-4dca-8312-489ef7a610f6"
+                  target="_blank"
+                  class="hover:text-bright-blue transition-colors underline decoration-border-grey underline-offset-2">data.gov.au</a>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="font-semibold text-primary/70">Population by LGA:</span>
+              <a href="https://digital.atlas.gov.au/datasets/digitalatlas::abs-population-and-people-data-by-region-lga-november-2025/about"
+                target="_blank"
+                class="hover:text-bright-blue transition-colors underline decoration-border-grey underline-offset-2">ABS (Nov 2025)</a>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
