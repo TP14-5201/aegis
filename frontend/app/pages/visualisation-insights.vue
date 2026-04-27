@@ -162,6 +162,22 @@
           <!-- Map Container -->
           <div
             :class="['lg:flex-[2] h-[420px] lg:h-auto w-full bg-white rounded-[16px] overflow-hidden relative shadow-lg border border-[#D8DADC]', mapShifting ? 'map-shifting' : '']">
+            
+            <!-- Loading Animation Overlay -->
+            <div v-if="isMapLoading" class="absolute inset-0 z-[100] bg-white/95 backdrop-blur-sm flex flex-col items-center justify-center gap-5 transition-opacity duration-500">
+               <div class="relative w-16 h-16">
+                  <div class="absolute inset-0 border-[3px] border-bg-blue rounded-full"></div>
+                  <div class="absolute inset-0 border-[3px] border-t-bright-blue rounded-full animate-spin"></div>
+                  <div class="absolute inset-0 flex items-center justify-center">
+                    <span class="text-xl animate-pulse">🌏</span>
+                  </div>
+               </div>
+               <div class="text-center">
+                 <p class="font-sans font-bold text-primary tracking-wide mb-1">Mapping Victoria</p>
+                 <p class="font-sans text-xs text-body-grey/80 animate-pulse italic">Retrieving regional data...</p>
+               </div>
+            </div>
+
             <div ref="mapEl" class="w-full h-full bg-[#E8EEF4]" />
 
             <!-- Map Legend -->
@@ -440,6 +456,7 @@ const filteredLgas = ref([])
 const showDropdown = ref(false)
 const searchIndex = ref([])
 const isLoadingLocation = ref(false)
+const isMapLoading = ref(true)
 
 const mapShifting = ref(false)
 
@@ -821,6 +838,11 @@ onMounted(async () => {
 
     } catch (err) {
       console.error("Map load error", err)
+    } finally {
+      // Ensure loading state is cleared after initial render attempts
+      setTimeout(() => {
+        isMapLoading.value = false
+      }, 300)
     }
   })
 })
