@@ -1,6 +1,7 @@
 import pytest
 import numpy as np
 import pandas as pd
+from unittest.mock import patch
 
 from src.data.wranglers.datagov_wrangler import (
     filter_victoria_services,
@@ -45,6 +46,22 @@ def make_full_datagov_df(**overrides):
     }
     row.update(overrides)
     return pd.DataFrame([row])
+
+
+@pytest.fixture
+def lga_boundaries():
+    """
+    Empty placeholder DataFrame standing in for real LGA boundary geometry.
+
+    determine_emergency_service_lga is patched to a no-op in all integration
+    tests, so the actual content of this fixture does not matter; it exists
+    only to satisfy the wrangle_datagov signature.
+    """
+    return pd.DataFrame()
+
+
+# Patch target for determine_emergency_service_lga used across integration tests.
+_PATCH_LGA = "src.data.wranglers.datagov_wrangler.determine_emergency_service_lga"
 
 
 # ---------------------------------------------------------------------------
@@ -231,20 +248,31 @@ class TestCreatePlaceholderColumns:
 # ---------------------------------------------------------------------------
 
 class TestWrangleDatagov:
-    def test_returns_dataframe(self):
+    """
+    Integration tests for wrangle_datagov.
+
+    determine_emergency_service_lga requires real LGA boundary geometry and is
+    tested separately.  It is patched here to a no-op (returns df unchanged)
+    so these tests remain focused on the wrangling logic alone.
+    """
+
+    def test_returns_dataframe(self, lga_boundaries):
         df = make_full_datagov_df()
-        result = wrangle_datagov(df)
+        with patch(_PATCH_LGA, side_effect=lambda df, _: df):
+            result = wrangle_datagov(df, lga_boundaries)
         assert isinstance(result, pd.DataFrame)
 
-    def test_output_has_source_column_set_to_datagov(self):
+    def test_output_has_source_column_set_to_datagov(self, lga_boundaries):
         df = make_full_datagov_df()
-        result = wrangle_datagov(df)
+        with patch(_PATCH_LGA, side_effect=lambda df, _: df):
+            result = wrangle_datagov(df, lga_boundaries)
         assert "source" in result.columns
         assert all(result["source"] == "DataGov")
 
-    def test_output_columns_match_expected_schema(self):
+    def test_output_columns_match_expected_schema(self, lga_boundaries):
         df = make_full_datagov_df()
-        result = wrangle_datagov(df)
+        with patch(_PATCH_LGA, side_effect=lambda df, _: df):
+            result = wrangle_datagov(df, lga_boundaries)
         expected_cols = [
             "name", "description", "target_audience", "address", "suburb",
             "primary_phone", "phone_display", "email", "website", "social_media",
@@ -254,7 +282,7 @@ class TestWrangleDatagov:
         for col in expected_cols:
             assert col in result.columns, f"Missing column: {col}"
 
-    def test_filters_out_non_vic_rows(self):
+    def test_filters_out_non_vic_rows(self, lga_boundaries):
         df = pd.DataFrame([
             {
                 "outlet_name": "VIC Service",
@@ -275,40 +303,55 @@ class TestWrangleDatagov:
                 "longitude": "151.2093",
             },
         ])
-        result = wrangle_datagov(df)
+        with patch(_PATCH_LGA, side_effect=lambda df, _: df):
+            result = wrangle_datagov(df, lga_boundaries)
         assert len(result) == 1
         assert result["name"].iloc[0] == "VIC Service"
 
-    def test_placeholder_columns_become_nan_after_pipeline(self):
+    def test_placeholder_columns_become_nan_after_pipeline(self, lga_boundaries):
         df = make_full_datagov_df()
-        result = wrangle_datagov(df)
+        with patch(_PATCH_LGA, side_effect=lambda df, _: df):
+            result = wrangle_datagov(df, lga_boundaries)
         for col in PLACEHOLDER_COLUMNS:
             assert pd.isna(result[col].iloc[0]), f"Column {col} should be NaN after pipeline"
 
-    def test_coordinates_are_numeric(self):
+    def test_coordinates_are_numeric(self, lga_boundaries):
         df = make_full_datagov_df()
-        result = wrangle_datagov(df)
+        with patch(_PATCH_LGA, side_effect=lambda df, _: df):
+            result = wrangle_datagov(df, lga_boundaries)
         assert result["latitude"].dtype in [float, np.float64]
         assert result["longitude"].dtype in [float, np.float64]
 
-    def test_website_is_normalised(self):
+    def test_website_is_normalised(self, lga_boundaries):
         df = make_full_datagov_df(organistaion_website="http://example.com")
-        result = wrangle_datagov(df)
+        with patch(_PATCH_LGA, side_effect=lambda df, _: df):
+            result = wrangle_datagov(df, lga_boundaries)
         assert result["website"].iloc[0] == "https://example.com"
 
-    def test_empty_dataframe_returns_empty_dataframe(self):
+    def test_empty_dataframe_returns_empty_dataframe(self, lga_boundaries):
         df = make_full_datagov_df()
         # Make all rows non-VIC so filter removes everything
         df["outlet_address"] = "123 Main St NSW"
         df["postcode"] = "2000"
-        result = wrangle_datagov(df)
+        with patch(_PATCH_LGA, side_effect=lambda df, _: df):
+            result = wrangle_datagov(df, lga_boundaries)
         assert isinstance(result, pd.DataFrame)
         assert len(result) == 0
 
-    def test_does_not_mutate_input_dataframe(self):
+    def test_does_not_mutate_input_dataframe(self, lga_boundaries):
         df = make_full_datagov_df()
         original_columns = list(df.columns)
         original_values = df["outlet_name"].iloc[0]
-        wrangle_datagov(df)
+        with patch(_PATCH_LGA, side_effect=lambda df, _: df):
+            wrangle_datagov(df, lga_boundaries)
         assert list(df.columns) == original_columns
         assert df["outlet_name"].iloc[0] == original_values
+
+    def test_lga_function_is_called_with_boundaries(self, lga_boundaries):
+        """determine_emergency_service_lga must receive the df_lga_boundaries argument."""
+        df = make_full_datagov_df()
+        with patch(_PATCH_LGA, side_effect=lambda df, _: df) as mock_lga:
+            wrangle_datagov(df, lga_boundaries)
+        mock_lga.assert_called_once()
+        _, called_boundaries = mock_lga.call_args.args
+        assert called_boundaries is lga_boundaries
