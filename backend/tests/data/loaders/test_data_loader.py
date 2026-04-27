@@ -6,8 +6,7 @@ from src.data.loaders.data_loader import (
     _load_and_wrangle,
     load_emergency_services_dataset,
     load_food_insecurity_dataset,
-    load_vic_boundaries_dataset,
-    load_viclga_boundaries_dataset,
+    load_lga_boundaries_dataset,
 )
 from src.core.config import settings
 
@@ -417,59 +416,8 @@ class TestLoadFoodInsecurityDataset:
             with pytest.raises(FileNotFoundError):
                 load_food_insecurity_dataset()
 
-
 # ---------------------------------------------------------------------------
-# load_vic_boundaries_dataset
-# ---------------------------------------------------------------------------
-
-class TestLoadVicBoundariesDataset:
-    def test_returns_dataframe(self):
-        """Tests that the function returns a DataFrame."""
-        with patch("src.data.loaders.data_loader.pd.read_csv", return_value=VIC_DF), \
-             patch("src.data.loaders.data_loader.wrangle_vic_boundaries", return_value=VIC_DF):
-            result = load_vic_boundaries_dataset()
-        assert isinstance(result, pd.DataFrame)
-
-    def test_reads_from_correct_path(self):
-        """Tests that the VIC boundaries CSV is read from the configured path."""
-        with patch("src.data.loaders.data_loader.pd.read_csv", return_value=VIC_DF) as mock_read_csv, \
-             patch("src.data.loaders.data_loader.wrangle_vic_boundaries", return_value=VIC_DF):
-            load_vic_boundaries_dataset()
-
-        mock_read_csv.assert_called_once_with(settings.VICGOV_BOUNDARY_RAW_PATH)
-
-    def test_uses_csv_reader_not_excel(self):
-        """Tests that pd.read_csv is used (is_excel defaults to False)."""
-        with patch("src.data.loaders.data_loader.pd.read_csv", return_value=VIC_DF), \
-             patch("src.data.loaders.data_loader.pd.read_excel") as mock_excel, \
-             patch("src.data.loaders.data_loader.wrangle_vic_boundaries", return_value=VIC_DF):
-            load_vic_boundaries_dataset()
-
-        mock_excel.assert_not_called()
-
-    def test_passes_result_through_vic_boundaries_wrangler(self):
-        """Tests that the raw DataFrame is passed to wrangle_vic_boundaries."""
-        raw_df = VIC_DF.copy()
-        wrangled_df = VIC_DF.copy()
-        mock_wrangler = MagicMock(return_value=wrangled_df)
-
-        with patch("src.data.loaders.data_loader.pd.read_csv", return_value=raw_df), \
-             patch("src.data.loaders.data_loader.wrangle_vic_boundaries", mock_wrangler):
-            result = load_vic_boundaries_dataset()
-
-        mock_wrangler.assert_called_once_with(raw_df)
-        assert result is wrangled_df
-
-    def test_propagates_exception_on_missing_file(self):
-        """Tests that a FileNotFoundError propagates to the caller."""
-        with patch("src.data.loaders.data_loader.pd.read_csv", side_effect=FileNotFoundError("missing")), \
-             patch("src.data.loaders.data_loader.logger"):
-            with pytest.raises(FileNotFoundError):
-                load_vic_boundaries_dataset()
-
-
-# ---------------------------------------------------------------------------
-# load_viclga_boundaries_dataset
+# load_lga_boundaries_dataset
 # ---------------------------------------------------------------------------
 
 class TestLoadViclgaBoundariesDataset:
@@ -477,14 +425,14 @@ class TestLoadViclgaBoundariesDataset:
         """Tests that the function returns a DataFrame."""
         with patch("src.data.loaders.data_loader.pd.read_csv", return_value=LGA_DF), \
              patch("src.data.loaders.data_loader.wrangle_viclga_boundaries", return_value=LGA_DF):
-            result = load_viclga_boundaries_dataset()
+            result = load_lga_boundaries_dataset()
         assert isinstance(result, pd.DataFrame)
 
     def test_reads_from_correct_path(self):
         """Tests that the VIC LGA boundaries CSV is read from the configured path."""
         with patch("src.data.loaders.data_loader.pd.read_csv", return_value=LGA_DF) as mock_read_csv, \
              patch("src.data.loaders.data_loader.wrangle_viclga_boundaries", return_value=LGA_DF):
-            load_viclga_boundaries_dataset()
+            load_lga_boundaries_dataset()
 
         mock_read_csv.assert_called_once_with(settings.VICLGA_BOUNDARY_RAW_PATH)
 
@@ -493,7 +441,7 @@ class TestLoadViclgaBoundariesDataset:
         with patch("src.data.loaders.data_loader.pd.read_csv", return_value=LGA_DF), \
              patch("src.data.loaders.data_loader.pd.read_excel") as mock_excel, \
              patch("src.data.loaders.data_loader.wrangle_viclga_boundaries", return_value=LGA_DF):
-            load_viclga_boundaries_dataset()
+            load_lga_boundaries_dataset()
 
         mock_excel.assert_not_called()
 
@@ -505,7 +453,7 @@ class TestLoadViclgaBoundariesDataset:
 
         with patch("src.data.loaders.data_loader.pd.read_csv", return_value=raw_df), \
              patch("src.data.loaders.data_loader.wrangle_viclga_boundaries", mock_wrangler):
-            result = load_viclga_boundaries_dataset()
+            result = load_lga_boundaries_dataset()
 
         mock_wrangler.assert_called_once_with(raw_df)
         assert result is wrangled_df
@@ -515,7 +463,7 @@ class TestLoadViclgaBoundariesDataset:
         with patch("src.data.loaders.data_loader.pd.read_csv", side_effect=FileNotFoundError("missing")), \
              patch("src.data.loaders.data_loader.logger"):
             with pytest.raises(FileNotFoundError):
-                load_viclga_boundaries_dataset()
+                load_lga_boundaries_dataset()
 
     def test_viclga_path_differs_from_vic_path(self):
         """Documents that VICLGA_BOUNDARY_RAW_PATH and VICGOV_BOUNDARY_RAW_PATH are
