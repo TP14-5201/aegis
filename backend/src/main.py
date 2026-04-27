@@ -15,7 +15,7 @@ from src.schemas import NearbyServiceOut, FoodInsecurityRegion
 from src.services.nearby_search import DEFAULT_KEYWORDS, find_nearby_support_services
 from src.utils.opening_hours import is_open_now, _now_in_tz
 
-from sqlalchemy import func, Integer
+from sqlalchemy import func, Integer, case, distinct
 from sqlalchemy.orm import Session
 from geoalchemy2.functions import ST_AsGeoJSON
 
@@ -192,23 +192,32 @@ def get_all_food_data(db: Session = Depends(get_db)):
         db.query(
             LgaPopulation.lga_pid,
             LgaPopulation.pop_2024_total,
-            func.coalesce(func.avg(FoodInsecurity.estimate_pct), 0).label("avg_estimate_pct"),
-            func.count(SupportService.id).label("emergency_services_count")
-        ).outerjoin(
-            FoodInsecurity, LgaPopulation.lga_pid == FoodInsecurity.lga_pid
-        ).outerjoin(
-            SupportService, LgaPopulation.lga_pid == SupportService.lga_pid
-        ).group_by(
+            # Pivot for Men
+            func.coalesce(func.avg(
+                case((FoodInsecurity.gender == 'Men', FoodInsecurity.estimate_pct))
+            ), 0).label("men_pct"),
+            # Pivot for Women
+            func.coalesce(func.avg(
+                case((FoodInsecurity.gender == 'Women', FoodInsecurity.estimate_pct))
+            ), 0).label("women_pct"),
+            # Count distinct IDs to avoid inflated numbers from the joins
+            func.count(distinct(SupportService.id)).label("emergency_services_count")
+        )
+        .outerjoin(FoodInsecurity, LgaPopulation.lga_pid == FoodInsecurity.lga_pid)
+        .outerjoin(SupportService, LgaPopulation.lga_pid == SupportService.lga_pid)
+        .group_by(
             LgaPopulation.lga_pid,
             LgaPopulation.pop_2024_total
-        ).all()
+        )
+        .all()
     )
     
     return [
         {
             "lga_pid": r.lga_pid,
             "pop_2024_total": r.pop_2024_total,
-            "avg_estimate_pct": r.avg_estimate_pct,
+            "men_pct": round(r.men_pct, 2),
+            "women_pct": round(r.women_pct, 2),
             "emergency_services_count": r.emergency_services_count
         } for r in results
     ]
