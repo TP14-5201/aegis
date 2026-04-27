@@ -14,13 +14,15 @@
         </svg>
 
         <div class="relative flex items-center justify-center gap-2 sm:gap-6 w-full px-4 mt-16 z-10">
-          <div v-for="(img, index) in polaroids" :key="index" class="polaroid-card" :style="getCalculatedStyle(index)">
+          <div v-for="(img, index) in polaroids" :key="index" class="polaroid-card"
+            :style="precomputedPolaroidStyles[index]">
             <div class="clip">
               <div class="clip-inner"></div>
             </div>
 
             <div class="bg-gray-100 overflow-hidden mb-2 border border-[#E8EEF4]">
-              <img :src="img" class="w-full h-[100px] sm:h-[130px] object-cover" alt="Community Story" />
+              <img :src="img" loading="lazy" decoding="async" class="w-full h-[100px] sm:h-[130px] object-cover"
+                alt="Community Story" />
             </div>
           </div>
         </div>
@@ -42,7 +44,7 @@
               class="group relative bg-white border border-[#D8DADC] rounded-2xl p-8 w-[320px] h-[360px] cursor-pointer overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
 
               <div
-                class="absolute inset-0 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out z-0">
+                class="absolute inset-0 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out z-0 will-change-transform">
                 <div class="absolute inset-0 bg-cover bg-center"
                   style="background-image: url('/visualisation/regional_map.jpg');"></div>
                 <div class="absolute inset-0 bg-[#1A234E]/50"></div>
@@ -70,7 +72,7 @@
               class="group relative bg-white border border-[#D8DADC] rounded-2xl p-8 w-[320px] h-[360px] cursor-pointer overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
 
               <div
-                class="absolute inset-0 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out z-0">
+                class="absolute inset-0 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out z-0 will-change-transform">
                 <div class="absolute inset-0 bg-cover bg-center"
                   style="background-image: url('/visualisation/child_nutrition.jpg');"></div>
                 <div class="absolute inset-0 bg-[#FF6B6B]/60"></div>
@@ -100,7 +102,8 @@
     </section>
 
     <!-- 1st Section: Map -->
-    <section class="relative w-full overflow-hidden" style="padding-top: 100px; padding-bottom: 80px;">
+    <section class="relative w-full overflow-hidden"
+      style="padding-top: 100px; padding-bottom: 80px; content-visibility: auto; contain-intrinsic-size: 0 800px;">
       <div class="max-w-[1200px] mx-auto px-6">
         <div id="map-section" class="mb-8">
           <span class="text-[#FF6B6B] font-bold text-sm tracking-wider uppercase mb-2 block">Around Us</span>
@@ -245,7 +248,8 @@
     </section>
 
     <!-- 2nd Section: The Children -->
-    <section id="child-section" class="py-[80px] bg-white border-t border-[#D8DADC]">
+    <section id="child-section" class="py-[80px] bg-white border-t border-[#D8DADC]"
+      style="content-visibility: auto; contain-intrinsic-size: 0 700px;">
       <div class="max-w-[1200px] mx-auto px-6">
         <span class="text-[#FF6B6B] font-bold text-sm tracking-wider uppercase mb-2 block">The Children</span>
         <h2 class="font-serif font-semibold text-[#1A234E] mb-6" style="font-size: 32px;">
@@ -321,7 +325,7 @@
     </section>
 
     <!-- 3rd Section: Ready to take the next step? -->
-    <section class="py-[80px] bg-[#EAF2FF]">
+    <section class="py-[80px] bg-[#EAF2FF]" style="content-visibility: auto; contain-intrinsic-size: 0 500px;">
       <div class="max-w-[1200px] mx-auto px-6">
         <h2 class="font-serif font-bold text-[#1A234E] mb-2" style="font-size: 32px;">
           Ready to take the next step?
@@ -535,33 +539,19 @@ const polaroids = [
   '/visualisation/meal6.webp'
 ]
 
-// Array to set rotation and vertical offset for each card to mimic a "hanging curve"
-const polaroidStyles = [
-  { transform: 'rotate(-8deg) translateY(20px)', zIndex: 10 },
-  { transform: 'rotate(5deg) translateY(50px)', zIndex: 11 },
-  { transform: 'rotate(-4deg) translateY(70px)', zIndex: 12 },
-  { transform: 'rotate(7deg) translateY(65px)', zIndex: 11 },
-  { transform: 'rotate(-6deg) translateY(45px)', zIndex: 10 },
-  { transform: 'rotate(9deg) translateY(15px)', zIndex: 9 },
-]
-
-function getCalculatedStyle(index) {
-  const total = polaroids.length;
-  // Normalized position from -1 to 1
-  const x = (index - (total - 1) / 2) / ((total - 1) / 2);
-
-  // Parabolic curve: y = x^2 * depth
-  // This ensures the vertical offset matches the "sag" of the SVG path
-  const verticalOffset = Math.pow(x, 2) * -60 + 70;
-
-  // Stable rotation based on index instead of Math.random to prevent flickering on scroll
-  const rotation = x * 8 + (index % 2 === 0 ? 2 : -2);
-
-  return {
-    transform: `translateY(${verticalOffset}px) rotate(${rotation}deg)`,
-    zIndex: 10 + index
-  }
-}
+// Pre-compute polaroid styles once at module level — no reactive deps, no per-render recalculation
+const precomputedPolaroidStyles = (() => {
+  const total = polaroids.length
+  return polaroids.map((_, index) => {
+    const x = (index - (total - 1) / 2) / ((total - 1) / 2)
+    const verticalOffset = Math.pow(x, 2) * -60 + 70
+    const rotation = x * 8 + (index % 2 === 0 ? 2 : -2)
+    return {
+      transform: `translateY(${verticalOffset}px) rotate(${rotation}deg)`,
+      zIndex: 10 + index
+    }
+  })
+})()
 
 // Stats mapping
 const statsMap = computed(() => {
@@ -830,20 +820,27 @@ onBeforeUnmount(() => {
 
 /* Real Clothesline Rope Texture */
 .rope-shadow {
-  filter: drop-shadow(0 3px 2px rgba(0, 0, 0, 0.1));
+  /* Use opacity-based shadow instead of filter to avoid costly compositing layer */
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.08));
+  will-change: auto;
 }
 
 .polaroid-card {
-  @apply bg-white p-2 sm:p-3 pb-5 sm:pb-8 shadow-xl border border-[#D8DADC] w-[110px] sm:w-[170px] transition-all duration-500;
+  @apply bg-white p-2 sm:p-3 pb-5 sm:pb-8 shadow-xl border border-[#D8DADC] w-[110px] sm:w-[170px];
+  /* Only transition transform and box-shadow — NOT all properties */
+  transition: transform 300ms ease, box-shadow 300ms ease;
   flex-shrink: 0;
   position: relative;
   /* Slight rough paper texture */
   background-image: linear-gradient(to bottom right, #ffffff, #fdfdfd);
+  /* Promote to GPU compositing layer so hover/scroll transform is handled by compositor */
+  will-change: transform;
 }
 
 .polaroid-card:hover {
   @apply z-50;
   transform: translateY(60px) rotate(0deg) scale(1.1) !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.18);
 }
 
 /* Clothespin Style */
