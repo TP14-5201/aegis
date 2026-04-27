@@ -191,6 +191,7 @@ def get_all_food_data(db: Session = Depends(get_db)):
     results = (
         db.query(
             LgaPopulation.lga_pid,
+            LgaPopulation.lga_name,
             LgaPopulation.pop_2024_total,
             # Pivot for Men
             func.coalesce(func.avg(
@@ -207,6 +208,7 @@ def get_all_food_data(db: Session = Depends(get_db)):
         .outerjoin(SupportService, LgaPopulation.lga_pid == SupportService.lga_pid)
         .group_by(
             LgaPopulation.lga_pid,
+            LgaPopulation.lga_name,
             LgaPopulation.pop_2024_total
         )
         .all()
@@ -215,6 +217,7 @@ def get_all_food_data(db: Session = Depends(get_db)):
     return [
         {
             "lga_pid": r.lga_pid,
+            "lga_name": r.lga_name,
             "pop_2024_total": r.pop_2024_total,
             "men_pct": round(r.men_pct, 2),
             "women_pct": round(r.women_pct, 2),
