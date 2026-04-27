@@ -3,7 +3,7 @@
     <LayoutNavbar />
 
     <!-- Hero Section -->
-    <section class="w-full bg-[#F7F9FB] pt-10 pb-20 border-b border-[#D8DADC] overflow-hidden relative">
+    <section class="w-full bg-bg-blue pt-12 pb-24 border-b border-border-grey overflow-hidden relative">
 
       <div class="relative w-full h-[380px] mb-8">
 
@@ -29,10 +29,12 @@
       </div>
 
       <div class="max-w-[1200px] mx-auto px-6 text-center relative z-20">
-        <h1 class="font-serif font-bold text-[#1A234E] mb-6" style="font-size: 56px; line-height: 1.1;">
-          The story the <span class="text-[#7392FF]">data</span> tells
+        <h1 class="font-serif font-bold text-primary mb-8"
+          style="font-size: 75.8px; line-height: 1.1; letter-spacing: -3.03px;">
+          The story the <span class="data-highlight">data</span>
+          tells
         </h1>
-        <p class="text-[#1A234E] text-[20px] max-w-2xl mx-auto leading-relaxed mb-10 opacity-90">
+        <p class="font-sans text-[#6F7979] italic text-[24px] max-w-3xl mx-auto leading-[35px] mb-12">
           Behind every statistic is a Victorian family. Explore the reality of food insecurity,
           malnutrition, and the cost of eating well across our state.
         </p>
@@ -41,56 +43,56 @@
           <div class="flex flex-wrap justify-center gap-6 mt-10">
 
             <div @click="scrollToSection('map-section')"
-              class="group relative bg-white border border-[#D8DADC] rounded-2xl p-8 w-[320px] h-[360px] cursor-pointer overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
+              class="group relative bg-white border border-border-grey rounded-20 p-8 w-[320px] h-[360px] cursor-pointer overflow-hidden transition-all duration-300 shadow-card-white hover:-translate-y-2">
 
               <div
                 class="absolute inset-0 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out z-0 will-change-transform">
                 <div class="absolute inset-0 bg-cover bg-center"
-                  style="background-image: url('/visualisation/regional_map.jpg');"></div>
-                <div class="absolute inset-0 bg-[#1A234E]/50"></div>
+                  style="background-image: url('/visualisation/regional_map.webp');"></div>
+                <div class="absolute inset-0 bg-primary/60"></div>
               </div>
 
               <div class="relative z-10 flex flex-col items-center justify-center h-full text-center">
                 <div
-                  class="w-20 h-20 bg-[#F7F9FB] group-hover:bg-white/20 rounded-full flex items-center justify-center mb-6 transition-all duration-300">
+                  class="w-20 h-20 bg-bg-input group-hover:bg-white/20 rounded-full flex items-center justify-center mb-6 transition-all duration-300">
                   <span class="text-4xl group-hover:scale-110 transition-transform duration-300">🗺️</span>
                 </div>
 
                 <h3
-                  class="font-serif font-bold text-[#1A234E] text-2xl group-hover:text-white transition-colors duration-300">
+                  class="font-serif font-bold text-primary text-2xl group-hover:text-white transition-colors duration-300">
                   Regional Map
                 </h3>
 
                 <p
-                  class="text-base text-[#5F6368] mt-3 group-hover:text-white/90 transition-colors duration-300 leading-relaxed px-2">
+                  class="font-sans text-base text-body-grey mt-3 group-hover:text-white/90 transition-colors duration-300 leading-relaxed px-2">
                   Explore food insecurity statistics by LGA
                 </p>
               </div>
             </div>
 
             <div @click="scrollToSection('child-section')"
-              class="group relative bg-white border border-[#D8DADC] rounded-2xl p-8 w-[320px] h-[360px] cursor-pointer overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
+              class="group relative bg-white border border-border-grey rounded-20 p-8 w-[320px] h-[360px] cursor-pointer overflow-hidden transition-all duration-300 shadow-card-white hover:-translate-y-2">
 
               <div
                 class="absolute inset-0 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out z-0 will-change-transform">
                 <div class="absolute inset-0 bg-cover bg-center"
-                  style="background-image: url('/visualisation/child_nutrition.jpg');"></div>
-                <div class="absolute inset-0 bg-[#FF6B6B]/60"></div>
+                  style="background-image: url('/visualisation/child_nutrition.webp');"></div>
+                <div class="absolute inset-0 bg-coral-orange/60"></div>
               </div>
 
               <div class="relative z-10 flex flex-col items-center justify-center h-full text-center">
                 <div
-                  class="w-20 h-20 bg-[#F7F9FB] group-hover:bg-white/20 rounded-full flex items-center justify-center mb-6 transition-all duration-300">
+                  class="w-20 h-20 bg-bg-input group-hover:bg-white/20 rounded-full flex items-center justify-center mb-6 transition-all duration-300">
                   <span class="text-4xl group-hover:scale-110 transition-transform duration-300">👶</span>
                 </div>
 
                 <h3
-                  class="font-serif font-bold text-[#1A234E] text-2xl group-hover:text-[#FFF5CC] transition-colors duration-300">
+                  class="font-serif font-bold text-primary text-2xl group-hover:text-white transition-colors duration-300">
                   Child Health
                 </h3>
 
                 <p
-                  class="text-base text-[#5F6368] mt-3 group-hover:text-white transition-colors duration-300 leading-relaxed px-2">
+                  class="font-sans text-base text-body-grey mt-3 group-hover:text-white/90 transition-colors duration-300 leading-relaxed px-2">
                   The impact of malnutrition on young Victorians
                 </p>
               </div>
@@ -102,57 +104,56 @@
     </section>
 
     <!-- 1st Section: Map -->
-    <section class="relative w-full overflow-hidden"
-      style="padding-top: 100px; padding-bottom: 80px; content-visibility: auto; contain-intrinsic-size: 0 800px;">
+    <section class="relative w-full bg-[#FFFFFF] overflow-hidden" style="padding-top: 100px; padding-bottom: 80px;">
       <div class="max-w-[1200px] mx-auto px-6">
-        <div id="map-section" class="mb-8">
-          <span class="text-[#FF6B6B] font-bold text-sm tracking-wider uppercase mb-2 block">Around Us</span>
-          <h2 class="font-serif font-semibold text-[#1A234E] mb-4" style="font-size: 32px;">
+        <div id="map-section" class="mb-12">
+          <span class="text-[#DF6651] font-bold text-sm tracking-wider uppercase mb-3 block">Around Us</span>
+          <h2 class="font-serif font-bold text-primary mb-6" style="font-size: 54px; line-height: 1.1;">
             It's happening right here
           </h2>
-          <p class="text-[#5F6368] text-[16px] max-w-2xl mb-8">
+          <p class="font-sans text-[#6F7979] text-[18px] max-w-2xl mb-10 leading-relaxed">
             Every region in Victoria tells a different story. Click yours to see the full picture — food insecurity
             rates, people affected, and the food banks trying to help.
           </p>
 
           <!-- Search Bar & Location -->
-          <div class="flex flex-col sm:flex-row gap-4 mb-8">
+          <div class="flex flex-col sm:flex-row gap-5 mb-10">
             <div class="relative flex-[2]">
               <input type="text" v-model="searchQuery" @input="filterLgas" placeholder="Enter your LGA (e.g. Melbourne)"
-                class="w-full bg-white border border-[#D8DADC] text-[#1A234E] placeholder-[#5F6368] rounded-xl px-4 py-3 focus:outline-none focus:border-[#7392FF] shadow-sm" />
+                class="w-full h-[53px] bg-white border border-border-grey text-primary placeholder-[#5F7979] rounded-14 px-6 focus:outline-none focus:border-bright-blue shadow-sm" />
               <ul v-if="showDropdown && filteredLgas.length"
-                class="absolute z-[9999] w-full bg-white border border-[#D8DADC] rounded-xl mt-2 max-h-60 overflow-y-auto shadow-lg">
+                class="absolute z-[9999] w-full bg-white border border-border-grey rounded-14 mt-2 max-h-60 overflow-y-auto shadow-card-white">
                 <li v-for="lga in filteredLgas" :key="lga" @click="selectLgaFromSearch(lga)"
-                  class="px-4 py-3 text-[#1A234E] hover:bg-[#F7F9FB] cursor-pointer">
+                  class="px-6 py-3 text-primary hover:bg-bg-input cursor-pointer font-sans">
                   {{ lga }}
                 </li>
               </ul>
             </div>
             <button @click="useMyLocation"
-              class="flex-1 flex items-center justify-center gap-2 bg-white hover:bg-[#F7F9FB] text-[#1A234E] border border-[#D8DADC] px-4 py-3 rounded-xl font-medium transition-colors shadow-sm">
+              class="flex-1 h-[53px] flex items-center justify-center gap-2 bg-white hover:bg-bg-input text-primary border border-border-grey px-6 rounded-14 font-semibold transition-colors shadow-sm">
               <span v-if="isLoadingLocation"
-                class="animate-spin h-4 w-4 border-2 border-[#1A234E] border-t-transparent rounded-full inline-block"></span>
+                class="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full inline-block"></span>
               <span v-else>📍</span> Use My Location
             </button>
             <button @click="resetMap" v-if="selectedLgaName"
-              class="flex items-center justify-center gap-2 bg-[#F7F9FB] hover:bg-[#E8EEF4] text-[#1A234E] border border-[#D8DADC] px-6 py-3 rounded-xl font-medium transition-colors shadow-sm">
+              class="h-[53px] flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-black px-8 rounded-14 font-semibold transition-colors shadow-sm">
               Reset Map
             </button>
           </div>
 
           <!-- Toggle Buttons -->
-          <div class="flex flex-wrap gap-4 mb-8">
+          <div class="flex flex-wrap gap-4 mb-10">
             <button @click="setMetric('foodInsecurity')"
-              :class="['px-6 py-3 rounded-full font-medium transition-colors shadow-sm', currentMetric === 'foodInsecurity' ? 'bg-[#F26442] text-white' : 'bg-white text-[#1A234E] border border-[#D8DADC] hover:bg-[#F7F9FB]']">
-              Food Insecurity
+              :class="['px-8 h-[50px] rounded-full font-bold transition-all shadow-sm', currentMetric === 'foodInsecurity' ? 'bg-[#F97316] text-white ring-4 ring-[#F97316]/25' : 'bg-white text-primary border border-border-grey hover:bg-[#FED7AA]/30']">
+              🔴 Food Insecurity
             </button>
             <button @click="setMetric('foodBanks')"
-              :class="['px-6 py-3 rounded-full font-medium transition-colors shadow-sm', currentMetric === 'foodBanks' ? 'bg-[#195128] text-white' : 'bg-white text-[#1A234E] border border-[#D8DADC] hover:bg-[#F7F9FB]']">
-              Food Banks
+              :class="['px-8 h-[50px] rounded-full font-bold transition-all shadow-sm', currentMetric === 'foodBanks' ? 'bg-[#22C55E] text-white ring-4 ring-[#22C55E]/25' : 'bg-white text-primary border border-border-grey hover:bg-[#BBF7D0]/30']">
+              🟢 Food Banks
             </button>
             <button @click="setMetric('peopleAffected')"
-              :class="['px-6 py-3 rounded-full font-medium transition-colors shadow-sm', currentMetric === 'peopleAffected' ? 'bg-[#7392FF] text-white' : 'bg-white text-[#1A234E] border border-[#D8DADC] hover:bg-[#F7F9FB]']">
-              People affected
+              :class="['px-8 h-[50px] rounded-full font-bold transition-all shadow-sm', currentMetric === 'peopleAffected' ? 'bg-[#0EA5E9] text-white ring-4 ring-[#0EA5E9]/25' : 'bg-white text-primary border border-border-grey hover:bg-[#BAE6FD]/30']">
+              🔵 People Affected
             </button>
           </div>
         </div>
@@ -160,23 +161,23 @@
         <div class="flex flex-col lg:flex-row gap-8 items-stretch lg:h-[600px]">
           <!-- Map Container -->
           <div
-            class="lg:flex-[2] h-[420px] lg:h-auto w-full bg-white rounded-[16px] overflow-hidden relative shadow-lg border border-[#D8DADC]">
+            :class="['lg:flex-[2] h-[420px] lg:h-auto w-full bg-white rounded-[16px] overflow-hidden relative shadow-lg border border-[#D8DADC]', mapShifting ? 'map-shifting' : '']">
             <div ref="mapEl" class="w-full h-full bg-[#E8EEF4]" />
 
             <!-- Map Legend -->
-            <div class="absolute bottom-6 left-6 bg-white p-4 rounded-xl shadow-md border border-[#D8DADC]">
-              <h4 class="text-xs font-bold text-[#1A234E] mb-3 uppercase tracking-wider">{{ legendTitle }}</h4>
-              <div class="flex items-center gap-4 text-sm font-medium text-[#5F6368]">
-                <div class="flex items-center gap-2">
-                  <span class="w-4 h-4 rounded-full" :style="{ backgroundColor: legendColors[0] }"></span>
+            <div class="absolute bottom-6 left-6 bg-white p-5 rounded-14 shadow-card-white border border-border-grey">
+              <h4 class="font-sans text-xs font-bold text-primary mb-4 uppercase tracking-wider">{{ legendTitle }}</h4>
+              <div class="flex flex-col gap-3 text-sm font-medium text-body-grey">
+                <div class="flex items-center gap-3">
+                  <span class="w-4 h-4 rounded-full shadow-inner" :style="{ backgroundColor: legendColors[0] }"></span>
                   Low
                 </div>
-                <div class="flex items-center gap-2">
-                  <span class="w-4 h-4 rounded-full" :style="{ backgroundColor: legendColors[1] }"></span>
+                <div class="flex items-center gap-3">
+                  <span class="w-4 h-4 rounded-full shadow-inner" :style="{ backgroundColor: legendColors[1] }"></span>
                   Medium
                 </div>
-                <div class="flex items-center gap-2">
-                  <span class="w-4 h-4 rounded-full" :style="{ backgroundColor: legendColors[2] }"></span>
+                <div class="flex items-center gap-3">
+                  <span class="w-4 h-4 rounded-full shadow-inner" :style="{ backgroundColor: legendColors[2] }"></span>
                   High
                 </div>
               </div>
@@ -186,48 +187,52 @@
           <!-- Details Panel -->
           <div class="lg:flex-1 w-full flex flex-col gap-6">
             <div v-if="!selectedLgaStat"
-              class="h-full flex flex-col items-center justify-center bg-white rounded-[16px] border border-dashed border-[#D8DADC] shadow-sm p-8 text-center">
+              class="h-full flex flex-col items-center justify-center bg-white rounded-20 border border-dashed border-border-grey shadow-sm p-8 text-center">
               <span class="text-4xl mb-4 opacity-50">👆</span>
-              <p class="text-[#5F6368] text-[16px] font-medium">Select a region on the map or use the search box to view
-                local statistics.</p>
+              <p class="font-sans text-body-grey text-[18px] font-medium leading-relaxed">Select a region on the map or
+                use the search box to view local statistics.</p>
             </div>
             <template v-else>
               <!-- Food Insecurity Card -->
               <div
-                class="bg-white rounded-[16px] p-6 text-center border border-[#D8DADC] shadow-sm flex flex-col items-center justify-center flex-1">
-                <h3 class="text-[14px] font-bold text-[#1A234E] uppercase tracking-wide mb-2">Food Insecurity</h3>
-                <div class="text-[42px] font-bold text-[#1A234E] leading-none mb-2">{{ displayFoodInsecurity }}%</div>
-                <div class="text-[14px] text-[#5F6368]">in {{ selectedLgaStat.lga_name }}</div>
+                class="bg-white rounded-20 p-6 text-center border-t-4 border-[#F97316] shadow-card-white flex flex-col items-center justify-center flex-1 transition-transform hover:scale-[1.02]">
+                <h3 class="font-sans text-[14px] font-bold text-[#F97316] uppercase tracking-wide mb-2">Food Insecurity
+                </h3>
+                <div class="font-serif text-[42px] font-bold text-[#C2410C] leading-none mb-2">{{ displayFoodInsecurity
+                  }}%</div>
+                <div class="font-sans text-[14px] text-body-grey">in {{ selectedLgaStat.lga_name }}</div>
               </div>
 
               <!-- People Affected Card -->
               <div
-                class="bg-white rounded-[16px] p-6 text-center border border-[#D8DADC] shadow-sm flex flex-col items-center justify-center flex-[1.5]">
-                <h3 class="text-[14px] font-bold text-[#1A234E] uppercase tracking-wide mb-2">People Affected</h3>
-                <div class="text-[36px] font-bold text-[#1A234E] leading-none mb-4">{{
+                class="bg-white rounded-20 p-6 text-center border-t-4 border-[#0EA5E9] shadow-card-white flex flex-col items-center justify-center flex-[1.5] transition-transform hover:scale-[1.02]">
+                <h3 class="font-sans text-[14px] font-bold text-[#0EA5E9] uppercase tracking-wide mb-2">People Affected
+                </h3>
+                <div class="font-serif text-[36px] font-bold text-[#0369A1] leading-none mb-4">{{
                   displayPeopleAffected.toLocaleString() }}</div>
 
                 <div class="w-full flex justify-between items-center mb-2 px-4">
-                  <span class="text-xs font-bold text-[#1A234E]">MEN</span>
-                  <span class="text-xs font-bold text-[#1A234E]">{{ menNeedRatio }}/10</span>
+                  <span class="font-sans text-xs font-bold text-blue-600">MEN</span>
+                  <span class="font-sans text-xs font-bold text-blue-600">{{ menNeedRatio }}/10</span>
                 </div>
                 <div
                   :class="['flex justify-center gap-1 mb-4 px-2 picto-fade', pictogramVisible ? 'picto-in' : 'picto-out']">
-                  <svg v-for="n in 10" :key="'m' + n" :class="n <= menNeedRatio ? 'text-[#7392FF]' : 'text-[#D8DADC]'"
-                    class="w-6 h-6 fill-current" viewBox="0 0 24 24">
+                  <svg v-for="n in 10" :key="'m' + n" :class="n <= menNeedRatio ? 'text-blue-600' : 'text-border-grey'"
+                    class="w-6 h-6 fill-current transition-colors duration-300" viewBox="0 0 24 24">
                     <path
                       d="M12 2C10.62 2 9.5 3.12 9.5 4.5C9.5 5.88 10.62 7 12 7C13.38 7 14.5 5.88 14.5 4.5C14.5 3.12 13.38 2 12 2ZM12 9C9.33 9 4 10.34 4 13V22H8V16H16V22H20V13C20 10.34 14.67 9 12 9Z" />
                   </svg>
                 </div>
 
                 <div class="w-full flex justify-between items-center mb-2 px-4">
-                  <span class="text-xs font-bold text-[#1A234E]">WOMEN</span>
-                  <span class="text-xs font-bold text-[#1A234E]">{{ womenNeedRatio }}/10</span>
+                  <span class="font-sans text-xs font-bold text-[#EC4899]">WOMEN</span>
+                  <span class="font-sans text-xs font-bold text-[#EC4899]">{{ womenNeedRatio }}/10</span>
                 </div>
                 <div
                   :class="['flex justify-center gap-1 px-2 picto-fade', pictogramVisible ? 'picto-in' : 'picto-out']">
-                  <svg v-for="n in 10" :key="'w' + n" :class="n <= womenNeedRatio ? 'text-[#EC4899]' : 'text-[#D8DADC]'"
-                    class="w-6 h-6 fill-current" viewBox="0 0 24 24">
+                  <svg v-for="n in 10" :key="'w' + n"
+                    :class="n <= womenNeedRatio ? 'text-[#EC4899]' : 'text-border-grey'"
+                    class="w-6 h-6 fill-current transition-colors duration-300" viewBox="0 0 24 24">
                     <path
                       d="M12 2C10.62 2 9.5 3.12 9.5 4.5C9.5 5.88 10.62 7 12 7C13.38 7 14.5 5.88 14.5 4.5C14.5 3.12 13.38 2 12 2ZM12 9C9.33 9 4 10.34 4 13V22H8V16H16V22H20V13C20 10.34 14.67 9 12 9Z" />
                   </svg>
@@ -236,10 +241,11 @@
 
               <!-- Food Banks Card -->
               <div
-                class="bg-white rounded-[16px] p-6 text-center border border-[#D8DADC] shadow-sm flex flex-col items-center justify-center flex-1">
-                <h3 class="text-[14px] font-bold text-[#1A234E] uppercase tracking-wide mb-2">Food Banks</h3>
-                <div class="text-[42px] font-bold text-[#1A234E] leading-none mb-2">{{ displayFoodBanks }}</div>
-                <div class="text-[14px] text-[#5F6368]">in {{ selectedLgaStat.lga_name }}</div>
+                class="bg-white rounded-20 p-6 text-center border-t-4 border-[#22C55E] shadow-card-white flex flex-col items-center justify-center flex-1 transition-transform hover:scale-[1.02]">
+                <h3 class="font-sans text-[14px] font-bold text-[#22C55E] uppercase tracking-wide mb-2">Food Banks</h3>
+                <div class="font-serif text-[42px] font-bold text-[#15803D] leading-none mb-2">{{ displayFoodBanks }}
+                </div>
+                <div class="font-sans text-[14px] text-body-grey">in {{ selectedLgaStat.lga_name }}</div>
               </div>
             </template>
           </div>
@@ -248,14 +254,13 @@
     </section>
 
     <!-- 2nd Section: The Children -->
-    <section id="child-section" class="py-[80px] bg-white border-t border-[#D8DADC]"
-      style="content-visibility: auto; contain-intrinsic-size: 0 700px;">
+    <section id="child-section" class="py-[100px] bg-white border-t border-border-grey">
       <div class="max-w-[1200px] mx-auto px-6">
-        <span class="text-[#FF6B6B] font-bold text-sm tracking-wider uppercase mb-2 block">The Children</span>
-        <h2 class="font-serif font-semibold text-[#1A234E] mb-6" style="font-size: 32px;">
+        <span class="text-[#DF6651] font-bold text-sm tracking-wider uppercase mb-3 block">The Children</span>
+        <h2 class="font-serif font-bold text-primary mb-8" style="font-size: 54px; line-height: 1.1;">
           No child should grow up hungry
         </h2>
-        <p class="text-[#5F6368] text-[16px] max-w-2xl mb-12">
+        <p class="font-sans text-[#6F7979] text-[18px] max-w-2xl mb-14 leading-relaxed">
           Malnutrition affects Victorian children differently across age groups. Select an age group to see how many are
           going without the nutrition they need.
         </p>
@@ -307,16 +312,15 @@
             </div>
           </div>
           <div
-            class="bg-[#F7F9FB] rounded-[16px] w-full max-w-4xl flex flex-col sm:flex-row items-stretch border border-[#D8DADC] shadow-sm overflow-hidden">
-            <div class="bg-[#B3D9FF] p-8 sm:w-1/3 flex flex-col justify-center items-center">
-              <span class="text-[48px] font-bold text-[#1A234E] leading-none mb-2">12%</span>
-              <span class="text-[#1A234E] font-bold text-[18px]">Malnourished</span>
+            class="bg-bg-input rounded-20 w-full max-w-4xl flex flex-col sm:flex-row items-stretch border border-border-grey shadow-sm overflow-hidden">
+            <div class="bg-light-blue p-8 sm:w-1/3 flex flex-col justify-center items-center">
+              <span class="font-serif text-[64px] font-bold text-primary leading-none mb-2">12%</span>
+              <span class="font-sans text-primary font-bold text-[20px]">Malnourished</span>
             </div>
-            <div class="p-8 sm:w-2/3 flex items-center">
-              <p class="text-[#5F6368] text-[16px] leading-relaxed">
+            <div class="p-8 sm:w-2/3 flex items-center bg-white">
+              <p class="font-sans text-body-grey text-[18px] leading-[32px]">
                 Infants in Victoria aren't getting adequate nutrition — putting their brain development and immune
-                system at
-                serious risk.
+                system at serious risk.
               </p>
             </div>
           </div>
@@ -325,7 +329,7 @@
     </section>
 
     <!-- 3rd Section: Ready to take the next step? -->
-    <section class="py-[80px] bg-[#EAF2FF]" style="content-visibility: auto; contain-intrinsic-size: 0 500px;">
+    <section class="py-[80px] bg-[#DBEDFF]" style="content-visibility: auto; contain-intrinsic-size: 0 500px;">
       <div class="max-w-[1200px] mx-auto px-6">
         <h2 class="font-serif font-bold text-[#1A234E] mb-2" style="font-size: 32px;">
           Ready to take the next step?
@@ -333,40 +337,42 @@
         <span class="text-[#FF6B6B] font-medium text-[16px] block mb-12">Here is where to start</span>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <!-- Card 1 -->
+          <!-- Card 1: Light Blue — Find Food Banks -->
           <div
-            class="bg-white rounded-[16px] p-8 shadow-sm border border-[#D8DADC] flex flex-col h-full hover:shadow-md transition-shadow">
-            <h3 class="font-serif font-bold text-[#1A234E] text-[24px] mb-4">Find Food Banks<br>near me</h3>
-            <p class="text-[#5F6368] text-[16px] flex-grow mb-8">Find free food support open right now</p>
+            class="bg-[#FFFFFF] rounded-20 p-8 shadow-card-white border border-[#FFFFFF] flex flex-col h-full hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+            <h3 class="font-serif font-bold text-primary text-[28px] leading-tight mb-4">Find Food Banks near me</h3>
+            <p class="font-sans text-black text-[16px] flex-grow mb-10 leading-relaxed">Find free food support open
+              right now</p>
             <NuxtLink to="/services">
               <button
-                class="bg-[#B3D9FF] text-[#1A234E] px-6 py-3 rounded-full font-bold hover:bg-[#99C2FF] transition-colors w-auto text-sm">
+                class="bg-[#1B1E45] text-white h-[70px] px-8 rounded-20 font-bold hover:bg-[#1B1E45]/85 transition-all w-full text-sm shadow-md">
                 Find Nearby Food Banks
               </button>
             </NuxtLink>
           </div>
 
-          <!-- Card 2 -->
+          <!-- Card 2: Navy — Groceries -->
           <div
-            class="bg-white rounded-[16px] p-8 shadow-sm border border-[#D8DADC] flex flex-col h-full hover:shadow-md transition-shadow">
-            <h3 class="font-serif font-bold text-[#1A234E] text-[24px] mb-4">Find groceries at<br>best prices</h3>
-            <p class="text-[#5F6368] text-[16px] flex-grow mb-8">Tell us your needs and we'll find you the right
-              groceries
-            </p>
+            class="bg-[#FFFFFF] rounded-20 p-8 shadow-card-white border border-[#FFFFFF] flex flex-col h-full hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+            <h3 class="font-serif font-bold text-black text-[28px] leading-tight mb-4">Find groceries at best prices
+            </h3>
+            <p class="font-sans text-black text-[16px] flex-grow mb-10 leading-relaxed">Tell us your needs and we'll
+              find you the right groceries</p>
             <button
-              class="bg-[#B3D9FF] text-[#1A234E] px-6 py-3 rounded-full font-bold hover:bg-[#99C2FF] transition-colors w-auto text-sm self-start">
-              Explore Ingredients
+              class="bg-[#1B1E45] text-white h-[70px] px-8 rounded-20 font-bold hover:bg-[#1B1E45]/85 transition-all w-full text-sm shadow-md">
+              Explore Groceries
             </button>
           </div>
 
-          <!-- Card 3 -->
+          <!-- Card 3: Coral — Nutrition -->
           <div
-            class="bg-white rounded-[16px] p-8 shadow-sm border border-[#D8DADC] flex flex-col h-full hover:shadow-md transition-shadow">
-            <h3 class="font-serif font-bold text-[#1A234E] text-[24px] mb-4">Know more<br>about nutrition</h3>
-            <p class="text-[#5F6368] text-[16px] flex-grow mb-8">Simple guides for your family's health</p>
+            class="bg-[#FFFFFF] rounded-20 p-8 shadow-card-white border border-[#FFFFFF] flex flex-col h-full hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+            <h3 class="font-serif font-bold text-black text-[28px] leading-tight mb-4">Know more about nutrition</h3>
+            <p class="font-sans text-black text-[16px] flex-grow mb-10 leading-relaxed">Simple guides for your
+              family's health</p>
             <button
-              class="bg-[#B3D9FF] text-[#1A234E] px-6 py-3 rounded-full font-bold hover:bg-[#99C2FF] transition-colors w-auto text-sm self-start">
-              Learn about nutrition
+              class="bg-[#1B1E45] text-white h-[70px] px-8 rounded-20 font-bold hover:bg-[#1B1E45]/85 transition-all w-full text-sm shadow-md">
+              Learn about Nutrition
             </button>
           </div>
         </div>
@@ -405,8 +411,13 @@ const showDropdown = ref(false)
 const searchIndex = ref([])
 const isLoadingLocation = ref(false)
 
+const mapShifting = ref(false)
+
 const setMetric = (metric) => {
+  if (currentMetric.value === metric) return
+  mapShifting.value = true
   currentMetric.value = metric
+  setTimeout(() => { mapShifting.value = false }, 600)
 }
 
 function filterLgas() {
@@ -524,9 +535,10 @@ function useMyLocation() {
 
 const scrollToSection = (id) => {
   const el = document.getElementById(id);
-  if (el) {
-    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
+  if (!el) return;
+  const NAVBAR_OFFSET = 150; // matches scroll-margin-top in CSS
+  const top = el.getBoundingClientRect().top + window.scrollY - NAVBAR_OFFSET;
+  window.scrollTo({ top, behavior: 'smooth' });
 };
 
 // Hero section
@@ -629,9 +641,9 @@ const legendTitle = computed(() => {
 })
 
 const legendColors = computed(() => {
-  if (currentMetric.value === 'foodInsecurity') return ['#FFD180', '#FF9800', '#E65100']
-  if (currentMetric.value === 'foodBanks') return ['#A5D6A7', '#4CAF50', '#1B5E20']
-  return ['#90CAF9', '#2196F3', '#0D47A1']
+  if (currentMetric.value === 'foodInsecurity') return ['#FED7AA', '#F97316', '#C2410C'] // Shades of Orange
+  if (currentMetric.value === 'foodBanks') return ['#BBF7D0', '#22C55E', '#15803D']      // Shades of Green
+  return ['#BAE6FD', '#0EA5E9', '#0369A1']                                              // Shades of Blue
 })
 
 const getFillColorExpression = () => {
@@ -865,8 +877,57 @@ onBeforeUnmount(() => {
   border-color: #ee5a5a;
 }
 
-.polaroid-card:nth-child(even) .clip {
-  background: #7392FF;
-  border-color: #5f7ee8;
+/* ── "data" word: bright-blue + animated underline drawn on load ── */
+.data-highlight {
+  color: #0298C5;
+  position: relative;
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.data-highlight::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 0;
+  height: 6px;
+  width: 0;
+  background: linear-gradient(90deg, #B5DCFF, #0298C5);
+  border-radius: 4px;
+  animation: drawUnderline 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.4s forwards;
+}
+
+@keyframes drawUnderline {
+  from {
+    width: 0;
+    opacity: 0.4;
+  }
+
+  to {
+    width: 100%;
+    opacity: 1;
+  }
+}
+
+/* ── Choropleth map shift animation on metric toggle ── */
+.map-shifting {
+  animation: mapShift 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes mapShift {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  25% {
+    opacity: 0.55;
+    transform: scale(0.985);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 </style>
