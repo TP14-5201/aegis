@@ -37,20 +37,6 @@ ALL_REGIONS = [
     "LGAs of Barwon South-West PHU",
 ]
 
-# Local copy of the PHU → vicgov_region mapping defined in the wrangler module.
-# Used in add_region_ids tests so they are self-contained.
-_PHU_TO_VICGOV_REGION = {
-    "LGAs of Barwon South-West PHU":                  "BARWON SOUTH WEST",
-    "LGAs of Gippsland PHU":                          "GIPPSLAND",
-    "LGAs of Grampians Wimmera Southern Mallee PHU":  "GRAMPIANS",
-    "LGAs of Goulburn Valley PHU":                    "HUME",
-    "LGAs of Ovens-Murray PHU":                       "HUME",
-    "LGAs of Loddon Mallee PHU":                      "LODDON MALLEE",
-    "LGAs of North Eastern PHU":                      "EASTERN METROPOLITAN",
-    "LGAs of South East PHU":                         "SOUTHERN METROPOLITAN",
-    "LGAs of Western PHU":                            "NORTHERN AND WESTERN METROPOLITAN",
-}
-
 
 def make_filter_df(**overrides) -> pd.DataFrame:
     """
@@ -89,19 +75,6 @@ def make_full_raw_df(**overrides) -> pd.DataFrame:
     }
     row.update(overrides)
     return pd.DataFrame([row])
-
-
-def make_vic_boundaries_df(rows: list[dict] | None = None) -> pd.DataFrame:
-    """
-    Minimal vic_boundaries DataFrame for add_region_ids and integration tests.
-    vicgov_region is title-cased as it arrives from vic_boundaries_wrangler;
-    add_region_ids uppercases it internally for the case-insensitive lookup.
-
-    VALID_REGION ('LGAs of South East PHU') maps to 'SOUTHERN METROPOLITAN'.
-    """
-    if rows is None:
-        rows = [{"vicgov_region": "Southern Metropolitan", "ufi": "UFI_001"}]
-    return pd.DataFrame(rows)
 
 
 def make_viclga_boundaries_df(rows: list[dict] | None = None) -> pd.DataFrame:
@@ -266,6 +239,12 @@ class TestFilterByIndicatorCategory:
         result = filter_by_indicator_category(df)
         assert len(result) == 1
 
+    def test_keeps_sometimes(self):
+        """Tests that 'Sometimes' indicator_category rows are kept."""
+        df = make_filter_df(indicator_category="Sometimes")
+        result = filter_by_indicator_category(df)
+        assert len(result) == 1
+
     def test_removes_no(self):
         """Tests that 'No' indicator_category rows are excluded."""
         df = make_filter_df(indicator_category="No")
@@ -279,10 +258,22 @@ class TestFilterByIndicatorCategory:
         assert len(result) == 0
 
     def test_removes_yes_sometimes(self):
-        """Tests that 'Yes, sometimes' (partial agreement) is excluded."""
+        """Tests that 'Yes, sometimes' is excluded (not in the allowed set)."""
         df = make_filter_df(indicator_category="Yes, sometimes")
         result = filter_by_indicator_category(df)
         assert len(result) == 0
+
+    def test_filters_mixed_indicator_categories(self):
+        """Tests that only allowed categories survive a mixed DataFrame."""
+        df = pd.DataFrame([
+            make_filter_df(indicator_category="Yes").iloc[0],
+            make_filter_df(indicator_category="Yes, definitely").iloc[0],
+            make_filter_df(indicator_category="Sometimes").iloc[0],
+            make_filter_df(indicator_category="No").iloc[0],
+        ])
+        result = filter_by_indicator_category(df)
+        assert len(result) == 3
+        assert set(result["indicator_category"].tolist()) == {"Yes", "Yes, definitely", "Sometimes"}
 
     def test_returns_dataframe(self):
         """Tests that the function returns a DataFrame."""
@@ -441,158 +432,93 @@ class TestFilterRecords:
 # ---------------------------------------------------------------------------
 
 class TestAddRegionIds:
-    """Tests for add_region_ids(df, vic_boundaries, viclga_boundaries).
+    """Tests for add_region_ids(df, viclga_boundaries).
 
-    add_region_ids enriches the food insecurity DataFrame with two foreign keys:
-    - ufi:     resolved via _PHU_TO_VICGOV_REGION → vicgov_region (case-insensitive)
-               → ufi from vic_boundaries.
+    add_region_ids enriches the food insecurity DataFrame with one foreign key:
     - lga_pid: resolved by matching subpopulation against lga_name in
                viclga_boundaries.
 
-    The input df uses the post-pipeline column names (region, subpopulation)
-    as the function runs after rename_columns in the pipeline.
+    Rows where lga_pid cannot be resolved are dropped from the result.
     """
 
-    def _make_df(self, region=VALID_REGION, subpopulation="Total") -> pd.DataFrame:
-        """Minimal post-rename DataFrame for add_region_ids unit tests."""
-        return pd.DataFrame([{"region": region, "subpopulation": subpopulation}])
+    def _make_df(self, subpopulation="Total") -> pd.DataFrame:
+        """Minimal DataFrame for add_region_ids unit tests."""
+        return pd.DataFrame([{"subpopulation": subpopulation}])
 
     # --- Return type ---------------------------------------------------------
 
     def test_returns_dataframe(self):
         """Tests that the function returns a DataFrame."""
         df = self._make_df()
-        result = add_region_ids(df, make_vic_boundaries_df(), make_viclga_boundaries_df())
+        result = add_region_ids(df, make_viclga_boundaries_df())
         assert isinstance(result, pd.DataFrame)
-
-    # --- ufi column ----------------------------------------------------------
-
-    def test_adds_ufi_column(self):
-        """Tests that a 'ufi' column is added to the DataFrame."""
-        df = self._make_df()
-        result = add_region_ids(df, make_vic_boundaries_df(), make_viclga_boundaries_df())
-        assert "ufi" in result.columns
-
-    def test_correct_ufi_resolved_for_known_region(self):
-        """Tests that a known PHU region resolves to the correct ufi."""
-        vic_boundaries = pd.DataFrame([
-            {"vicgov_region": "Southern Metropolitan", "ufi": "UFI_SOUTH_EAST"},
-        ])
-        df = self._make_df(region="LGAs of South East PHU")
-        result = add_region_ids(df, vic_boundaries, make_viclga_boundaries_df())
-        assert result["ufi"].iloc[0] == "UFI_SOUTH_EAST"
-
-    def test_vicgov_region_lookup_is_case_insensitive(self):
-        """Tests that vicgov_region matching works regardless of case in vic_boundaries.
-
-        The wrangler title-cases vicgov_region; _PHU_TO_VICGOV_REGION stores uppercase.
-        add_region_ids uppercases vic_boundaries values before matching, so both
-        'Southern Metropolitan' and 'SOUTHERN METROPOLITAN' should resolve correctly.
-        """
-        for case in ("Southern Metropolitan", "SOUTHERN METROPOLITAN", "southern metropolitan"):
-            vic_boundaries = pd.DataFrame([{"vicgov_region": case, "ufi": "UFI_CASE_TEST"}])
-            df = self._make_df(region="LGAs of South East PHU")
-            result = add_region_ids(df, vic_boundaries, make_viclga_boundaries_df())
-            assert result["ufi"].iloc[0] == "UFI_CASE_TEST", f"Failed for vicgov_region='{case}'"
-
-    def test_two_phu_regions_sharing_vicgov_get_same_ufi(self):
-        """Tests that Ovens-Murray and Goulburn Valley both resolve to the HUME ufi.
-
-        Both PHU regions map to the same vicgov_region ('HUME'), so both should
-        receive the same ufi value.
-        """
-        vic_boundaries = pd.DataFrame([{"vicgov_region": "Hume", "ufi": "UFI_HUME"}])
-        df = pd.DataFrame([
-            {"region": "LGAs of Ovens-Murray PHU",    "subpopulation": "Total"},
-            {"region": "LGAs of Goulburn Valley PHU", "subpopulation": "Total"},
-        ])
-        result = add_region_ids(df, vic_boundaries, make_viclga_boundaries_df())
-        assert result["ufi"].iloc[0] == "UFI_HUME"
-        assert result["ufi"].iloc[1] == "UFI_HUME"
-
-    def test_unknown_region_produces_nan_ufi(self):
-        """Tests that a region absent from _PHU_TO_VICGOV_REGION yields NaN ufi."""
-        df = self._make_df(region="LGAs of Unknown PHU")
-        result = add_region_ids(df, make_vic_boundaries_df(), make_viclga_boundaries_df())
-        assert pd.isna(result["ufi"].iloc[0])
-
-    def test_all_known_phu_regions_resolve_non_nan_ufi(self):
-        """Tests that every region in _PHU_TO_VICGOV_REGION resolves to a non-NaN ufi."""
-        # Build a vic_boundaries with one row per unique vicgov_region
-        unique_vicgov = list({v for v in _PHU_TO_VICGOV_REGION.values()})
-        vic_boundaries = pd.DataFrame([
-            {"vicgov_region": vg, "ufi": f"UFI_{i}"} for i, vg in enumerate(unique_vicgov)
-        ])
-        df = pd.DataFrame([{"region": phu, "subpopulation": "Total"} for phu in _PHU_TO_VICGOV_REGION])
-        result = add_region_ids(df, vic_boundaries, make_viclga_boundaries_df())
-        assert result["ufi"].notna().all(), "Some PHU regions failed to resolve a ufi"
 
     # --- lga_pid column ------------------------------------------------------
 
     def test_adds_lga_pid_column(self):
         """Tests that a 'lga_pid' column is added to the DataFrame."""
         df = self._make_df()
-        result = add_region_ids(df, make_vic_boundaries_df(), make_viclga_boundaries_df())
+        result = add_region_ids(df, make_viclga_boundaries_df())
         assert "lga_pid" in result.columns
 
     def test_correct_lga_pid_resolved_for_known_subpopulation(self):
         """Tests that a subpopulation matching a lga_name resolves the correct lga_pid."""
         viclga_boundaries = pd.DataFrame([{"lga_name": "Melbourne", "lga_pid": "LGA_MEL"}])
         df = self._make_df(subpopulation="Melbourne")
-        result = add_region_ids(df, make_vic_boundaries_df(), viclga_boundaries)
+        result = add_region_ids(df, viclga_boundaries)
         assert result["lga_pid"].iloc[0] == "LGA_MEL"
 
-    def test_unknown_subpopulation_produces_nan_lga_pid(self):
-        """Tests that a subpopulation with no matching lga_name yields NaN lga_pid."""
+    def test_unknown_subpopulation_row_is_dropped(self):
+        """Tests that a row whose subpopulation has no matching lga_name is dropped."""
         df = self._make_df(subpopulation="Unknown LGA")
-        result = add_region_ids(df, make_vic_boundaries_df(), make_viclga_boundaries_df())
-        assert pd.isna(result["lga_pid"].iloc[0])
+        result = add_region_ids(df, make_viclga_boundaries_df())
+        assert len(result) == 0
 
-    def test_handles_duplicate_lga_name_columns_in_viclga_boundaries(self):
-        """Tests that duplicate lga_name columns in viclga_boundaries are handled correctly.
-
-        The function drops duplicated columns keeping the last occurrence, so the
-        lookup uses the final lga_name column (the cleaned abb_name value).
-        """
-        viclga_boundaries = pd.DataFrame(
-            [["Melbourne (orig)", "Melbourne", "LGA_MEL"]],
-            columns=["lga_name", "lga_name", "lga_pid"],
-        )
+    def test_duplicate_lga_names_in_viclga_boundaries_uses_first(self):
+        """Tests that duplicate lga_name entries use drop_duplicates logic (first occurrence)."""
+        viclga_boundaries = pd.DataFrame([
+            {"lga_name": "Melbourne", "lga_pid": "LGA_MEL_FIRST"},
+            {"lga_name": "Melbourne", "lga_pid": "LGA_MEL_SECOND"},
+        ])
         df = self._make_df(subpopulation="Melbourne")
-        result = add_region_ids(df, make_vic_boundaries_df(), viclga_boundaries)
-        assert result["lga_pid"].iloc[0] == "LGA_MEL"
+        result = add_region_ids(df, viclga_boundaries)
+        assert result["lga_pid"].iloc[0] == "LGA_MEL_FIRST"
 
     def test_multiple_rows_resolved_independently(self):
-        """Tests that ufi and lga_pid are resolved correctly for each row."""
-        vic_boundaries = pd.DataFrame([
-            {"vicgov_region": "Southern Metropolitan", "ufi": "UFI_SE"},
-            {"vicgov_region": "Gippsland",             "ufi": "UFI_GL"},
-        ])
+        """Tests that lga_pid is resolved correctly for each row independently."""
         viclga_boundaries = pd.DataFrame([
             {"lga_name": "Melbourne", "lga_pid": "LGA_MEL"},
             {"lga_name": "Ballarat",  "lga_pid": "LGA_BAL"},
         ])
         df = pd.DataFrame([
-            {"region": "LGAs of South East PHU", "subpopulation": "Melbourne"},
-            {"region": "LGAs of Gippsland PHU",  "subpopulation": "Ballarat"},
+            {"subpopulation": "Melbourne"},
+            {"subpopulation": "Ballarat"},
         ])
-        result = add_region_ids(df, vic_boundaries, viclga_boundaries)
-        assert result["ufi"].iloc[0] == "UFI_SE"
-        assert result["ufi"].iloc[1] == "UFI_GL"
+        result = add_region_ids(df, viclga_boundaries)
         assert result["lga_pid"].iloc[0] == "LGA_MEL"
         assert result["lga_pid"].iloc[1] == "LGA_BAL"
+
+    def test_mixed_known_unknown_subpopulations_keeps_only_matched(self):
+        """Tests that only rows with a matching lga_name are retained."""
+        viclga_boundaries = pd.DataFrame([{"lga_name": "Melbourne", "lga_pid": "LGA_MEL"}])
+        df = pd.DataFrame([
+            {"subpopulation": "Melbourne"},
+            {"subpopulation": "Unknown LGA"},
+        ])
+        result = add_region_ids(df, viclga_boundaries)
+        assert len(result) == 1
+        assert result["lga_pid"].iloc[0] == "LGA_MEL"
 
     # --- Column preservation -------------------------------------------------
 
     def test_existing_columns_are_preserved(self):
-        """Tests that columns other than ufi and lga_pid are untouched."""
+        """Tests that columns other than lga_pid are untouched."""
         df = pd.DataFrame([{
-            "region": VALID_REGION,
             "subpopulation": "Total",
             "gender": "Women",
             "estimate_pct": 12.5,
         }])
-        result = add_region_ids(df, make_vic_boundaries_df(), make_viclga_boundaries_df())
+        result = add_region_ids(df, make_viclga_boundaries_df())
         assert result["gender"].iloc[0] == "Women"
         assert result["estimate_pct"].iloc[0] == 12.5
 
@@ -605,32 +531,25 @@ class TestWrangleFoodInsecurity:
     def test_returns_dataframe(self):
         """Tests that the pipeline returns a DataFrame."""
         df = make_full_raw_df()
-        result = wrangle_food_insecurity(df, make_vic_boundaries_df(), make_viclga_boundaries_df())
+        result = wrangle_food_insecurity(df, make_viclga_boundaries_df())
         assert isinstance(result, pd.DataFrame)
 
     def test_output_has_expected_columns(self):
         """Tests that the output contains all required schema columns."""
         df = make_full_raw_df()
-        result = wrangle_food_insecurity(df, make_vic_boundaries_df(), make_viclga_boundaries_df())
+        result = wrangle_food_insecurity(df, make_viclga_boundaries_df())
         expected_cols = [
             "gender", "indicator", "indicator_category",
-            "region", "subpopulation", "estimate_pct", "ufi", "lga_pid",
+            "subpopulation", "estimate_pct", "lga_pid",
         ]
         for col in expected_cols:
             assert col in result.columns, f"Missing column: {col}"
-
-    def test_stratified_by_renamed_to_region(self):
-        """Tests that 'stratified_by' is renamed to 'region' end-to-end."""
-        df = make_full_raw_df()
-        result = wrangle_food_insecurity(df, make_vic_boundaries_df(), make_viclga_boundaries_df())
-        assert "region" in result.columns
-        assert "stratified_by" not in result.columns
 
     def test_percent_column_renamed_to_estimate_pct(self):
         """Tests that the '%' raw column (standardised to '' by initial_cleaning_pipeline)
         is renamed to 'estimate_pct' by the pipeline."""
         df = make_full_raw_df(**{"%": 15.0})
-        result = wrangle_food_insecurity(df, make_vic_boundaries_df(), make_viclga_boundaries_df())
+        result = wrangle_food_insecurity(df, make_viclga_boundaries_df())
         assert "estimate_pct" in result.columns
         assert result["estimate_pct"].iloc[0] == 15.0
 
@@ -640,7 +559,7 @@ class TestWrangleFoodInsecurity:
             make_full_raw_df(stratified_by=VALID_REGION).iloc[0],
             make_full_raw_df(stratified_by="LGAs of Unknown PHU").iloc[0],
         ])
-        result = wrangle_food_insecurity(df, make_vic_boundaries_df(), make_viclga_boundaries_df())
+        result = wrangle_food_insecurity(df, make_viclga_boundaries_df())
         assert len(result) == 1
 
     def test_filters_out_persons_gender(self):
@@ -649,7 +568,7 @@ class TestWrangleFoodInsecurity:
             make_full_raw_df(gender="Women").iloc[0],
             make_full_raw_df(gender="Persons").iloc[0],
         ])
-        result = wrangle_food_insecurity(df, make_vic_boundaries_df(), make_viclga_boundaries_df())
+        result = wrangle_food_insecurity(df, make_viclga_boundaries_df())
         assert len(result) == 1
         assert result["gender"].iloc[0] == "Women"
 
@@ -659,7 +578,7 @@ class TestWrangleFoodInsecurity:
             make_full_raw_df(estimate_type="Crude").iloc[0],
             make_full_raw_df(estimate_type="Age-standardised").iloc[0],
         ])
-        result = wrangle_food_insecurity(df, make_vic_boundaries_df(), make_viclga_boundaries_df())
+        result = wrangle_food_insecurity(df, make_viclga_boundaries_df())
         assert len(result) == 1
 
     def test_filters_out_non_yes_indicator_categories(self):
@@ -668,34 +587,20 @@ class TestWrangleFoodInsecurity:
             make_full_raw_df(indicator_category="Yes").iloc[0],
             make_full_raw_df(indicator_category="No").iloc[0],
         ])
-        result = wrangle_food_insecurity(df, make_vic_boundaries_df(), make_viclga_boundaries_df())
+        result = wrangle_food_insecurity(df, make_viclga_boundaries_df())
         assert len(result) == 1
 
     def test_subpopulation_is_cleaned(self):
         """Tests that the parenthetical age range is stripped end-to-end."""
         df = make_full_raw_df(subpopulation="Total (18+ years)")
-        result = wrangle_food_insecurity(df, make_vic_boundaries_df(), make_viclga_boundaries_df())
+        result = wrangle_food_insecurity(df, make_viclga_boundaries_df())
         assert result["subpopulation"].iloc[0] == "Total"
 
     def test_nan_estimate_pct_is_imputed_to_zero(self):
         """Tests that a NaN estimate value is imputed to 0 end-to-end."""
         df = make_full_raw_df(**{"%": np.nan})
-        result = wrangle_food_insecurity(df, make_vic_boundaries_df(), make_viclga_boundaries_df())
+        result = wrangle_food_insecurity(df, make_viclga_boundaries_df())
         assert result["estimate_pct"].iloc[0] == 0
-
-    def test_ufi_is_resolved_end_to_end(self):
-        """Tests that ufi is correctly enriched from vic_boundaries end-to-end.
-
-        VALID_REGION ('LGAs of South East PHU') maps to 'SOUTHERN METROPOLITAN',
-        which should resolve to the ufi supplied in vic_boundaries.
-        """
-        vic_boundaries = pd.DataFrame([
-            {"vicgov_region": "Southern Metropolitan", "ufi": "UFI_EXPECTED"},
-        ])
-        df = make_full_raw_df(stratified_by=VALID_REGION)
-        result = wrangle_food_insecurity(df, vic_boundaries, make_viclga_boundaries_df())
-        assert "ufi" in result.columns
-        assert result["ufi"].iloc[0] == "UFI_EXPECTED"
 
     def test_lga_pid_is_resolved_end_to_end(self):
         """Tests that lga_pid is correctly enriched from viclga_boundaries end-to-end.
@@ -707,22 +612,29 @@ class TestWrangleFoodInsecurity:
             {"lga_name": "Total", "lga_pid": "LGA_EXPECTED"},
         ])
         df = make_full_raw_df(subpopulation="Total (18+ years)")
-        result = wrangle_food_insecurity(df, make_vic_boundaries_df(), viclga_boundaries)
+        result = wrangle_food_insecurity(df, viclga_boundaries)
         assert "lga_pid" in result.columns
         assert result["lga_pid"].iloc[0] == "LGA_EXPECTED"
+
+    def test_unmatched_lga_rows_are_dropped_end_to_end(self):
+        """Tests that rows whose cleaned subpopulation has no lga_name match are dropped."""
+        viclga_boundaries = pd.DataFrame([{"lga_name": "Melbourne", "lga_pid": "LGA_MEL"}])
+        df = make_full_raw_df(subpopulation="Total (18+ years)")  # 'Total' won't match 'Melbourne'
+        result = wrangle_food_insecurity(df, viclga_boundaries)
+        assert len(result) == 0
 
     def test_does_not_mutate_input(self):
         """Tests that the original input DataFrame is not modified by the pipeline."""
         df = make_full_raw_df()
         original_columns = list(df.columns)
         original_value = df["stratified_by"].iloc[0]
-        wrangle_food_insecurity(df, make_vic_boundaries_df(), make_viclga_boundaries_df())
+        wrangle_food_insecurity(df, make_viclga_boundaries_df())
         assert list(df.columns) == original_columns
         assert df["stratified_by"].iloc[0] == original_value
 
     def test_empty_dataframe_after_filtering_returns_empty(self):
         """Tests that filtering all rows returns an empty DataFrame (not an error)."""
         df = make_full_raw_df(gender="Persons")  # will be filtered out
-        result = wrangle_food_insecurity(df, make_vic_boundaries_df(), make_viclga_boundaries_df())
+        result = wrangle_food_insecurity(df, make_viclga_boundaries_df())
         assert isinstance(result, pd.DataFrame)
         assert len(result) == 0
