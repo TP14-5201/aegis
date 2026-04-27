@@ -10,7 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from src.core.logging import logger
 from src.database import Base, engine, get_db
-from src.models import VicBoundary, FoodInsecurity, VicLgaBoundary
+from src.models import LgaPopulation, FoodInsecurity, VicLgaBoundary, SupportService
 from src.schemas import NearbyServiceOut, FoodInsecurityRegion
 from src.services.nearby_search import DEFAULT_KEYWORDS, find_nearby_support_services
 from src.utils.opening_hours import is_open_now, _now_in_tz
@@ -157,34 +157,13 @@ def get_nearby_services(
         raise HTTPException(status_code=500, detail="Internal error while searching for services")
 
 
-@app.get("/boundaries/phu")
-def get_phu_boundaries(db: Session = Depends(get_db)):
-    results = db.query(
-        VicBoundary.vicgov_region_code,
-        ST_AsGeoJSON(VicBoundary.geometry).label("geometry")
-    ).all()
-
-    return {
-        "type": "FeatureCollection",
-        "features": [
-            {
-                "type": "Feature",
-                "properties": {"code": r.vicgov_region_code},
-                "geometry": json.loads(r.geometry) # Convert string to JSON object
-            } for r in results
-        ]
-    }
-
-
-@app.get("/boundaries/lga/{phu_code}")
-def get_lga_boundaries(phu_code: int, db: Session = Depends(get_db)):
+@app.get("/lga/boundaries")
+def get_lga_boundaries(db: Session = Depends(get_db)):
     results = (
         db.query(
             VicLgaBoundary.lga_name,
             ST_AsGeoJSON(VicLgaBoundary.geometry).label("geometry")
         )
-        .join(FoodInsecurity, VicLgaBoundary.lga_name == FoodInsecurity.subpopulation)
-        .filter(FoodInsecurity.vic_region_code == phu_code)
         .distinct(VicLgaBoundary.lga_name) # One polygon per suburb
         .all()
     )
@@ -207,24 +186,29 @@ def get_lga_boundaries(phu_code: int, db: Session = Depends(get_db)):
     }
 
 
-@app.get("/food-insecurity/all-data")
+@app.get("/lga/stats")
 def get_all_food_data(db: Session = Depends(get_db)):
-    results = db.query(
-        FoodInsecurity.subpopulation,
-        FoodInsecurity.vic_region_code,
-        FoodInsecurity.gender,
-        FoodInsecurity.indicator,
-        FoodInsecurity.indicator_category,
-        FoodInsecurity.estimate_pct
-    ).all()
+    results = (
+        db.query(
+            LgaPopulation.lga_pid,
+            LgaPopulation.pop_2024_total,
+            func.coalesce(func.avg(FoodInsecurity.estimate_pct), 0).label("avg_estimate_pct"),
+            func.count(SupportService.id).label("emergency_services_count")
+        ).outerjoin(
+            FoodInsecurity, LgaPopulation.lga_pid == FoodInsecurity.lga_pid
+        ).outerjoin(
+            SupportService, LgaPopulation.lga_pid == SupportService.lga_pid
+        ).group_by(
+            LgaPopulation.lga_pid,
+            LgaPopulation.pop_2024_total
+        ).all()
+    )
     
     return [
         {
-            "subpopulation": r.subpopulation,
-            "vic_region_code": r.vic_region_code,
-            "gender": r.gender,
-            "indicator": r.indicator,
-            "indicator_category": r.indicator_category,
-            "estimate_pct": r.estimate_pct
+            "lga_pid": r.lga_pid,
+            "pop_2024_total": r.pop_2024_total,
+            "avg_estimate_pct": r.avg_estimate_pct,
+            "emergency_services_count": r.emergency_services_count
         } for r in results
     ]
