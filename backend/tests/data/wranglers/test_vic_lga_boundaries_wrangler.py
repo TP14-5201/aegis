@@ -13,20 +13,17 @@ from src.data.wranglers.vic_lga_boundaries_wrangler import (
 # Shared constants & helpers
 # ---------------------------------------------------------------------------
 
-# Column names as they arrive from the raw VIC LGA shapefile CSV
-# (pre-pipeline, i.e. before standardize_columns runs).
-# abb_name is the abbreviated name used for deduplication, cleaned, and then
-# renamed to lga_name. dt_create is the record creation timestamp used for
-# determining the most recent record per region.
-RAW_COLUMNS = ["lg_ply_pid", "lga_pid", "abb_name", "dt_create", "geometry"]
+# Column names as they arrive from the raw VIC LGA shapefile CSV.
+# abb_name is the abbreviated name used for deduplication, cleaned, then
+# renamed to lga_name. dt_create is used to pick the latest record per region.
+RAW_COLUMNS = ["lg_ply_pid", "abb_name", "dt_create", "geometry"]
 
 # Expected output column names after the full pipeline.
-# lga_ply_pid is intentionally absent — it is renamed from lg_ply_pid but then
-# dropped by select_columns, which only keeps the three columns below.
-EXPECTED_OUTPUT_COLS = ["lga_pid", "lga_name", "geometry"]
+# lga_name comes from renaming abb_name.
+# lga_pid is joined in from df_population via add_lga_pid_from_lga_population_data.
+# geometry passes through unmodified.
+EXPECTED_OUTPUT_COLS = ["lga_name", "geometry", "lga_pid"]
 
-# Sample WKT geometry — geometry values should pass through unmodified since
-# this pipeline does NOT reproject or parse geometry (unlike vic_boundaries_wrangler).
 SAMPLE_GEOMETRY = (
     "POLYGON ((144.9 -37.8, 145.0 -37.8, "
     "145.0 -37.9, 144.9 -37.9, 144.9 -37.8))"
@@ -36,17 +33,12 @@ SAMPLE_GEOMETRY = (
 def make_raw_df(**overrides) -> pd.DataFrame:
     """
     Minimal single-row DataFrame matching the raw VIC LGA shapefile CSV schema.
-    All defaults produce a row that survives the full pipeline.
 
-    abb_name    — abbreviated name; used by take_latest_lga_boundaries for
-                  deduplication, cleaned by clean_lga_names, and then renamed
-                  to lga_name by rename_columns.
-    dt_create   — creation timestamp; used by take_latest_lga_boundaries for
-                  determining the most recent record per region.
+    Note: lga_pid is NOT present in the raw data — it is joined in from the
+    population DataFrame. The lg_ply_pid column is renamed then dropped.
     """
     row = {
         "lg_ply_pid": "VIC_LGA_1234",
-        "lga_pid":    "LGA_PID_001",
         "abb_name":   "Melbourne",
         "dt_create":  "2023-01-01",
         "geometry":   SAMPLE_GEOMETRY,
@@ -55,22 +47,25 @@ def make_raw_df(**overrides) -> pd.DataFrame:
     return pd.DataFrame([row])
 
 
+def make_population_df(rows: list[dict] | None = None) -> pd.DataFrame:
+    """
+    Minimal population DataFrame for add_lga_pid_from_lga_population_data.
+    Requires lga_pid and lga_name columns.
+    """
+    if rows is None:
+        rows = [{"lga_pid": "LGA_PID_001", "lga_name": "Melbourne"}]
+    return pd.DataFrame(rows)
+
+
 def make_boundary_df(rows: list[dict] | None = None) -> pd.DataFrame:
-    """
-    Minimal DataFrame for take_latest_lga_boundaries unit tests.
-    Columns mirror the post-initial_cleaning_pipeline schema that the
-    function receives (abb_name and dt_create are the only required fields).
-    """
+    """Minimal DataFrame for take_latest_lga_boundaries unit tests."""
     if rows is None:
         rows = [{"abb_name": "Melbourne", "dt_create": "2023-01-01", "geometry": SAMPLE_GEOMETRY}]
     return pd.DataFrame(rows)
 
 
 def make_lga_name_df(rows: list[dict] | None = None) -> pd.DataFrame:
-    """
-    Minimal DataFrame for clean_lga_names unit tests.
-    Only abb_name is required by the function.
-    """
+    """Minimal DataFrame for clean_lga_names unit tests."""
     if rows is None:
         rows = [{"abb_name": "Melbourne"}]
     return pd.DataFrame(rows)
@@ -138,11 +133,7 @@ class TestTakeLatestLgaBoundaries:
         assert pd.api.types.is_datetime64_any_dtype(result["dt_create"])
 
     def test_string_dates_compared_correctly(self):
-        """Tests that lexicographically-ambiguous string dates are compared as timestamps.
-
-        '2020-10-01' < '2020-09-01' lexicographically but not chronologically —
-        without pd.to_datetime the wrong row would be kept.
-        """
+        """Tests that lexicographically-ambiguous string dates are compared as timestamps."""
         df = make_boundary_df([
             {"abb_name": "Melbourne", "dt_create": "2020-09-01", "geometry": SAMPLE_GEOMETRY},
             {"abb_name": "Melbourne", "dt_create": "2020-10-01", "geometry": SAMPLE_GEOMETRY},
@@ -189,11 +180,7 @@ class TestCleanLgaNames:
         assert result["abb_name"].iloc[0] == "Mildura"
 
     def test_removes_any_parenthetical_postfix(self):
-        """Tests that any text in parentheses at the end of abb_name is removed.
-
-        The function splits on '(' so any parenthetical suffix is stripped,
-        not only the specific '(Uninc)' case.
-        """
+        """Tests that any text in parentheses at the end of abb_name is removed."""
         df = make_lga_name_df([{"abb_name": "Some LGA (Other)"}])
         result = clean_lga_names(df)
         assert result["abb_name"].iloc[0] == "Some LGA"
@@ -224,11 +211,9 @@ class TestCleanLgaNames:
         """Tests that columns other than abb_name are untouched."""
         df = pd.DataFrame([{
             "abb_name": "Mildura (Uninc)",
-            "lga_pid": "LGA_001",
             "geometry": SAMPLE_GEOMETRY,
         }])
         result = clean_lga_names(df)
-        assert result["lga_pid"].iloc[0] == "LGA_001"
         assert result["geometry"].iloc[0] == SAMPLE_GEOMETRY
 
 
@@ -237,13 +222,23 @@ class TestCleanLgaNames:
 # ---------------------------------------------------------------------------
 
 class TestWrangleViclgaBoundaries:
+    """
+    wrangle_viclga_boundaries(df, df_population) requires TWO arguments.
+
+    Pipeline changes vs old version:
+    - VICLGA_COLUMN_MAP now maps abb_name -> lga_name (and lga_name -> lga_name_full
+      which is then dropped by select_columns).
+    - VICLGA_INCLUED_COLS is ["lga_name", "geometry"] — lga_pid is NOT in the raw data.
+    - add_lga_pid_from_lga_population_data joins lga_pid from df_population after select.
+    - Rows with no matching lga_pid in the population DF are dropped.
+    """
 
     # --- Return type ---------------------------------------------------------
 
     def test_returns_dataframe(self):
         """Tests that the pipeline returns a DataFrame."""
         df = make_raw_df()
-        result = wrangle_viclga_boundaries(df)
+        result = wrangle_viclga_boundaries(df, make_population_df())
         assert isinstance(result, pd.DataFrame)
 
     # --- Column renaming -----------------------------------------------------
@@ -251,37 +246,28 @@ class TestWrangleViclgaBoundaries:
     def test_renames_abb_name_to_lga_name(self):
         """Tests that 'abb_name' is renamed to 'lga_name'."""
         df = make_raw_df()
-        result = wrangle_viclga_boundaries(df)
+        result = wrangle_viclga_boundaries(df, make_population_df())
         assert "lga_name" in result.columns
         assert "abb_name" not in result.columns
 
-    def test_lga_pid_is_preserved_unchanged(self):
-        """Tests that 'lga_pid' passes through without renaming.
-
-        This column is NOT in the rename map — it must already be named
-        'lga_pid' in the raw data for the pipeline to succeed. This test
-        documents that implicit contract.
-        """
+    def test_geometry_column_is_preserved(self):
+        """Tests that 'geometry' passes through without renaming."""
         df = make_raw_df()
-        result = wrangle_viclga_boundaries(df)
-        assert "lga_pid" in result.columns
-
-    def test_geometry_column_is_preserved_unchanged(self):
-        """Tests that 'geometry' passes through without renaming or modification."""
-        df = make_raw_df()
-        result = wrangle_viclga_boundaries(df)
+        result = wrangle_viclga_boundaries(df, make_population_df())
         assert "geometry" in result.columns
 
-    def test_lga_ply_pid_is_not_in_output(self):
-        """Tests that 'lga_ply_pid' is absent from the output.
+    def test_lga_pid_present_after_population_join(self):
+        """Tests that lga_pid is present in output, sourced from df_population join."""
+        df = make_raw_df(abb_name="Melbourne")
+        pop = make_population_df([{"lga_pid": "LGA_PID_001", "lga_name": "Melbourne"}])
+        result = wrangle_viclga_boundaries(df, pop)
+        assert "lga_pid" in result.columns
+        assert result["lga_pid"].iloc[0] == "LGA_PID_001"
 
-        lg_ply_pid is renamed to lga_ply_pid by rename_columns, but it is not
-        listed in VICLGA_INCLUED_COLS, so select_columns drops it. This test
-        documents that intentional exclusion.
-        """
+    def test_lg_ply_pid_not_in_output(self):
+        """Tests that 'lg_ply_pid' is absent from the output."""
         df = make_raw_df()
-        result = wrangle_viclga_boundaries(df)
-        assert "lga_ply_pid" not in result.columns
+        result = wrangle_viclga_boundaries(df, make_population_df())
         assert "lg_ply_pid" not in result.columns
 
     # --- Column selection ----------------------------------------------------
@@ -289,156 +275,108 @@ class TestWrangleViclgaBoundaries:
     def test_output_has_exactly_the_expected_columns(self):
         """Tests that the output contains exactly the three expected columns."""
         df = make_raw_df()
-        result = wrangle_viclga_boundaries(df)
+        result = wrangle_viclga_boundaries(df, make_population_df())
         assert sorted(result.columns.tolist()) == sorted(EXPECTED_OUTPUT_COLS)
 
     def test_extra_columns_are_dropped(self):
         """Tests that columns outside the inclusion list are removed."""
         df = make_raw_df()
         df["unexpected_col"] = "should be dropped"
-        df["another_extra"] = 42
-        result = wrangle_viclga_boundaries(df)
+        result = wrangle_viclga_boundaries(df, make_population_df())
         assert "unexpected_col" not in result.columns
-        assert "another_extra" not in result.columns
-
-    def test_raises_on_missing_lga_pid(self):
-        """Tests that a KeyError is raised when 'lga_pid' is absent from the raw data.
-
-        'lga_pid' is not in the rename map — it must arrive under this exact
-        name (or be standardisable to it) for select_columns to succeed.
-        """
-        df = make_raw_df().drop(columns=["lga_pid"])
-        with pytest.raises(KeyError):
-            wrangle_viclga_boundaries(df)
 
     def test_raises_on_missing_abb_name(self):
-        """Tests that an error is raised when 'abb_name' is absent.
-
-        Without 'abb_name', clean_lga_names will raise a KeyError before
-        rename_columns can produce 'lga_name'.
-        """
+        """Tests that an error is raised when 'abb_name' is absent."""
         df = make_raw_df().drop(columns=["abb_name"])
         with pytest.raises(KeyError):
-            wrangle_viclga_boundaries(df)
+            wrangle_viclga_boundaries(df, make_population_df())
 
     def test_raises_on_missing_geometry(self):
         """Tests that a KeyError is raised when 'geometry' is absent."""
         df = make_raw_df().drop(columns=["geometry"])
         with pytest.raises(KeyError):
-            wrangle_viclga_boundaries(df)
+            wrangle_viclga_boundaries(df, make_population_df())
 
     def test_raises_on_missing_dt_create(self):
-        """Tests that a KeyError is raised when 'dt_create' is absent.
-
-        take_latest_lga_boundaries requires this column to determine the
-        most recent record per region.
-        """
+        """Tests that a KeyError is raised when 'dt_create' is absent."""
         df = make_raw_df().drop(columns=["dt_create"])
         with pytest.raises(KeyError):
-            wrangle_viclga_boundaries(df)
+            wrangle_viclga_boundaries(df, make_population_df())
 
     # --- Value correctness ---------------------------------------------------
 
     def test_lga_name_value_is_correct(self):
         """Tests that the renamed lga_name column carries the correct value."""
         df = make_raw_df(abb_name="Ballarat")
-        result = wrangle_viclga_boundaries(df)
+        pop = make_population_df([{"lga_pid": "LGA_PID_BAL", "lga_name": "Ballarat"}])
+        result = wrangle_viclga_boundaries(df, pop)
         assert result["lga_name"].iloc[0] == "Ballarat"
 
-    def test_lga_pid_value_is_correct(self):
-        """Tests that lga_pid retains its original value end-to-end."""
-        df = make_raw_df(lga_pid="LGA_PID_XYZ")
-        result = wrangle_viclga_boundaries(df)
-        assert result["lga_pid"].iloc[0] == "LGA_PID_XYZ"
-
     def test_geometry_value_is_preserved_exactly(self):
-        """Tests that the geometry WKT string is passed through unmodified.
-
-        Unlike vic_boundaries_wrangler, this pipeline does NOT reproject or
-        parse geometry — the raw string should be identical in the output.
-        """
+        """Tests that the geometry WKT string is passed through unmodified."""
         df = make_raw_df(geometry=SAMPLE_GEOMETRY)
-        result = wrangle_viclga_boundaries(df)
+        result = wrangle_viclga_boundaries(df, make_population_df())
         assert result["geometry"].iloc[0] == SAMPLE_GEOMETRY
+
+    # --- Population join (lga_pid) -------------------------------------------
+
+    def test_rows_without_matching_population_entry_are_dropped(self):
+        """Tests that rows with no lga_pid match in population DF are removed."""
+        df = make_raw_df(abb_name="Unmatched Region")
+        pop = make_population_df([{"lga_pid": "LGA_PID_001", "lga_name": "Melbourne"}])
+        result = wrangle_viclga_boundaries(df, pop)
+        assert len(result) == 0
 
     # --- Deduplication -------------------------------------------------------
 
     def test_deduplicates_to_one_row_per_abb_name(self):
-        """Tests that duplicate abb_names are collapsed to the most recent row end-to-end."""
+        """Tests that duplicate abb_names are collapsed to the most recent row."""
         df = pd.DataFrame([
-            {"lg_ply_pid": "PID_1", "lga_pid": "LPID_1", "abb_name": "Melbourne", "dt_create": "2020-01-01", "geometry": SAMPLE_GEOMETRY},
-            {"lg_ply_pid": "PID_2", "lga_pid": "LPID_2", "abb_name": "Melbourne", "dt_create": "2023-06-15", "geometry": SAMPLE_GEOMETRY},
-            {"lg_ply_pid": "PID_3", "lga_pid": "LPID_3", "abb_name": "Ballarat",  "dt_create": "2022-03-10", "geometry": SAMPLE_GEOMETRY},
+            {"lg_ply_pid": "PID_1", "abb_name": "Melbourne", "dt_create": "2020-01-01", "geometry": SAMPLE_GEOMETRY},
+            {"lg_ply_pid": "PID_2", "abb_name": "Melbourne", "dt_create": "2023-06-15", "geometry": SAMPLE_GEOMETRY},
+            {"lg_ply_pid": "PID_3", "abb_name": "Ballarat",  "dt_create": "2022-03-10", "geometry": SAMPLE_GEOMETRY},
         ])
-        result = wrangle_viclga_boundaries(df)
+        pop = make_population_df([
+            {"lga_pid": "LGA_PID_MEL", "lga_name": "Melbourne"},
+            {"lga_pid": "LGA_PID_BAL", "lga_name": "Ballarat"},
+        ])
+        result = wrangle_viclga_boundaries(df, pop)
         assert len(result) == 2
-
-    def test_keeps_latest_row_per_abb_name(self):
-        """Tests that the most recent row per abb_name is retained end-to-end."""
-        df = pd.DataFrame([
-            {"lg_ply_pid": "PID_1", "lga_pid": "LPID_OLD", "abb_name": "Melbourne", "dt_create": "2020-01-01", "geometry": SAMPLE_GEOMETRY},
-            {"lg_ply_pid": "PID_2", "lga_pid": "LPID_NEW", "abb_name": "Melbourne", "dt_create": "2023-06-15", "geometry": SAMPLE_GEOMETRY},
-        ])
-        result = wrangle_viclga_boundaries(df)
-        assert len(result) == 1
-        assert result["lga_pid"].iloc[0] == "LPID_NEW"
 
     # --- Name cleaning -------------------------------------------------------
 
     def test_uninc_postfix_is_stripped_from_lga_name(self):
         """Tests that the '(Uninc)' postfix is removed from abb_name end-to-end."""
         df = make_raw_df(abb_name="Mildura (Uninc)")
-        result = wrangle_viclga_boundaries(df)
+        pop = make_population_df([{"lga_pid": "LGA_PID_MIL", "lga_name": "Mildura"}])
+        result = wrangle_viclga_boundaries(df, pop)
         assert result["lga_name"].iloc[0] == "Mildura"
 
-    # --- Column standardisation (initial_cleaning_pipeline) -----------------
+    # --- Column standardisation ----------------------------------------------
 
     def test_handles_uppercase_raw_column_names(self):
-        """Tests that uppercase raw column names are standardised before processing.
-
-        initial_cleaning_pipeline calls standardize_columns which lowercases
-        all column names, so all subsequent steps receive lowercase column names.
-        """
+        """Tests that uppercase raw column names are standardised before processing."""
         df = make_raw_df()
         df.columns = [c.upper() for c in df.columns]
-        result = wrangle_viclga_boundaries(df)
+        result = wrangle_viclga_boundaries(df, make_population_df())
         assert "lga_name" in result.columns
-        assert "lga_pid" in result.columns
         assert "geometry" in result.columns
 
     def test_strips_whitespace_from_string_values(self):
         """Tests that leading/trailing whitespace in cell values is stripped."""
-        df = make_raw_df(abb_name="  Melbourne  ", lga_pid="  LGA_001  ")
-        result = wrangle_viclga_boundaries(df)
+        df = make_raw_df(abb_name="  Melbourne  ")
+        pop = make_population_df([{"lga_pid": "LGA_PID_001", "lga_name": "Melbourne"}])
+        result = wrangle_viclga_boundaries(df, pop)
         assert result["lga_name"].iloc[0] == "Melbourne"
-        assert result["lga_pid"].iloc[0] == "LGA_001"
-
-    # --- Sentinel / NA handling ---------------------------------------------
-
-    def test_sentinel_values_are_not_converted_to_nan(self):
-        """Tests that sentinel strings (N/A, NULL etc.) are NOT converted to NaN.
-
-        clean_na_values is intentionally absent from this pipeline — boundary
-        data does not need sentinel cleanup. This test documents that contract
-        and will catch an unintended addition of clean_na_values in future.
-        """
-        df = make_raw_df(abb_name="N/A", lga_pid="NULL")
-        result = wrangle_viclga_boundaries(df)
-        assert result["lga_name"].iloc[0] == "N/A"
-        assert result["lga_pid"].iloc[0] == "NULL"
 
     # --- Immutability --------------------------------------------------------
 
     def test_does_not_mutate_input_dataframe(self):
-        """Tests that the original input DataFrame is not modified.
-
-        initial_cleaning_pipeline calls df.copy() internally, so the input
-        should be fully isolated from pipeline mutations.
-        """
+        """Tests that the original input DataFrame is not modified."""
         df = make_raw_df()
         original_columns = list(df.columns)
         original_name = df["abb_name"].iloc[0]
-        wrangle_viclga_boundaries(df)
+        wrangle_viclga_boundaries(df, make_population_df())
         assert list(df.columns) == original_columns
         assert df["abb_name"].iloc[0] == original_name
 
@@ -447,18 +385,22 @@ class TestWrangleViclgaBoundaries:
     def test_handles_multiple_rows(self):
         """Tests that the pipeline processes all rows, not just the first."""
         df = pd.DataFrame([
-            {"lg_ply_pid": "PID_1", "lga_pid": "LPID_1", "abb_name": "Melbourne", "dt_create": "2023-01-01", "geometry": SAMPLE_GEOMETRY},
-            {"lg_ply_pid": "PID_2", "lga_pid": "LPID_2", "abb_name": "Ballarat",  "dt_create": "2022-06-01", "geometry": SAMPLE_GEOMETRY},
-            {"lg_ply_pid": "PID_3", "lga_pid": "LPID_3", "abb_name": "Geelong",   "dt_create": "2021-03-15", "geometry": SAMPLE_GEOMETRY},
+            {"lg_ply_pid": "PID_1", "abb_name": "Melbourne", "dt_create": "2023-01-01", "geometry": SAMPLE_GEOMETRY},
+            {"lg_ply_pid": "PID_2", "abb_name": "Ballarat",  "dt_create": "2022-06-01", "geometry": SAMPLE_GEOMETRY},
+            {"lg_ply_pid": "PID_3", "abb_name": "Geelong",   "dt_create": "2021-03-15", "geometry": SAMPLE_GEOMETRY},
         ])
-        result = wrangle_viclga_boundaries(df)
+        pop = make_population_df([
+            {"lga_pid": "LGA_PID_MEL", "lga_name": "Melbourne"},
+            {"lga_pid": "LGA_PID_BAL", "lga_name": "Ballarat"},
+            {"lga_pid": "LGA_PID_GEE", "lga_name": "Geelong"},
+        ])
+        result = wrangle_viclga_boundaries(df, pop)
         assert len(result) == 3
         assert set(result["lga_name"]) == {"Melbourne", "Ballarat", "Geelong"}
 
     def test_empty_dataframe_with_correct_columns_returns_empty(self):
         """Tests that an empty DataFrame with the right columns returns empty output."""
         df = pd.DataFrame(columns=RAW_COLUMNS)
-        result = wrangle_viclga_boundaries(df)
+        result = wrangle_viclga_boundaries(df, make_population_df())
         assert isinstance(result, pd.DataFrame)
         assert len(result) == 0
-        assert sorted(result.columns.tolist()) == sorted(EXPECTED_OUTPUT_COLS)

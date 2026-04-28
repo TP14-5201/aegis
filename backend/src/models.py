@@ -8,6 +8,7 @@ class SupportService(Base):
     __tablename__ = "support_services"
 
     id = Column(Integer, primary_key=True, index=True)
+    lga_pid = Column(String, index=True)     # FK → vic_lga_boundaries.lga_pid
     name = Column(String, index=True)
     description = Column(String)
     target_audience = Column(String)
@@ -38,32 +39,28 @@ class FoodInsecurity(Base):
     gender = Column(String)
     indicator = Column(String)
     indicator_category = Column(String)
-    region = Column(String)
-    ufi = Column(Integer, index=True)        # FK → vic_boundaries.ufi
-    lga_pid = Column(String, index=True)     # FK → viclga_boundaries.lga_pid
+    lga_pid = Column(String, index=True)     # FK → vic_lga_boundaries.lga_pid
     subpopulation = Column(String)
     estimate_pct = Column(Float)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
 
-class VicBoundary(Base):
-    __tablename__ = "vic_boundaries"
+class VicLgaBoundary(Base):
+    __tablename__ = "vic_lga_boundaries"
 
-    ufi = Column(Integer, primary_key=True, index=True)
-    vicgov_region_sname = Column(String)
-    vicgov_region = Column(String)
-    ufi_created = Column(DateTime)
+    lga_pid = Column(String, primary_key=True, index=True)
+    lga_name = Column(String)
     geometry = Column(Geometry(geometry_type='MULTIPOLYGON', srid=4326))
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
-class VicLgaBoundary(Base):
-    __tablename__ = "viclga_boundaries"
+class LgaPopulation(Base):
+    __tablename__ = "vic_lga_population"
 
     lga_pid = Column(String, primary_key=True, index=True)
     lga_name = Column(String)
-    geometry = Column(Geometry(geometry_type='MULTIPOLYGON', srid=4326))
+    pop_2024_total = Column(Integer)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

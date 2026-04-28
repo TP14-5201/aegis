@@ -138,15 +138,6 @@ class TestFoodInsecuritySettings:
 
 
 class TestBoundarySettings:
-    def test_settings_default_vicgov_boundary_url(self):
-        """Tests the default VicGov boundary URL."""
-        s = Settings()
-        assert s.VICGOV_BOUNDARY_URL == (
-            "https://www.dropbox.com/scl/fo/qr05jgmxcdbdn0boev1w7/"
-            "ANUNe4e7aGOSzulbbzNLqX4"
-            "?rlkey=8sna6zqjt5xrw52pf2jv37r0c&st=c3sn5k9r&dl=1"
-        )
-
     def test_settings_default_viclga_boundary_url(self):
         """Tests the default VicLGA boundary URL."""
         s = Settings()
@@ -154,11 +145,6 @@ class TestBoundarySettings:
             "https://data.gov.au/data/dataset/bdf92691-c6fe-42b9-a0e2-a4cd716fa811/resource/"
             "95079e79-37d0-43c7-9f80-10eda1b0d05f/download/vic_lga_gda2020.zip"
         )
-
-    def test_settings_default_vicgov_boundary_raw_path(self):
-        """Tests the default VicGov boundary raw local path."""
-        s = Settings()
-        assert s.VICGOV_BOUNDARY_RAW_PATH == os.path.join(s.RAW_DATA_DIR, "vicgov_boundary_raw.csv")
 
     def test_settings_default_viclga_boundary_raw_zip_path(self):
         """Tests the default VicLGA boundary raw zip local path."""
@@ -181,6 +167,28 @@ class TestBoundarySettings:
         assert s.VICLGA_BOUNDARY_RAW_PATH.startswith(s.VICLGA_BOUNDARY_RAW_UNZIP_PATH)
 
 
+class TestLGAPopulationSettings:
+    def test_settings_default_lga_population_url(self):
+        """Tests the default LGA population URL is set."""
+        s = Settings()
+        assert s.LGA_POPULATION_URL.startswith("https://")
+
+    def test_settings_default_lga_population_sep(self):
+        """Tests the default LGA population separator is comma (,)."""
+        s = Settings()
+        assert s.LGA_POPULATION_SEP == ","
+
+    def test_settings_default_lga_population_raw_path(self):
+        """Tests the default LGA population raw local path."""
+        s = Settings()
+        assert s.LGA_POPULATION_RAW_PATH == os.path.join(s.RAW_DATA_DIR, "abs_population_raw.csv")
+
+    def test_settings_default_lga_population_raw_path_under_raw_data_dir(self):
+        """Tests that LGA_POPULATION_RAW_PATH is rooted under RAW_DATA_DIR."""
+        s = Settings()
+        assert s.LGA_POPULATION_RAW_PATH.startswith(s.RAW_DATA_DIR)
+
+
 class TestRawDataDirSettings:
     def test_settings_default_raw_data_dir(self):
         """Tests the default raw data directory."""
@@ -194,10 +202,10 @@ class TestRawDataDirSettings:
             s.MELBOURNE_RAW_PATH,
             s.DATAGOV_RAW_PATH,
             s.FOOD_INSECURITY_RAW_PATH,
-            s.VICGOV_BOUNDARY_RAW_PATH,
             s.VICLGA_BOUNDARY_RAW_ZIP_PATH,
             s.VICLGA_BOUNDARY_RAW_UNZIP_PATH,
             s.VICLGA_BOUNDARY_RAW_PATH,
+            s.LGA_POPULATION_RAW_PATH,
         ]
         for path in raw_paths:
             assert path.startswith(s.RAW_DATA_DIR), (
@@ -235,6 +243,12 @@ class TestSettingsEnvOverrides:
         s = Settings()
         assert s.FOOD_INSECURITY_SHEET_NAME == "Sheet1"
 
+    def test_settings_override_lga_population_sep(self, monkeypatch):
+        """Tests that LGA_POPULATION_SEP can be overridden with an environment variable."""
+        monkeypatch.setenv("LGA_POPULATION_SEP", ";")
+        s = Settings()
+        assert s.LGA_POPULATION_SEP == ";"
+
     def test_settings_override_raw_data_dir_does_not_affect_already_computed_paths(
         self, monkeypatch
     ):
@@ -267,3 +281,11 @@ class TestGlobalSettingsInstance:
     def test_global_settings_instance_has_correct_emergency_cols_count(self):
         """Tests the global settings instance has 18 emergency included columns."""
         assert len(settings.EMERGENCY_INCLUDED_COLS) == 18
+
+    def test_global_settings_instance_has_correct_lga_population_sep(self):
+        """Tests the global settings instance has comma as the LGA population separator."""
+        assert settings.LGA_POPULATION_SEP == ","
+
+    def test_global_settings_instance_lga_population_raw_path_under_raw_data_dir(self):
+        """Tests the global settings instance LGA population path is under RAW_DATA_DIR."""
+        assert settings.LGA_POPULATION_RAW_PATH.startswith(settings.RAW_DATA_DIR)

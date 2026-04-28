@@ -10,12 +10,12 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from src.core.logging import logger
 from src.database import Base, engine, get_db
-from src.models import VicBoundary, FoodInsecurity, VicLgaBoundary
+from src.models import LgaPopulation, FoodInsecurity, VicLgaBoundary, SupportService
 from src.schemas import NearbyServiceOut, FoodInsecurityRegion
 from src.services.nearby_search import DEFAULT_KEYWORDS, find_nearby_support_services
 from src.utils.opening_hours import is_open_now, _now_in_tz
 
-from sqlalchemy import func, Integer
+from sqlalchemy import func, Integer, case, distinct
 from sqlalchemy.orm import Session
 from geoalchemy2.functions import ST_AsGeoJSON
 
@@ -156,75 +156,3 @@ def get_nearby_services(
         logger.exception("Failed to fetch nearby services: %s", exc)
         raise HTTPException(status_code=500, detail="Internal error while searching for services")
 
-
-@app.get("/boundaries/phu")
-def get_phu_boundaries(db: Session = Depends(get_db)):
-    results = db.query(
-        VicBoundary.vicgov_region_code,
-        ST_AsGeoJSON(VicBoundary.geometry).label("geometry")
-    ).all()
-
-    return {
-        "type": "FeatureCollection",
-        "features": [
-            {
-                "type": "Feature",
-                "properties": {"code": r.vicgov_region_code},
-                "geometry": json.loads(r.geometry) # Convert string to JSON object
-            } for r in results
-        ]
-    }
-
-
-@app.get("/boundaries/lga/{phu_code}")
-def get_lga_boundaries(phu_code: int, db: Session = Depends(get_db)):
-    results = (
-        db.query(
-            VicLgaBoundary.lga_name,
-            ST_AsGeoJSON(VicLgaBoundary.geometry).label("geometry")
-        )
-        .join(FoodInsecurity, VicLgaBoundary.lga_name == FoodInsecurity.subpopulation)
-        .filter(FoodInsecurity.vic_region_code == phu_code)
-        .distinct(VicLgaBoundary.lga_name) # One polygon per suburb
-        .all()
-    )
-
-    if not results:
-        return {"type": "FeatureCollection", "features": [], "message": "No boundaries found"}
-
-    # Construct the GeoJSON FeatureCollection
-    return {
-        "type": "FeatureCollection",
-        "features": [
-            {
-                "type": "Feature",
-                "properties": {
-                    "lga_name": r.lga_name,
-                },
-                "geometry": json.loads(r.geometry)
-            } for r in results
-        ]
-    }
-
-
-@app.get("/food-insecurity/all-data")
-def get_all_food_data(db: Session = Depends(get_db)):
-    results = db.query(
-        FoodInsecurity.subpopulation,
-        FoodInsecurity.vic_region_code,
-        FoodInsecurity.gender,
-        FoodInsecurity.indicator,
-        FoodInsecurity.indicator_category,
-        FoodInsecurity.estimate_pct
-    ).all()
-    
-    return [
-        {
-            "subpopulation": r.subpopulation,
-            "vic_region_code": r.vic_region_code,
-            "gender": r.gender,
-            "indicator": r.indicator,
-            "indicator_category": r.indicator_category,
-            "estimate_pct": r.estimate_pct
-        } for r in results
-    ]

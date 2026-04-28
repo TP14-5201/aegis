@@ -74,6 +74,25 @@ def make_full_melbourne_df(**overrides):
     return pd.DataFrame([row])
 
 
+def make_lga_boundaries_df() -> pd.DataFrame:
+    """
+    Minimal LGA boundaries DataFrame compatible with determine_emergency_service_lga.
+    Contains a single polygon that covers the test coordinate (-37.8136, 144.9631)
+    so spatial-join tests behave predictably. The WKT polygon is a rough bounding
+    box around central Melbourne.
+    """
+    return pd.DataFrame([
+        {
+            "lga_name": "Melbourne",
+            "lga_pid": "LGA_PID_001",
+            "geometry": (
+                "POLYGON ((144.9 -37.77, 145.02 -37.77, "
+                "145.02 -37.86, 144.9 -37.86, 144.9 -37.77))"
+            ),
+        }
+    ])
+
+
 # ---------------------------------------------------------------------------
 # remove_missing_service_names
 # ---------------------------------------------------------------------------
@@ -628,28 +647,37 @@ class TestRenameColumns:
 # ---------------------------------------------------------------------------
 
 class TestWrangleMelbourne:
+    """Integration tests for wrangle_melbourne.
+
+    wrangle_melbourne(df, df_lga_boundaries) requires TWO arguments.
+    df_lga_boundaries is passed to determine_emergency_service_lga which
+    performs a spatial join and appends a lga_pid column to the output.
+    All tests use make_lga_boundaries_df() as the second argument.
+    """
+
     def test_returns_dataframe(self):
         """Tests that the pipeline returns a DataFrame."""
         df = make_full_melbourne_df()
-        result = wrangle_melbourne(df)
+        result = wrangle_melbourne(df, make_lga_boundaries_df())
         assert isinstance(result, pd.DataFrame)
 
     def test_source_column_is_city_of_melbourne(self):
         """Tests that the 'source' column is set to 'City of Melbourne' for every row."""
         df = make_full_melbourne_df()
-        result = wrangle_melbourne(df)
+        result = wrangle_melbourne(df, make_lga_boundaries_df())
         assert "source" in result.columns
         assert all(result["source"] == "City of Melbourne")
 
     def test_output_has_expected_columns(self):
         """Tests that all required schema columns are present in the output."""
         df = make_full_melbourne_df()
-        result = wrangle_melbourne(df)
+        result = wrangle_melbourne(df, make_lga_boundaries_df())
         expected = [
             "name", "description", "target_audience", "address", "suburb",
             "primary_phone", "phone_display", "email", "website", "social_media",
             "opening_hours", "cost", "tram_routes", "bus_routes",
             "nearest_train_station", "categories", "longitude", "latitude", "source",
+            "lga_pid",  # appended by determine_emergency_service_lga spatial join
         ]
         for col in expected:
             assert col in result.columns, f"Missing column: {col}"
@@ -660,60 +688,60 @@ class TestWrangleMelbourne:
             make_full_melbourne_df(name="Valid Service"),
             make_full_melbourne_df(name=np.nan),
         ], ignore_index=True)
-        result = wrangle_melbourne(df)
+        result = wrangle_melbourne(df, make_lga_boundaries_df())
         assert len(result) == 1
         assert result["name"].iloc[0] == "Valid Service"
 
     def test_what_renamed_to_description(self):
         """Tests that the 'what' column value is accessible as 'description'."""
         df = make_full_melbourne_df(what="Crisis support")
-        result = wrangle_melbourne(df)
+        result = wrangle_melbourne(df, make_lga_boundaries_df())
         assert "description" in result.columns
         assert result["description"].iloc[0] == "Crisis support"
 
     def test_who_renamed_to_target_audience(self):
         """Tests that the 'who' column value is accessible as 'target_audience'."""
         df = make_full_melbourne_df(who="Families")
-        result = wrangle_melbourne(df)
+        result = wrangle_melbourne(df, make_lga_boundaries_df())
         assert "target_audience" in result.columns
         assert result["target_audience"].iloc[0] == "Families"
 
     def test_address_parts_combined(self):
         """Tests that address_1 and address_2 are combined with ', ' end-to-end."""
         df = make_full_melbourne_df(address_1="123 Main St", address_2="Level 2")
-        result = wrangle_melbourne(df)
+        result = wrangle_melbourne(df, make_lga_boundaries_df())
         assert result["address"].iloc[0] == "123 Main St, Level 2"
 
     def test_coordinates_are_numeric(self):
         """Tests that latitude and longitude are cast to float dtype."""
         df = make_full_melbourne_df()
-        result = wrangle_melbourne(df)
+        result = wrangle_melbourne(df, make_lga_boundaries_df())
         assert result["latitude"].dtype in [float, np.float64]
         assert result["longitude"].dtype in [float, np.float64]
 
     def test_invalid_coordinates_become_nan(self):
         """Tests that non-numeric coordinate strings are coerced to NaN."""
         df = make_full_melbourne_df(latitude="invalid", longitude="bad")
-        result = wrangle_melbourne(df)
+        result = wrangle_melbourne(df, make_lga_boundaries_df())
         assert pd.isna(result["latitude"].iloc[0])
         assert pd.isna(result["longitude"].iloc[0])
 
     def test_http_website_upgraded_to_https(self):
         """Tests that an http:// website URL is normalised to https://."""
         df = make_full_melbourne_df(website="http://example.com")
-        result = wrangle_melbourne(df)
+        result = wrangle_melbourne(df, make_lga_boundaries_df())
         assert result["website"].iloc[0] == "https://example.com"
 
     def test_opening_hours_is_dict(self):
         """Tests that opening_hours is a dict after the full pipeline."""
         df = make_full_melbourne_df()
-        result = wrangle_melbourne(df)
+        result = wrangle_melbourne(df, make_lga_boundaries_df())
         assert isinstance(result["opening_hours"].iloc[0], dict)
 
     def test_opening_hours_dict_contains_all_days(self):
         """Tests that the opening_hours dict contains all 8 expected keys."""
         df = make_full_melbourne_df()
-        result = wrangle_melbourne(df)
+        result = wrangle_melbourne(df, make_lga_boundaries_df())
         hours = result["opening_hours"].iloc[0]
         for day in DAYS:
             assert day in hours, f"Missing day in opening_hours: {day}"
@@ -721,13 +749,13 @@ class TestWrangleMelbourne:
     def test_categories_is_list(self):
         """Tests that categories is a list after the full pipeline."""
         df = make_full_melbourne_df(**{"category_1": "Food", "category_2": "Health"})
-        result = wrangle_melbourne(df)
+        result = wrangle_melbourne(df, make_lga_boundaries_df())
         assert isinstance(result["categories"].iloc[0], list)
 
     def test_categories_values_are_correct(self):
         """Tests that non-empty category values are preserved end-to-end."""
         df = make_full_melbourne_df(**{"category_1": "Food", "category_2": "Health"})
-        result = wrangle_melbourne(df)
+        result = wrangle_melbourne(df, make_lga_boundaries_df())
         cats = result["categories"].iloc[0]
         assert "Food" in cats
         assert "Health" in cats
@@ -735,7 +763,7 @@ class TestWrangleMelbourne:
     def test_sentinel_values_become_nan(self):
         """Tests that common sentinel strings (N/A, NULL) are converted to NaN."""
         df = make_full_melbourne_df(email="N/A", social_media="NULL")
-        result = wrangle_melbourne(df)
+        result = wrangle_melbourne(df, make_lga_boundaries_df())
         assert pd.isna(result["email"].iloc[0])
         assert pd.isna(result["social_media"].iloc[0])
 
@@ -744,13 +772,13 @@ class TestWrangleMelbourne:
         df = make_full_melbourne_df()
         original_columns = list(df.columns)
         original_name = df["name"].iloc[0]
-        wrangle_melbourne(df)
+        wrangle_melbourne(df, make_lga_boundaries_df())
         assert list(df.columns) == original_columns
         assert df["name"].iloc[0] == original_name
 
     def test_empty_dataframe_after_name_filter_returns_empty(self):
         """Tests that filtering all rows returns an empty DataFrame (not an error)."""
         df = make_full_melbourne_df(name=np.nan)
-        result = wrangle_melbourne(df)
+        result = wrangle_melbourne(df, make_lga_boundaries_df())
         assert isinstance(result, pd.DataFrame)
         assert len(result) == 0
