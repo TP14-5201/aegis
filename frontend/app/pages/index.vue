@@ -69,5 +69,5 @@
 </template>
 
 <script setup lang="ts">
-useHead({ title: 'Landing' })
+useHead({ title: 'ChereBowl - Home' })
 </script>
