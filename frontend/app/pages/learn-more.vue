@@ -1,10 +1,11 @@
 <template>
   <TopNavigation />
   <div class="h-[72px] lg:h-[100px]" />
-  <InsightsTheStoryHero />
-  <InsightsRegionMap />
-  <InsightsChildrenAgeGroups />
-  <InsightsNextSteps />
+  <LearnMoreTheStoryHero />
+  <LearnMoreRegionMap />
+  <LearnMoreChildrenAgeGroups />
+  <LearnMoreBehaviouralImpact />
+  <LearnMoreNextSteps />
 </template>
 
 <script setup lang="ts">
