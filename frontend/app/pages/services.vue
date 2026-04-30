@@ -1,6 +1,7 @@
 <template>
   <div class="page-wrap">
-    <LayoutNavbar />
+    <TopNavigation />
+    <div class="h-[72px] lg:h-[100px]" />
 
     <!-- ── Search & Filter Header ── -->
     <div ref="headerEl" class="services-header">
@@ -305,11 +306,12 @@
       </div>
     </div>
 
-    <LayoutFooter />
   </div>
 </template>
 
 <script setup>
+import TopNavigation from '../components/TopNavigation.vue'
+
 definePageMeta({ ssr: false })
 
 // Leaflet is browser-only — loaded dynamically inside onMounted
