@@ -6,7 +6,8 @@ from src.database import SessionLocal, engine
 from src.models import (
     Base, SupportService, FoodInsecurity, 
     VicLgaBoundary, LgaPopulation, 
-    DietIndicator, HealthOutcome, LowCostDiet
+    DietIndicator, HealthOutcome, LowCostDiet,
+    LowCostDietHealthOutcome
 )
 
 from src.core.config import settings
@@ -19,7 +20,8 @@ from src.data.loaders.data_loader import (
     load_lga_population_dataset, 
     load_diet_indicator_dataset,
     load_health_outcome_dataset,
-    load_low_cost_diet_dataset
+    load_low_cost_diet_dataset,
+    load_low_cost_diet_health_outcome_dataset
 )
 
 
@@ -74,6 +76,7 @@ def load_dataset() -> pd.DataFrame:
         (load_diet_indicator_dataset, DietIndicator),
         (load_health_outcome_dataset, HealthOutcome),
         (load_low_cost_diet_dataset, LowCostDiet),
+        (load_low_cost_diet_health_outcome_dataset, LowCostDietHealthOutcome)
     ]
     
     return [(loader(), model) for loader, model in DATASET_REGISTRY]

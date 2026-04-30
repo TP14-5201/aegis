@@ -36,6 +36,7 @@ class Settings(BaseSettings):
     ]
     ### END OF Emergency Services Dataset ###
 
+
     ### Victoria Geographical & Demographical Dataset ###
     # Food insecurity data: VAHI (Victorian Population Health Survey)
     FOOD_INSECURITY_URL: str = "https://www.dropbox.com/scl/fi/8dj6f9knai1pvc2kuxbq8/food_insecurity_data.xlsx?rlkey=jxyaf0viyy84fnev3t3m0atod&st=7vc78ayw&dl=1"
@@ -60,17 +61,25 @@ class Settings(BaseSettings):
     LGA_POPULATION_SEP: str = ","
     ### END OF Victoria Geographical & Demographical Dataset ###
 
+
     ### Victorian Population Health Survey (VPHS) 2014 Data ###
     # VPHS 2014 Diet Indicator
     DIET_INDICATOR_URL: str = "https://www.dropbox.com/scl/fi/iummecvcrqg59y4k9tv49/vphs_2014_food_insecurity_diet_indicators_table_a1_18.csv?rlkey=xejidbj7sr68j8v05cm3k3qjx&st=vc1c5ba4&dl=1"
     DIET_INDICATOR_SEP: str = ","
+    
     # VPHS 2014 Health Outcome
     HEALTH_OUTCOME_URL: str = "https://www.dropbox.com/scl/fi/64qdk5b6v4kfphul99urn/vphs_2014_food_insecurity_health_outcomes_table_a1_19.csv?rlkey=3h4ds9jlma1wmg4g8hnjn9bxf&st=n8ymhkpc&dl=1"
     HEALTH_OUTCOME_SEP: str = ","
+    
     # VPHS 2014 Parents Low Cost Diet Table
     LOW_COST_DIET_URL: str = "https://www.dropbox.com/scl/fi/lvt872810o0napqs4dbcs/vphs_2014_parents_low_cost_diet_table_a1_27_raw.csv?rlkey=enfc1sm8svisjggl4o9qzfjyz&st=g676xyrx&dl=1"
     LOW_COST_DIET_SEP: str = ","
+    
+    # VPHS 2014 Parents Low Cost Diet Health Outcomes Table
+    LOW_COST_DIET_HEALTH_OUTCOME_URL: str = "https://www.dropbox.com/scl/fi/bs2lvwfe2nluwf7q371ha/vphs_2014_parents_low_cost_health_outcomes_table_a1_28_raw.csv?rlkey=iq25f7umbf3r60oe962mzzt6i&st=q3bqhlgh&dl=1"
+    LOW_COST_DIET_HEALTH_OUTCOME_SEP: str = ","
     ### END OF Victorian Population Health Survey (VPHS) 2014 Data ###
+
 
     ### Local file paths ###
     RAW_DATA_DIR: str = "src/data/raw"
@@ -88,6 +97,7 @@ class Settings(BaseSettings):
     DIET_INDICATOR_RAW_PATH: str = os.path.join(RAW_DATA_DIR, "vphs_2014_food_insecurity_diet_indicators_table_a1_18_raw.csv")
     HEALTH_OUTCOME_RAW_PATH: str = os.path.join(RAW_DATA_DIR, "vphs_2014_food_insecurity_health_outcomes_table_a1_19_raw.csv")
     LOW_COST_DIET_RAW_PATH: str = os.path.join(RAW_DATA_DIR, "vphs_2014_parents_low_cost_diet_table_a1_27_raw.csv")
+    LOW_COST_DIET_HEALTH_OUTCOME_RAW_PATH: str = os.path.join(RAW_DATA_DIR, "vphs_2014_parents_low_cost_health_outcomes_table_a1_28_raw.csv")
     ### END OF Local file paths ###
 
 settings = Settings()
