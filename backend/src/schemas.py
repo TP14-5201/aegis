@@ -49,3 +49,59 @@ class LgaStatsOut(BaseModel):
     women_pct: float = 0.0
     pop_2024_total: Optional[int] = None
     emergency_services_count: int = 0
+
+
+class DietIndicatorOut(BaseModel):
+    category: str
+    indicator_response: str
+    worried_pct: float
+    worried_95ci_ll: float
+    worried_95ci_ul: float
+    not_worried_pct: float
+    not_worried_95ci_ll: float
+    not_worried_95ci_ul: float
+
+    class Config:
+        from_attributes = True
+
+
+class HealthOutcomeOut(BaseModel):
+    category: str
+    health_outcome: str
+    insecure_hunger_pct: float
+    insecure_hunger_95ci_ll: float
+    insecure_hunger_95ci_ul: float
+    food_secure_pct: float
+    food_secure_95ci_ll: float
+    food_secure_95ci_ul: float
+
+    class Config:
+        from_attributes = True
+
+
+class LowCostDietOut(BaseModel):
+    category: str
+    indicator_response: str
+    relied_lowcost_yes_pct: float
+    relied_lowcost_yes_95ci_ll: float
+    relied_lowcost_yes_95ci_ul: float
+    relied_lowcost_no_pct: float
+    relied_lowcost_no_95ci_ll: float
+    relied_lowcost_no_95ci_ul: float
+
+    class Config:
+        from_attributes = True
+
+
+class LowCostDietHealthOutcomeOut(BaseModel):
+    category: str
+    health_outcome: str
+    relied_lowcost_yes_pct: float
+    relied_lowcost_yes_95ci_ll: float
+    relied_lowcost_yes_95ci_ul: float
+    relied_lowcost_no_pct: float
+    relied_lowcost_no_95ci_ll: float
+    relied_lowcost_no_95ci_ul: float
+
+    class Config:
+        from_attributes = True
