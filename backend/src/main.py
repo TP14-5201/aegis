@@ -50,6 +50,45 @@ def health() -> dict:
     return {"status": "ok"}
 
 
+@app.get("/lga/boundaries")
+def get_lga_boundaries(db: Session = Depends(get_db)) -> dict:
+    """Return GeoJSON polygons for all Victorian LGAs from the boundary table."""
+    try:
+        rows = (
+            db.query(
+                VicLgaBoundary.lga_name,
+                ST_AsGeoJSON(VicLgaBoundary.geometry).label("geojson"),
+            )
+            .distinct(VicLgaBoundary.lga_name)
+            .all()
+        )
+
+        features = []
+        for row in rows:
+            if not row.geojson:
+                continue
+            geometry = json.loads(row.geojson)
+            features.append(
+                {
+                    "type": "Feature",
+                    "properties": {"lga_name": row.lga_name},
+                    "geometry": geometry,
+                }
+            )
+
+        if not features:
+            return {
+                "type": "FeatureCollection",
+                "features": [],
+                "message": "No boundaries found",
+            }
+
+        return {"type": "FeatureCollection", "features": features}
+    except Exception as exc:
+        logger.exception("Failed to fetch LGA boundaries: %s", exc)
+        raise HTTPException(status_code=500, detail="Internal error fetching LGA boundaries")
+
+
 @app.get("/services", response_model=List[NearbyServiceOut])
 def get_all_services(
     db: Session = Depends(get_db),
