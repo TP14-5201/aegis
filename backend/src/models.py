@@ -80,3 +80,19 @@ class DietIndicator(Base):
     not_worried_95ci_ul = Column(Float)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class HealthOutcome(Base):
+    __tablename__ = "health_outcomes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    category = Column(String)
+    health_outcome = Column(String)
+    insecure_hunger_pct = Column(Float)
+    insecure_hunger_95ci_ll = Column(Float)
+    insecure_hunger_95ci_ul = Column(Float)
+    food_secure_pct = Column(Float)
+    food_secure_95ci_ll = Column(Float)
+    food_secure_95ci_ul = Column(Float)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
