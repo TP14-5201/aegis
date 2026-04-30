@@ -48,7 +48,7 @@
       </a>
 
       <!-- BOTTOM RIGHT -->
-      <a href="#tips" class="hero-side-card">
+      <a href="#wellness-guide" class="hero-side-card">
         <img
           src="/images/nutritionhero/nutritionhero-tips.png"
           alt="Wellness tips"

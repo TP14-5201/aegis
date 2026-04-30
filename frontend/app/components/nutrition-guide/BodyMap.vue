@@ -109,12 +109,12 @@ function togglePart(key: string) {
 }
 
 const image = {
-  eggs: 'https://c.animaapp.com/OAm0AsyE/img/subject-36-1@2x.png',
-  walnuts: 'https://c.animaapp.com/OAm0AsyE/img/subject-37-1@2x.png',
-  blueberries: 'https://c.animaapp.com/OAm0AsyE/img/subject-38-1@2x.png',
-  oats: 'https://c.animaapp.com/OAm0AsyE/img/subject-39-1@2x.png',
-  milk: 'https://c.animaapp.com/OAm0AsyE/img/subject-40-1@2x.png',
-  banana: 'https://c.animaapp.com/OAm0AsyE/img/subject-41-1@2x.png',
+  eggs: '/images/foodguide/eggs.png',
+  walnuts: '/images/foodguide/walnuts.png',
+  blueberries: '/images/foodguide/blueberries.png',
+  oats: '/images/foodguide/oats.png',
+  milk: '/images/foodguide/milk.png',
+  banana: '/images/foodguide/banana.png',
 }
 
 const bodyParts: BodyPart[] = [

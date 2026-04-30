@@ -1,5 +1,5 @@
 <template>
-  <section class="wellness-section">
+  <section id="wellness-guide" class="wellness-section">
     <div class="wellness-header">
       <p class="eyebrow">DAILY TIPS</p>
       <h2>Wellness Guide</h2>
