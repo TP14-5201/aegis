@@ -23,7 +23,7 @@
 
             <!-- Image Container (handles hover effect) -->
             <div
-              class="relative w-full h-[200px] flex justify-center items-end transition-transform duration-300 group-hover:-translate-y-2 group-hover:drop-shadow-[0_10px_15px_rgba(27,30,69,0.3)]">
+              class="relative w-full h-[400px] flex justify-center items-end transition-transform duration-300 group-hover:-translate-y-2 group-hover:drop-shadow-[0_10px_15px_rgba(27,30,69,0.3)]">
 
               <!-- Mask Container (keeps logo shape constant) -->
               <div class="absolute inset-0 w-full h-full" :style="{
@@ -78,6 +78,20 @@
               {{ selectedGroup?.description || '' }}
             </p>
           </transition>
+        </div>
+      </div>
+
+      <!-- Data resources -->
+      <div class="mt-10 lg:mt-12 pt-6 border-t border-gray-200 text-[11px] text-ash">
+        <p class="font-bold uppercase tracking-widest mb-3 text-navy/60">Data Resources Used</p>
+        <div class="flex flex-wrap gap-x-8 gap-y-3">
+          <span class="flex items-center gap-2">
+            <span class="font-semibold text-navy/70">Children Malnourishment:</span>
+            <a href="https://vahi.vic.gov.au/reports/victorian-population-health-survey-2023" target="_blank"
+              rel="noopener" class="hover:text-sky-active underline decoration-gray-300 underline-offset-2">
+              VCHWS Summary Findings 2021 (Victorian Child Health and Wellbeing Survey)
+            </a>
+          </span>
         </div>
       </div>
     </div>
