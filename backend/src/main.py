@@ -15,7 +15,7 @@ from src.schemas import NearbyServiceOut, FoodInsecurityRegion, LgaStatsOut
 from src.services.nearby_search import DEFAULT_KEYWORDS, find_nearby_support_services
 from src.utils.opening_hours import is_open_now, _now_in_tz
 
-from sqlalchemy import func, Integer, case, distinct
+from sqlalchemy import func, Integer, case, distinct, Numeric
 from sqlalchemy.orm import Session
 from geoalchemy2.functions import ST_AsGeoJSON
 
@@ -100,7 +100,7 @@ def get_lga_stats(db: Session = Depends(get_db)) -> List[dict]:
                         (FoodInsecurity.gender == "Men", FoodInsecurity.estimate_pct),
                         else_=None,
                     )
-                ),
+                ).cast(Numeric),
                 2,
             ),
             0,
@@ -113,7 +113,7 @@ def get_lga_stats(db: Session = Depends(get_db)) -> List[dict]:
                         (FoodInsecurity.gender == "Women", FoodInsecurity.estimate_pct),
                         else_=None,
                     )
-                ),
+                ).cast(Numeric),
                 2,
             ),
             0,
