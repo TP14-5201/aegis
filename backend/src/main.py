@@ -11,7 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from src.core.logging import logger
 from src.database import Base, engine, get_db
 from src.models import LgaPopulation, FoodInsecurity, VicLgaBoundary, SupportService
-from src.schemas import NearbyServiceOut, FoodInsecurityRegion
+from src.schemas import NearbyServiceOut, FoodInsecurityRegion, LgaStatsOut
 from src.services.nearby_search import DEFAULT_KEYWORDS, find_nearby_support_services
 from src.utils.opening_hours import is_open_now, _now_in_tz
 
@@ -87,6 +87,71 @@ def get_lga_boundaries(db: Session = Depends(get_db)) -> dict:
     except Exception as exc:
         logger.exception("Failed to fetch LGA boundaries: %s", exc)
         raise HTTPException(status_code=500, detail="Internal error fetching LGA boundaries")
+
+
+@app.get("/lga/stats", response_model=List[LgaStatsOut])
+def get_lga_stats(db: Session = Depends(get_db)) -> List[dict]:
+    """Return population, gendered food insecurity averages, and emergency service counts per LGA."""
+    try:
+        men_pct = func.coalesce(
+            func.round(
+                func.avg(
+                    case(
+                        (FoodInsecurity.gender == "Men", FoodInsecurity.estimate_pct),
+                        else_=None,
+                    )
+                ),
+                2,
+            ),
+            0,
+        )
+
+        women_pct = func.coalesce(
+            func.round(
+                func.avg(
+                    case(
+                        (FoodInsecurity.gender == "Women", FoodInsecurity.estimate_pct),
+                        else_=None,
+                    )
+                ),
+                2,
+            ),
+            0,
+        )
+
+        emergency_services_count = func.coalesce(
+            func.count(distinct(SupportService.id)),
+            0,
+        )
+
+        rows = (
+            db.query(
+                LgaPopulation.lga_pid,
+                LgaPopulation.lga_name,
+                LgaPopulation.pop_2024_total,
+                men_pct.label("men_pct"),
+                women_pct.label("women_pct"),
+                emergency_services_count.label("emergency_services_count"),
+            )
+            .outerjoin(FoodInsecurity, FoodInsecurity.lga_pid == LgaPopulation.lga_pid)
+            .outerjoin(SupportService, SupportService.lga_pid == LgaPopulation.lga_pid)
+            .group_by(LgaPopulation.lga_pid, LgaPopulation.lga_name, LgaPopulation.pop_2024_total)
+            .all()
+        )
+
+        return [
+            {
+                "lga_name": row.lga_name,
+                "men_pct": float(row.men_pct),
+                "women_pct": float(row.women_pct),
+                "pop_2024_total": row.pop_2024_total,
+                "emergency_services_count": int(row.emergency_services_count),
+            }
+            for row in rows
+        ]
+    except Exception as exc:
+        logger.exception("Failed to fetch LGA stats: %s", exc)
+        raise HTTPException(status_code=500, detail="Internal error fetching LGA stats")
 
 
 @app.get("/services", response_model=List[NearbyServiceOut])
