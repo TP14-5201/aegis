@@ -96,3 +96,19 @@ class HealthOutcome(Base):
     food_secure_95ci_ul = Column(Float)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class LowCostDiet(Base):
+    __tablename__ = "low_cost_diet"
+
+    id = Column(Integer, primary_key=True, index=True)
+    category = Column(String)
+    indicator_response = Column(String)
+    relied_lowcost_yes_pct = Column(Float)
+    relied_lowcost_yes_95ci_ll = Column(Float)
+    relied_lowcost_yes_95ci_ul = Column(Float)
+    relied_lowcost_no_pct = Column(Float)
+    relied_lowcost_no_95ci_ll = Column(Float)
+    relied_lowcost_no_95ci_ul = Column(Float)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

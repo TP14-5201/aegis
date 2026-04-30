@@ -67,6 +67,9 @@ class Settings(BaseSettings):
     # VPHS 2014 Health Outcome
     HEALTH_OUTCOME_URL: str = "https://www.dropbox.com/scl/fi/64qdk5b6v4kfphul99urn/vphs_2014_food_insecurity_health_outcomes_table_a1_19.csv?rlkey=3h4ds9jlma1wmg4g8hnjn9bxf&st=n8ymhkpc&dl=1"
     HEALTH_OUTCOME_SEP: str = ","
+    # VPHS 2014 Parents Low Cost Diet Table
+    LOW_COST_DIET_URL: str = "https://www.dropbox.com/scl/fi/lvt872810o0napqs4dbcs/vphs_2014_parents_low_cost_diet_table_a1_27_raw.csv?rlkey=enfc1sm8svisjggl4o9qzfjyz&st=g676xyrx&dl=1"
+    LOW_COST_DIET_SEP: str = ","
     ### END OF Victorian Population Health Survey (VPHS) 2014 Data ###
 
     ### Local file paths ###
@@ -84,6 +87,7 @@ class Settings(BaseSettings):
 
     DIET_INDICATOR_RAW_PATH: str = os.path.join(RAW_DATA_DIR, "vphs_2014_food_insecurity_diet_indicators_table_a1_18_raw.csv")
     HEALTH_OUTCOME_RAW_PATH: str = os.path.join(RAW_DATA_DIR, "vphs_2014_food_insecurity_health_outcomes_table_a1_19_raw.csv")
+    LOW_COST_DIET_RAW_PATH: str = os.path.join(RAW_DATA_DIR, "vphs_2014_parents_low_cost_diet_table_a1_27_raw.csv")
     ### END OF Local file paths ###
 
 settings = Settings()

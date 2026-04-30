@@ -3,7 +3,11 @@ import pandas as pd
 
 from sqlalchemy.orm import Session
 from src.database import SessionLocal, engine
-from src.models import Base, SupportService, FoodInsecurity, VicLgaBoundary, LgaPopulation, DietIndicator, HealthOutcome
+from src.models import (
+    Base, SupportService, FoodInsecurity, 
+    VicLgaBoundary, LgaPopulation, 
+    DietIndicator, HealthOutcome, LowCostDiet
+)
 
 from src.core.config import settings
 from src.core.logging import logger
@@ -15,6 +19,7 @@ from src.data.loaders.data_loader import (
     load_lga_population_dataset, 
     load_diet_indicator_dataset,
     load_health_outcome_dataset,
+    load_low_cost_diet_dataset
 )
 
 
@@ -68,6 +73,7 @@ def load_dataset() -> pd.DataFrame:
         (load_lga_population_dataset, LgaPopulation),
         (load_diet_indicator_dataset, DietIndicator),
         (load_health_outcome_dataset, HealthOutcome),
+        (load_low_cost_diet_dataset, LowCostDiet),
     ]
     
     return [(loader(), model) for loader, model in DATASET_REGISTRY]

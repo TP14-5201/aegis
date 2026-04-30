@@ -11,6 +11,7 @@ from src.data.wranglers.vic_lga_boundaries_wrangler import wrangle_viclga_bounda
 from src.data.wranglers.lga_population_wrangler import wrangle_lga_population
 from src.data.wranglers.diet_indicator_wrangler import wrangle_diet_indicator
 from src.data.wranglers.health_outcome_wrangler import wrangle_health_outcome
+from src.data.wranglers.low_cost_diet_wrangler import wrangle_low_cost_diet
 
 
 def _load_and_wrangle(
@@ -89,3 +90,9 @@ def load_health_outcome_dataset() -> pd.DataFrame:
     """Load VPHS 2014 food insecurity health outcomes dataset (Table A1-19)."""
     df_raw = pd.read_csv(settings.HEALTH_OUTCOME_RAW_PATH)
     return wrangle_health_outcome(df_raw)
+
+
+def load_low_cost_diet_dataset() -> pd.DataFrame:
+    """Load VPHS 2014 parents low cost diet table (Table A1-27)."""
+    df_raw = pd.read_csv(settings.LOW_COST_DIET_RAW_PATH)
+    return wrangle_low_cost_diet(df_raw)
