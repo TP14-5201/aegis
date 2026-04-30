@@ -106,9 +106,7 @@
                 </span>
               </div>
 
-              <p class="mt-5 font-roboto text-[14px] text-[#6AA276]">
-                ⓘ Tap for food guide
-              </p>
+            
             </div>
 
             <!-- Alternatives shown immediately -->
