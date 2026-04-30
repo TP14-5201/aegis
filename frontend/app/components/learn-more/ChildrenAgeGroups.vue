@@ -23,7 +23,7 @@
 
             <!-- Image Container (handles hover effect) -->
             <div
-              class="relative w-full h-[400px] flex justify-center items-end transition-transform duration-300 group-hover:-translate-y-2 group-hover:drop-shadow-[0_10px_15px_rgba(27,30,69,0.3)]">
+              class="relative w-full h-[300px] flex justify-center items-end transition-transform duration-300 group-hover:-translate-y-2 group-hover:drop-shadow-[0_10px_15px_rgba(27,30,69,0.3)]">
 
               <!-- Mask Container (keeps logo shape constant) -->
               <div class="absolute inset-0 w-full h-full" :style="{
