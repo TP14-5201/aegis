@@ -11,7 +11,11 @@ def fill_health_outcome_na_values(df: pd.DataFrame) -> pd.DataFrame:
     df_with_null_stats = df[df.isna().any(axis=1)]
     # The first 2 columns are not the stat values
     for column in df_with_null_stats.columns[2:]:
-        df[column] = df[column].fillna(100 - float(df_category_sum[column].values[0]))
+        expected_sum = 100 - float(df_category_sum[column].values[0])
+        if expected_sum > 0:
+            df[column] = df[column].fillna(expected_sum)
+        else:
+            df[column] = df[column].fillna(0)
 
     return df
 
