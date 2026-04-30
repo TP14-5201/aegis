@@ -1,9 +1,8 @@
 <template>
   <TopNavigation />
-  <div class="h-[72px] lg:h-[100px]" />
   <GetFoodHero />
-  <GroceryPlanner />
-  <GroceryRecommendation />
+  <GetFoodGroceryPlanner />
+  <GetFoodGroceryRecommendation />
 </template>
 
 <script setup lang="ts">
