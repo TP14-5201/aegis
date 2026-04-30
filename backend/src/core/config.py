@@ -57,7 +57,7 @@ class Settings(BaseSettings):
     VICLGA_BOUNDARY_URL: str = "https://data.gov.au/data/dataset/bdf92691-c6fe-42b9-a0e2-a4cd716fa811/resource/95079e79-37d0-43c7-9f80-10eda1b0d05f/download/vic_lga_gda2020.zip"
 
     # LGA Population
-    LGA_POPULATION_URL: str = "https://stg-arcgisazurecdataprodap1.az.arcgis.com/exportfiles-1032-2313/LGA_pop_ppl_DbR_Nov25_-3329894466674715511.csv?sv=2025-05-05&st=2026-04-26T05%3A23%3A40Z&se=2026-04-26T06%3A28%3A40Z&sr=c&sp=r&sig=BFbMCTHXPxxhEjQcfHASaDF8JKJBqgvlLmpv6cKhrdo%3D"
+    LGA_POPULATION_URL: str = "https://www.dropbox.com/scl/fi/ebycjxbqe4k609nl7tr5r/abs_population_raw.csv?rlkey=acffuxvapuwtae1asrfyeivaz&st=msgf6ui9&dl=1"
     LGA_POPULATION_SEP: str = ","
     ### END OF Victoria Geographical & Demographical Dataset ###
 
