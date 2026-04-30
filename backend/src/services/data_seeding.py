@@ -8,7 +8,13 @@ from src.models import Base, SupportService, FoodInsecurity, VicLgaBoundary, Lga
 from src.core.config import settings
 from src.core.logging import logger
 from src.scripts.download_dev_data import save_local_copy
-from src.data.loaders.data_loader import load_emergency_services_dataset, load_food_insecurity_dataset, load_lga_boundaries_dataset, load_lga_population_dataset, load_diet_indicator_dataset
+from src.data.loaders.data_loader import (
+    load_emergency_services_dataset, 
+    load_food_insecurity_dataset, 
+    load_lga_boundaries_dataset, 
+    load_lga_population_dataset, 
+    load_diet_indicator_dataset
+)
 
 
 def seed_support_services(db: Session, df: pd.DataFrame, model: Base) -> None:
@@ -54,13 +60,15 @@ def download_dataset() -> pd.DataFrame:
 
 def load_dataset() -> pd.DataFrame:
     """Load all datasets"""
-    df_emergency_services = load_emergency_services_dataset()
-    df_lga_boundaries = load_lga_boundaries_dataset()
-    df_lga_population = load_lga_population_dataset()
-    df_food_insecurity = load_food_insecurity_dataset()
-    df_diet_indicator = load_diet_indicator_dataset()
-
-    return df_emergency_services, df_food_insecurity, df_lga_boundaries, df_lga_population, df_diet_indicator
+    DATASET_REGISTRY = [
+        (load_emergency_services_dataset, SupportService),
+        (load_food_insecurity_dataset, FoodInsecurity),
+        (load_lga_boundaries_dataset, VicLgaBoundary),
+        (load_lga_population_dataset, LgaPopulation),
+        (load_diet_indicator_dataset, DietIndicator),
+    ]
+    
+    return [(loader(), model) for loader, model in DATASET_REGISTRY]
 
 
 if __name__ == "__main__":
@@ -68,13 +76,10 @@ if __name__ == "__main__":
     Base.metadata.create_all(bind=engine)
 
     download_dataset()
-    df_emergency_services, df_food_insecurity, df_lga_boundaries, df_lga_population, df_diet_indicator = load_dataset()
+    datasets = load_dataset()
     db = SessionLocal()
     try:
-        seed_support_services(db, df_emergency_services, SupportService)
-        seed_support_services(db, df_food_insecurity, FoodInsecurity)
-        seed_support_services(db, df_lga_boundaries, VicLgaBoundary)
-        seed_support_services(db, df_lga_population, LgaPopulation)
-        seed_support_services(db, df_diet_indicator, DietIndicator)
+        for df, model in datasets:
+            seed_support_services(db, df, model)
     finally:
         db.close()
