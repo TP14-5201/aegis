@@ -64,3 +64,19 @@ class LgaPopulation(Base):
     pop_2024_total = Column(Integer)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class DietIndicator(Base):
+    __tablename__ = "diet_indicator"
+
+    id = Column(Integer, primary_key=True, index=True)
+    category = Column(String)
+    indicator_response = Column(String)
+    worried_pct = Column(Float)
+    worried_95ci_ll = Column(Float)
+    worried_95ci_ul = Column(Float)
+    not_worried_pct = Column(Float)
+    not_worried_95ci_ll = Column(Float)
+    not_worried_95ci_ul = Column(Float)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

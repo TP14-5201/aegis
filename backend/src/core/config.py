@@ -56,6 +56,10 @@ class Settings(BaseSettings):
     LGA_POPULATION_URL: str = "https://stg-arcgisazurecdataprodap1.az.arcgis.com/exportfiles-1032-2313/LGA_pop_ppl_DbR_Nov25_-3329894466674715511.csv?sv=2025-05-05&st=2026-04-26T05%3A23%3A40Z&se=2026-04-26T06%3A28%3A40Z&sr=c&sp=r&sig=BFbMCTHXPxxhEjQcfHASaDF8JKJBqgvlLmpv6cKhrdo%3D"
     LGA_POPULATION_SEP: str = ","
 
+    # VPHS 2014 Diet Indicator
+    DIET_INDICATOR_URL: str = "https://www.dropbox.com/scl/fi/iummecvcrqg59y4k9tv49/vphs_2014_food_insecurity_diet_indicators_table_a1_18.csv?rlkey=xejidbj7sr68j8v05cm3k3qjx&st=vc1c5ba4&dl=1"
+    DIET_INDICATOR_SEP: str = ","
+
     # Local file paths
     RAW_DATA_DIR: str = "src/data/raw"
 
@@ -68,5 +72,7 @@ class Settings(BaseSettings):
     VICLGA_BOUNDARY_RAW_PATH: str = os.path.join(VICLGA_BOUNDARY_RAW_UNZIP_PATH, "vic_lga.csv")
 
     LGA_POPULATION_RAW_PATH: str = os.path.join(RAW_DATA_DIR, "abs_population_raw.csv")
+
+    DIET_INDICATOR_RAW_PATH: str = os.path.join(RAW_DATA_DIR, "vphs_2014_food_insecurity_diet_indicators_table_a1_18_raw.csv")
 
 settings = Settings()
