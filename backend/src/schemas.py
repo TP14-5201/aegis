@@ -41,3 +41,11 @@ class FoodInsecurityRegion(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class LgaStatsOut(BaseModel):
+    lga_name: Optional[str] = None
+    men_pct: float = 0.0
+    women_pct: float = 0.0
+    pop_2024_total: Optional[int] = None
+    emergency_services_count: int = 0
