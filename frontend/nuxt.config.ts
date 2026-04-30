@@ -13,26 +13,34 @@ export default defineNuxtConfig({
   },
   app: {
     head: {
+      title: 'cherebowl',
+      meta: [
+        { charset: 'utf-8' },
+        { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+        { name: 'description', content: 'cherebowl — help is here when you need it.' },
+      ],
       link: [
         {
           rel: 'icon',
           type: 'image/png',
-          href: '/images/logo.png'
+          href: '/images/logo.png',
         },
         {
           rel: 'preconnect',
-          href: 'https://fonts.googleapis.com'
+          href: 'https://fonts.googleapis.com',
         },
         {
           rel: 'preconnect',
           href: 'https://fonts.gstatic.com',
-          crossorigin: ''
+          crossorigin: '',
         },
         {
+          // Loads both old (Volkhov 400/700, Roboto 300/400/500/700) and new
+          // (Roboto 800/900) weights so every component renders correctly.
           rel: 'stylesheet',
-          href: 'https://fonts.googleapis.com/css2?family=Volkhov:wght@400;700&family=Roboto:wght@300;400;500;700&display=swap'
-        }
-      ]
+          href: 'https://fonts.googleapis.com/css2?family=Volkhov:wght@400;700&family=Roboto:wght@300;400;500;700;800;900&display=swap',
+        },
+      ],
     }
   }
 })
