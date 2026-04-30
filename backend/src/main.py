@@ -10,8 +10,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from src.core.logging import logger
 from src.database import Base, engine, get_db
-from src.models import LgaPopulation, FoodInsecurity, VicLgaBoundary, SupportService
-from src.schemas import NearbyServiceOut, FoodInsecurityRegion, LgaStatsOut
+from src.models import LgaPopulation, FoodInsecurity, VicLgaBoundary, SupportService, DietIndicator, HealthOutcome, LowCostDiet, LowCostDietHealthOutcome
+from src.schemas import NearbyServiceOut, FoodInsecurityRegion, LgaStatsOut, DietIndicatorOut, HealthOutcomeOut, LowCostDietOut, LowCostDietHealthOutcomeOut
 from src.services.nearby_search import DEFAULT_KEYWORDS, find_nearby_support_services
 from src.utils.opening_hours import is_open_now, _now_in_tz
 
@@ -261,3 +261,94 @@ def get_nearby_services(
         logger.exception("Failed to fetch nearby services: %s", exc)
         raise HTTPException(status_code=500, detail="Internal error while searching for services")
 
+
+@app.get("/diet-indicators", response_model=List[DietIndicatorOut])
+def get_diet_indicators(db: Session = Depends(get_db)):
+    """
+    Fetch all diet indicators, returning only the 
+    statistical columns and categories.
+    """
+    try:
+        # We fetch the full rows; the response_model filters the fields
+        indicators = db.query(DietIndicator).all()
+        
+        if not indicators:
+            return []
+            
+        return indicators
+    except Exception as exc:
+        logger.exception("Failed to fetch diet indicators: %s", exc)
+        raise HTTPException(
+            status_code=500, 
+            detail="Internal error fetching dietary data"
+        )
+
+
+@app.get("/health-outcomes", response_model=List[HealthOutcomeOut])
+def get_health_outcomes(db: Session = Depends(get_db)):
+    """
+    Fetch all health outcomes related to food security status.
+    Returns statistical percentages and confidence intervals.
+    """
+    try:
+        # Fetching and ordering by category to keep the data organized
+        results = db.query(HealthOutcome).order_by(HealthOutcome.category).all()
+        
+        if not results:
+            return []
+            
+        return results
+    except Exception as exc:
+        logger.exception("Failed to fetch health outcomes: %s", exc)
+        raise HTTPException(
+            status_code=500, 
+            detail="Internal error fetching health outcome data"
+        )
+
+
+@app.get("/low-cost-diet", response_model=List[LowCostDietOut])
+def get_low_cost_diet_stats(db: Session = Depends(get_db)):
+    """
+    Fetch statistics on populations relying on low-cost diets.
+    Returns percentages and 95% confidence intervals for 'Yes' and 'No' responses.
+    """
+    try:
+        # Fetching all records from the low_cost_diet table
+        rows = db.query(LowCostDiet).all()
+        
+        if not rows:
+            return []
+            
+        return rows
+    except Exception as exc:
+        logger.exception("Failed to fetch low-cost diet stats: %s", exc)
+        raise HTTPException(
+            status_code=500, 
+            detail="Internal error fetching low-cost diet data"
+        )
+
+
+@app.get("/low-cost-diet-health-outcomes", response_model=List[LowCostDietHealthOutcomeOut])
+def get_low_cost_diet_health_outcomes(db: Session = Depends(get_db)):
+    """
+    Fetch health outcomes specifically categorized by whether 
+    populations relied on low-cost diets.
+    """
+    try:
+        # Ordering by category and outcome for a consistent frontend display
+        results = (
+            db.query(LowCostDietHealthOutcome)
+            .order_by(LowCostDietHealthOutcome.category, LowCostDietHealthOutcome.health_outcome)
+            .all()
+        )
+        
+        if not results:
+            return []
+            
+        return results
+    except Exception as exc:
+        logger.exception("Failed to fetch low-cost diet health outcomes: %s", exc)
+        raise HTTPException(
+            status_code=500, 
+            detail="Internal error fetching dietary health outcome data"
+        )

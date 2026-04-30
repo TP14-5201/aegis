@@ -64,3 +64,66 @@ class LgaPopulation(Base):
     pop_2024_total = Column(Integer)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class DietIndicator(Base):
+    __tablename__ = "diet_indicator"
+
+    id = Column(Integer, primary_key=True, index=True)
+    category = Column(String)
+    indicator_response = Column(String)
+    worried_pct = Column(Float)
+    worried_95ci_ll = Column(Float)
+    worried_95ci_ul = Column(Float)
+    not_worried_pct = Column(Float)
+    not_worried_95ci_ll = Column(Float)
+    not_worried_95ci_ul = Column(Float)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class HealthOutcome(Base):
+    __tablename__ = "health_outcomes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    category = Column(String)
+    health_outcome = Column(String)
+    insecure_hunger_pct = Column(Float)
+    insecure_hunger_95ci_ll = Column(Float)
+    insecure_hunger_95ci_ul = Column(Float)
+    food_secure_pct = Column(Float)
+    food_secure_95ci_ll = Column(Float)
+    food_secure_95ci_ul = Column(Float)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class LowCostDiet(Base):
+    __tablename__ = "low_cost_diet"
+
+    id = Column(Integer, primary_key=True, index=True)
+    category = Column(String)
+    indicator_response = Column(String)
+    relied_lowcost_yes_pct = Column(Float)
+    relied_lowcost_yes_95ci_ll = Column(Float)
+    relied_lowcost_yes_95ci_ul = Column(Float)
+    relied_lowcost_no_pct = Column(Float)
+    relied_lowcost_no_95ci_ll = Column(Float)
+    relied_lowcost_no_95ci_ul = Column(Float)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+class LowCostDietHealthOutcome(Base):
+    __tablename__ = "low_cost_diet_health_outcome"
+
+    id = Column(Integer, primary_key=True, index=True)
+    category = Column(String)
+    health_outcome = Column(String)
+    relied_lowcost_yes_pct = Column(Float)
+    relied_lowcost_yes_95ci_ll = Column(Float)
+    relied_lowcost_yes_95ci_ul = Column(Float)
+    relied_lowcost_no_pct = Column(Float)
+    relied_lowcost_no_95ci_ll = Column(Float)
+    relied_lowcost_no_95ci_ul = Column(Float)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
