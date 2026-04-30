@@ -37,7 +37,7 @@
 
         <!-- CTA INSIDE HERO -->
         <NuxtLink
-          to="/services"
+          to="/food-banks"
           class="btn-cta mt-10 lg:mt-14 inline-flex items-center justify-center
                  bg-sky shadow-cta rounded-[20px]
                  h-[64px] lg:h-[76px] px-8 lg:px-12
