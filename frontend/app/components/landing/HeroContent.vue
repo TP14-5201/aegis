@@ -1,79 +1,65 @@
 <template>
-  <section class="relative w-full max-w-8xl mx-auto px-5 lg:px-12
-                pt-20 lg:pt-28 pb-0
-                min-h-[720px] lg:min-h-[820px]
-                overflow-hidden">
+  <section class="relative w-full overflow-hidden bg-white">
+    <!-- GLOBAL BLOB BACKGROUND -->
+    <img
+      src="/images/Decore.png"
+      alt=""
+      class="absolute z-0 -translate-x-1/2
+             left-1/2 top-0 w-[180%] max-w-[700px]
+             sm:max-w-[760px]
+             lg:left-[64%] lg:top-auto lg:bottom-0 lg:w-[120%] lg:max-w-[980px]"
+    />
+
     <div
-      class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]
-             gap-8 lg:gap-12 items-stretch"
+      class="relative z-10 mx-auto grid max-w-8xl
+             grid-cols-1 gap-6 px-5 pt-10
+             min-h-[70vh]
+             lg:min-h-[80vh] lg:grid-cols-2 lg:gap-12 lg:px-12 lg:pt-0"
     >
-      <!-- TEXT -->
-      <div class="order-1 lg:order-1 flex flex-col justify-center pt-8 lg:pt-12 pb-12 lg:pb-16">
-        <h2
-          class="font-roboto font-bold text-coral
-                 text-[26px] sm:text-[30px] lg:text-[34px] leading-tight"
-        >
-          Food Banks around Victoria
-        </h2>
+      <!-- LEFT CONTENT -->
+      <div class="flex flex-col justify-center lg:self-center">
+        <p class="text-sm font-bold uppercase tracking-wider text-[#DF6951]">
+          Food Banks around you
+        </p>
 
         <h1
-          class="mt-3 lg:mt-4 font-volkhov font-bold text-navy
-                 text-[44px] sm:text-[58px] lg:text-[68px] xl:text-[75.8px]
-                 leading-[1.05] tracking-[-1.2px] lg:tracking-[-3px]"
+          class="mt-3 font-volkhov text-[42px] font-bold leading-[0.95]
+                 text-navy lg:text-[64px]"
         >
           Help is here<br />
-          when you<br />
-          need it
+          when you need it
         </h1>
 
-        <p
-          class="mt-6 lg:mt-9 font-roboto
-                 text-[18px] sm:text-[20px] lg:text-[24px]
-                 leading-[1.5] text-black"
-        >
-          Immediate access to food support.<br />
+        <p class="mt-5 max-w-xl text-[18px] leading-tight text-black lg:text-[21px]">
+          Immediate access to food support across Victoria.
           No judgment, no barriers.
         </p>
 
-        <!-- CTA INSIDE HERO -->
-        <NuxtLink
-          to="/services"
-          class="btn-cta mt-10 lg:mt-14 inline-flex items-center justify-center
-                 bg-sky shadow-cta rounded-[20px]
-                 h-[64px] lg:h-[76px] px-8 lg:px-12
-                 font-roboto font-extrabold text-navy-deep
-                 text-[18px] lg:text-[24px] w-fit"
+        <a
+          href="#services"
+          class="mt-6 inline-flex w-fit rounded-full bg-[#B8DEFF]
+                 px-7 py-3 font-bold text-navy"
         >
           Find Nearby Food Banks
-        </NuxtLink>
+        </a>
 
-        <p class="mt-4 font-roboto text-[16px] lg:text-[20px] text-ink">
-          Browse anonymously&nbsp;&nbsp;•&nbsp;&nbsp;Available 24/7
+        <p class="mt-4 text-sm text-gray-500">
+          Browse anonymously · Available 24/7
         </p>
       </div>
 
-      <!-- IMAGE -->
+      <!-- RIGHT IMAGE -->
       <div
-        class="relative order-2 lg:order-2 self-stretch
-              flex items-end justify-center lg:justify-end
-              h-full min-h-[320px] lg:min-h-[700px]"
+        class="relative flex min-h-[420px] items-end justify-center
+               self-end lg:min-h-[640px]"
       >
-        <!-- BACKGROUND DECORE -->
         <img
-          class="hidden lg:block absolute -top-[120px] right-[-80px]
-                 w-[620px] xl:w-[720px] h-auto object-contain
-                 z-0 pointer-events-none"
-          src="/images/Decore.png"
-          alt=""
-          aria-hidden="true"
-        />
-
-        <!-- HERO IMAGE (BOTTOM ALIGNED) -->
-        <img
-          class="relative z-10 block w-full max-w-[720px] h-auto object-contain translate-y-[8px]"
           src="/images/landing-hero.png"
-          alt="A volunteer hands a food parcel to a recipient"
-          loading="eager"
+          alt="Family"
+          class="relative z-10 block w-[115%] max-w-[520px]
+                 sm:max-w-[620px]
+                 lg:w-[130%] lg:max-w-[950px]
+                 translate-y-[1px]"
         />
       </div>
     </div>
