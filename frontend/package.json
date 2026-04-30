@@ -13,6 +13,7 @@
     "@turf/boolean-point-in-polygon": "^7.1.0",
     "@turf/dissolve": "^7.1.0",
     "@turf/helpers": "^7.1.0",
+    "d3": "^7.9.0",
     "leaflet": "^1.9.4",
     "mapbox-gl": "^3.22.0",
     "nuxt": "^4.4.2",
