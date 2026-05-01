@@ -136,6 +136,8 @@ class RecommendedMacronutrientsIntake(Base):
     age = Column(String)
     nutrient = Column(String)
     goal = Column(String)
+    portion_guide = Column(String)
     rationale_summary = Column(String)
+    actionable_guidance = Column(String)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
