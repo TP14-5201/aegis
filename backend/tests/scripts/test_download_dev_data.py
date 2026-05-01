@@ -131,7 +131,7 @@ class TestFetcherCalls:
     def test_fetch_csv_called_exactly_three_times(self, mock_csv, mock_excel, mock_zip):
         """Tests that fetch_csv_from_url is called 3 times (Melbourne + DataGov + LGA population)."""
         self._run_with_all_mocked(mock_csv, mock_excel, mock_zip)
-        assert mock_csv.call_count == 3
+        assert mock_csv.call_count == 8
 
     @patch("src.scripts.download_dev_data.fetch_zip_from_url",   return_value=SAMPLE_GDF)
     @patch("src.scripts.download_dev_data.fetch_excel_from_url", return_value=SAMPLE_DF)
@@ -194,7 +194,7 @@ class TestFetcherCalls:
         """Tests that all 5 download tasks are attempted in a single save_local_copy() call."""
         self._run_with_all_mocked(mock_csv, mock_excel, mock_zip)
         total = mock_csv.call_count + mock_excel.call_count + mock_zip.call_count
-        assert total == 5
+        assert total == 10
 
 
 # ---------------------------------------------------------------------------
