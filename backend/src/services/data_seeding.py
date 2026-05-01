@@ -7,7 +7,7 @@ from src.models import (
     Base, SupportService, FoodInsecurity, 
     VicLgaBoundary, LgaPopulation, 
     DietIndicator, HealthOutcome, LowCostDiet,
-    LowCostDietHealthOutcome
+    LowCostDietHealthOutcome, RecommendedMacronutrientsIntake
 )
 
 from src.core.config import settings
@@ -21,7 +21,8 @@ from src.data.loaders.data_loader import (
     load_diet_indicator_dataset,
     load_health_outcome_dataset,
     load_low_cost_diet_dataset,
-    load_low_cost_diet_health_outcome_dataset
+    load_low_cost_diet_health_outcome_dataset,
+    load_recommended_macronutrients_intake_dataset
 )
 
 
@@ -57,7 +58,11 @@ def download_dataset() -> pd.DataFrame:
         settings.FOOD_INSECURITY_RAW_PATH,
         settings.VICLGA_BOUNDARY_RAW_PATH,
         settings.LGA_POPULATION_RAW_PATH,
-        settings.DIET_INDICATOR_RAW_PATH
+        settings.DIET_INDICATOR_RAW_PATH,
+        settings.HEALTH_OUTCOME_RAW_PATH,
+        settings.LOW_COST_DIET_RAW_PATH,
+        settings.LOW_COST_DIET_HEALTH_OUTCOME_RAW_PATH,
+        settings.RECOMMENDED_MACRONUTRIENTS_INTAKE_RAW_PATH
     ]
     if any(not os.path.exists(cfg) for cfg in data_configs):
         logger.info(f"Missing files detected. Downloading...")
@@ -76,7 +81,8 @@ def load_dataset() -> pd.DataFrame:
         (load_diet_indicator_dataset, DietIndicator),
         (load_health_outcome_dataset, HealthOutcome),
         (load_low_cost_diet_dataset, LowCostDiet),
-        (load_low_cost_diet_health_outcome_dataset, LowCostDietHealthOutcome)
+        (load_low_cost_diet_health_outcome_dataset, LowCostDietHealthOutcome),
+        (load_recommended_macronutrients_intake_dataset, RecommendedMacronutrientsIntake)
     ]
     
     return [(loader(), model) for loader, model in DATASET_REGISTRY]
