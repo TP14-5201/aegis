@@ -53,6 +53,7 @@ DIET_INDICATOR_DF     = pd.DataFrame({"lga_name": ["Melbourne"], "diet_score": [
 HEALTH_OUTCOME_DF     = pd.DataFrame({"lga_name": ["Melbourne"], "outcome": ["diabetes"]})
 LOW_COST_DIET_DF      = pd.DataFrame({"lga_name": ["Melbourne"], "weekly_cost": [120.0]})
 LOW_COST_DIET_HO_DF   = pd.DataFrame({"lga_name": ["Melbourne"], "linked_outcome": ["obesity"]})
+MACRONUTRIENT_DF      = pd.DataFrame({"lga_name": ["Melbourne"], "recommended_macronutrients_intake": [120.0]})
 
 
 @pytest.fixture
@@ -76,19 +77,20 @@ def mock_model():
 
 def _all_loader_patches(overrides: dict = None):
     """
-    Returns a dict of patch kwargs for all 8 loaders with their default
+    Returns a dict of patch kwargs for all 9 loaders with their default
     return values. Pass ``overrides`` to swap individual loaders
     (e.g. ``{"load_emergency_services_dataset": side_effect=...}``).
     """
     defaults = {
-        "load_emergency_services_dataset":          EMERGENCY_DF,
-        "load_food_insecurity_dataset":             FOOD_DF,
-        "load_lga_boundaries_dataset":              LGA_BOUNDS_DF,
-        "load_lga_population_dataset":              LGA_POP_DF,
-        "load_diet_indicator_dataset":              DIET_INDICATOR_DF,
-        "load_health_outcome_dataset":              HEALTH_OUTCOME_DF,
-        "load_low_cost_diet_dataset":               LOW_COST_DIET_DF,
-        "load_low_cost_diet_health_outcome_dataset": LOW_COST_DIET_HO_DF,
+        "load_emergency_services_dataset":                EMERGENCY_DF,
+        "load_food_insecurity_dataset":                   FOOD_DF,
+        "load_lga_boundaries_dataset":                    LGA_BOUNDS_DF,
+        "load_lga_population_dataset":                    LGA_POP_DF,
+        "load_diet_indicator_dataset":                    DIET_INDICATOR_DF,
+        "load_health_outcome_dataset":                    HEALTH_OUTCOME_DF,
+        "load_low_cost_diet_dataset":                     LOW_COST_DIET_DF,
+        "load_low_cost_diet_health_outcome_dataset":      LOW_COST_DIET_HO_DF,
+        "load_recommended_macronutrients_intake_dataset": MACRONUTRIENT_DF,
     }
     if overrides:
         defaults.update(overrides)
@@ -206,9 +208,11 @@ class TestSeedSupportServices:
 
 class TestDownloadDataset:
     """
-    download_dataset() checks whether all 6 raw files exist:
+    download_dataset() checks whether all 10 raw files exist:
         MELBOURNE_RAW_PATH, DATAGOV_RAW_PATH, FOOD_INSECURITY_RAW_PATH,
-        VICLGA_BOUNDARY_RAW_PATH, LGA_POPULATION_RAW_PATH, DIET_INDICATOR_RAW_PATH
+        VICLGA_BOUNDARY_RAW_PATH, LGA_POPULATION_RAW_PATH, DIET_INDICATOR_RAW_PATH,
+        HEALTH_OUTCOME_RAW_PATH, LOW_COST_DIET_RAW_PATH,
+        LOW_COST_DIET_HEALTH_OUTCOME_RAW_PATH, RECOMMENDED_MACRONUTRIENTS_INTAKE_RAW_PATH
     and calls save_local_copy() only when at least one is missing.
     """
 
@@ -274,18 +278,54 @@ class TestDownloadDataset:
             download_dataset()
         mock_save.assert_called_once()
 
-    def test_checks_all_six_configured_paths(self):
+    def test_downloads_when_only_health_outcome_file_missing(self):
+        """Tests that save_local_copy is called when only the health outcome file is absent."""
+        with patch("src.services.data_seeding.os.path.exists",
+                   side_effect=lambda p: p != settings.HEALTH_OUTCOME_RAW_PATH), \
+             patch("src.services.data_seeding.save_local_copy") as mock_save:
+            download_dataset()
+        mock_save.assert_called_once()
+
+    def test_downloads_when_only_low_cost_diet_file_missing(self):
+        """Tests that save_local_copy is called when only the low cost diet file is absent."""
+        with patch("src.services.data_seeding.os.path.exists",
+                   side_effect=lambda p: p != settings.LOW_COST_DIET_RAW_PATH), \
+             patch("src.services.data_seeding.save_local_copy") as mock_save:
+            download_dataset()
+        mock_save.assert_called_once()
+
+    def test_downloads_when_only_low_cost_diet_health_outcome_file_missing(self):
+        """Tests that save_local_copy is called when only the low cost diet health outcome file is absent."""
+        with patch("src.services.data_seeding.os.path.exists",
+                   side_effect=lambda p: p != settings.LOW_COST_DIET_HEALTH_OUTCOME_RAW_PATH), \
+             patch("src.services.data_seeding.save_local_copy") as mock_save:
+            download_dataset()
+        mock_save.assert_called_once()
+
+    def test_downloads_when_only_recommended_macronutrients_intake_file_missing(self):
+        """Tests that save_local_copy is called when only the recommended macronutrients intake file is absent."""
+        with patch("src.services.data_seeding.os.path.exists",
+                   side_effect=lambda p: p != settings.RECOMMENDED_MACRONUTRIENTS_INTAKE_RAW_PATH), \
+             patch("src.services.data_seeding.save_local_copy") as mock_save:
+            download_dataset()
+        mock_save.assert_called_once()
+
+    def test_checks_all_ten_configured_paths(self):
         """Tests that os.path.exists is called for every configured raw file path."""
         with patch("src.services.data_seeding.os.path.exists", return_value=True) as mock_exists, \
              patch("src.services.data_seeding.save_local_copy"):
             download_dataset()
         checked = {c.args[0] for c in mock_exists.call_args_list}
-        assert settings.MELBOURNE_RAW_PATH        in checked
-        assert settings.DATAGOV_RAW_PATH          in checked
-        assert settings.FOOD_INSECURITY_RAW_PATH  in checked
-        assert settings.VICLGA_BOUNDARY_RAW_PATH  in checked
-        assert settings.LGA_POPULATION_RAW_PATH   in checked
-        assert settings.DIET_INDICATOR_RAW_PATH   in checked
+        assert settings.MELBOURNE_RAW_PATH                       in checked
+        assert settings.DATAGOV_RAW_PATH                         in checked
+        assert settings.FOOD_INSECURITY_RAW_PATH                 in checked
+        assert settings.VICLGA_BOUNDARY_RAW_PATH                 in checked
+        assert settings.LGA_POPULATION_RAW_PATH                  in checked
+        assert settings.DIET_INDICATOR_RAW_PATH                  in checked
+        assert settings.HEALTH_OUTCOME_RAW_PATH                  in checked
+        assert settings.LOW_COST_DIET_RAW_PATH                   in checked
+        assert settings.LOW_COST_DIET_HEALTH_OUTCOME_RAW_PATH    in checked
+        assert settings.RECOMMENDED_MACRONUTRIENTS_INTAKE_RAW_PATH in checked
 
     def test_save_local_copy_called_exactly_once_when_files_missing(self):
         """Tests that save_local_copy is called exactly once — not once per missing file."""
@@ -324,7 +364,7 @@ class TestDownloadDataset:
 
 class TestLoadDataset:
     """
-    load_dataset() calls 8 loaders and returns a list of 8 (df, model) tuples
+    load_dataset() calls 9 loaders and returns a list of 9 (df, model) tuples
     in the following order:
         (emergency_services_df, SupportService),
         (food_insecurity_df,    FoodInsecurity),
@@ -334,6 +374,7 @@ class TestLoadDataset:
         (health_outcome_df,     HealthOutcome),
         (low_cost_diet_df,      LowCostDiet),
         (low_cost_diet_ho_df,   LowCostDietHealthOutcome),
+        (macronutrient_df,      RecommendedMacronutrientsIntake),
 
     Correct patch targets (functions imported into data_seeding):
         src.services.data_seeding.load_emergency_services_dataset
@@ -344,13 +385,14 @@ class TestLoadDataset:
         src.services.data_seeding.load_health_outcome_dataset
         src.services.data_seeding.load_low_cost_diet_dataset
         src.services.data_seeding.load_low_cost_diet_health_outcome_dataset
+        src.services.data_seeding.load_recommended_macronutrients_intake_dataset
     """
 
     BASE = "src.services.data_seeding"
 
     def _patch_all(self, overrides: dict = None):
         """
-        Context manager that patches all 8 loaders. ``overrides`` maps a
+        Context manager that patches all 9 loaders. ``overrides`` maps a
         short loader name to a ``side_effect`` or ``return_value`` dict,
         e.g. ``{"load_emergency_services_dataset": {"side_effect": FileNotFoundError()}}``.
         """
@@ -371,7 +413,6 @@ class TestLoadDataset:
 
     def _run_with_all_patches(self, overrides=None):
         patches_cfg = _all_loader_patches()
-        ctx = {}
         patch_objs = []
         for name, df in patches_cfg.items():
             target = f"{self.BASE}.{name}"
@@ -397,7 +438,7 @@ class TestLoadDataset:
         assert isinstance(result, list)
 
     def test_returns_correct_num_items(self):
-        """Tests that load_dataset returns exactly 8 (df, model) pairs."""
+        """Tests that load_dataset returns exactly 9 (df, model) pairs."""
         result, _ = self._run_with_all_patches()
         assert len(result) == 9
 
@@ -463,9 +504,15 @@ class TestLoadDataset:
         df, _ = result[7]
         assert df is LOW_COST_DIET_HO_DF
 
+    def test_ninth_pair_is_recommended_macronutrients_intake(self):
+        """Tests that the ninth pair contains the recommended macronutrients intake DataFrame."""
+        result, _ = self._run_with_all_patches()
+        df, _ = result[8]
+        assert df is MACRONUTRIENT_DF
+
     # -- all loaders called --
 
-    def test_all_eight_loaders_are_called(self):
+    def test_all_nine_loaders_are_called(self):
         """Tests that every loader function is invoked exactly once."""
         loader_names = list(_all_loader_patches().keys())
         patch_objs = []
@@ -521,3 +568,7 @@ class TestLoadDataset:
     def test_propagates_exception_from_low_cost_diet_health_outcome_loader(self):
         """Tests that a failure in load_low_cost_diet_health_outcome_dataset propagates up."""
         self._assert_propagates("load_low_cost_diet_health_outcome_dataset")
+
+    def test_propagates_exception_from_recommended_macronutrients_intake_loader(self):
+        """Tests that a failure in load_recommended_macronutrients_intake_dataset propagates up."""
+        self._assert_propagates("load_recommended_macronutrients_intake_dataset")
