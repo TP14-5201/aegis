@@ -105,3 +105,14 @@ class LowCostDietHealthOutcomeOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class RecommendedMacronutrientsIntakeOut(BaseModel):
+    id: int
+    age: str
+    nutrient: str
+    goal: str
+    rationale_summary: str
+
+    class Config:
+        from_attributes = True

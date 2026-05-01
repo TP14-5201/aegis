@@ -10,8 +10,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from src.core.logging import logger
 from src.database import Base, engine, get_db
-from src.models import LgaPopulation, FoodInsecurity, VicLgaBoundary, SupportService, DietIndicator, HealthOutcome, LowCostDiet, LowCostDietHealthOutcome
-from src.schemas import NearbyServiceOut, FoodInsecurityRegion, LgaStatsOut, DietIndicatorOut, HealthOutcomeOut, LowCostDietOut, LowCostDietHealthOutcomeOut
+from src.models import LgaPopulation, FoodInsecurity, VicLgaBoundary, SupportService, DietIndicator, HealthOutcome, LowCostDiet, LowCostDietHealthOutcome, RecommendedMacronutrientsIntake
+from src.schemas import NearbyServiceOut, FoodInsecurityRegion, LgaStatsOut, DietIndicatorOut, HealthOutcomeOut, LowCostDietOut, LowCostDietHealthOutcomeOut, RecommendedMacronutrientsIntakeOut
 from src.services.nearby_search import DEFAULT_KEYWORDS, find_nearby_support_services
 from src.utils.opening_hours import is_open_now, _now_in_tz
 
@@ -27,6 +27,8 @@ ALLOWED_ORIGINS = [
     "http://127.0.0.1:3000",
     # Production
     "https://cherebowl.vercel.app",
+    # Dev
+    "https://cherebowl-underdevelopment.vercel.app",
     # Archived version
     "https://cherebowl-v1.vercel.app"
 ]
@@ -351,4 +353,29 @@ def get_low_cost_diet_health_outcomes(db: Session = Depends(get_db)):
         raise HTTPException(
             status_code=500, 
             detail="Internal error fetching dietary health outcome data"
+        )
+
+
+@app.get("/recommended-macronutrients", response_model=List[RecommendedMacronutrientsIntakeOut])
+def get_all_macronutrient_goals(db: Session = Depends(get_db)):
+    """
+    Retrieve all nutritional records based on age, nutrient, and goals 
+    """
+    try:
+        # Fetching and ordering by category to keep the data organized
+        results = (
+            db.query(RecommendedMacronutrientsIntake)
+            .order_by(RecommendedMacronutrientsIntake.age, RecommendedMacronutrientsIntake.nutrient)
+            .all()
+        )
+        
+        if not results:
+            return []
+            
+        return results
+    except Exception as exc:
+        logger.exception("Failed to fetch recommended macronutrients: %s", exc)
+        raise HTTPException(
+            status_code=500, 
+            detail="Internal error fetching recommended macronutrients"
         )
