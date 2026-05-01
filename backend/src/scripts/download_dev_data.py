@@ -20,7 +20,12 @@ def save_local_copy() -> None:
         (fetch_csv_from_url, settings.OTHER_DATA_URL, settings.DATAGOV_RAW_PATH, {"separator": settings.OTHER_SEP}),
         (fetch_excel_from_url, settings.FOOD_INSECURITY_URL, settings.FOOD_INSECURITY_RAW_PATH, {"sheet_name": settings.FOOD_INSECURITY_SHEET_NAME}),
         (fetch_zip_from_url, settings.VICLGA_BOUNDARY_URL, settings.VICLGA_BOUNDARY_RAW_PATH, {}),
-        (fetch_csv_from_url, settings.LGA_POPULATION_URL, settings.LGA_POPULATION_RAW_PATH, {"separator": settings.LGA_POPULATION_SEP})
+        (fetch_csv_from_url, settings.LGA_POPULATION_URL, settings.LGA_POPULATION_RAW_PATH, {"separator": settings.LGA_POPULATION_SEP}),
+        (fetch_csv_from_url, settings.DIET_INDICATOR_URL, settings.DIET_INDICATOR_RAW_PATH, {"separator": settings.DIET_INDICATOR_SEP}),
+        (fetch_csv_from_url, settings.HEALTH_OUTCOME_URL, settings.HEALTH_OUTCOME_RAW_PATH, {"separator": settings.HEALTH_OUTCOME_SEP}),
+        (fetch_csv_from_url, settings.LOW_COST_DIET_URL, settings.LOW_COST_DIET_RAW_PATH, {"separator": settings.LOW_COST_DIET_SEP}),
+        (fetch_csv_from_url, settings.LOW_COST_DIET_HEALTH_OUTCOME_URL, settings.LOW_COST_DIET_HEALTH_OUTCOME_RAW_PATH, {"separator": settings.LOW_COST_DIET_HEALTH_OUTCOME_SEP}),
+        (fetch_csv_from_url, settings.RECOMMENDED_MACRONUTRIENTS_INTAKE_URL, settings.RECOMMENDED_MACRONUTRIENTS_INTAKE_RAW_PATH, {"separator": settings.RECOMMENDED_MACRONUTRIENTS_INTAKE_SEP})
     ]
 
     # Download all necessary files

@@ -80,6 +80,11 @@ class Settings(BaseSettings):
     LOW_COST_DIET_HEALTH_OUTCOME_SEP: str = ","
     ### END OF Victorian Population Health Survey (VPHS) 2014 Data ###
 
+    ### Recommended Macronutrients Intake Data (Appendix 3: Macro and micronutrient goals) ###
+    RECOMMENDED_MACRONUTRIENTS_INTAKE_URL: str = "https://www.dropbox.com/scl/fi/aok0u8f41q2wrisy00gmk/recommended_macronutrients.csv?rlkey=qwgcap8nvtftwrjc4joywuwrx&st=dkpxc39u&dl=1"
+    RECOMMENDED_MACRONUTRIENTS_INTAKE_SEP: str = ","
+    ### END OF Recommended Macronutrients Intake Data ###
+
 
     ### Local file paths ###
     RAW_DATA_DIR: str = "src/data/raw"
@@ -98,6 +103,8 @@ class Settings(BaseSettings):
     HEALTH_OUTCOME_RAW_PATH: str = os.path.join(RAW_DATA_DIR, "vphs_2014_food_insecurity_health_outcomes_table_a1_19_raw.csv")
     LOW_COST_DIET_RAW_PATH: str = os.path.join(RAW_DATA_DIR, "vphs_2014_parents_low_cost_diet_table_a1_27_raw.csv")
     LOW_COST_DIET_HEALTH_OUTCOME_RAW_PATH: str = os.path.join(RAW_DATA_DIR, "vphs_2014_parents_low_cost_health_outcomes_table_a1_28_raw.csv")
+    
+    RECOMMENDED_MACRONUTRIENTS_INTAKE_RAW_PATH: str = os.path.join(RAW_DATA_DIR, "recommended_macronutrients_raw.csv")
     ### END OF Local file paths ###
 
 settings = Settings()

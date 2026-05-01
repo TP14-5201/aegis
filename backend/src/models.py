@@ -127,3 +127,17 @@ class LowCostDietHealthOutcome(Base):
     relied_lowcost_no_95ci_ul = Column(Float)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class RecommendedMacronutrientsIntake(Base):
+    __tablename__ = "recommended_macronutrients_intake"
+
+    id = Column(Integer, primary_key=True, index=True)
+    age = Column(String)
+    nutrient = Column(String)
+    goal = Column(String)
+    portion_guide = Column(String)
+    rationale_summary = Column(String)
+    actionable_guidance = Column(String)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
