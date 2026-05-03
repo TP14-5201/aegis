@@ -45,10 +45,15 @@ def make_sample_df(n: int = 2) -> pd.DataFrame:
 
 
 # Sample DataFrames for each dataset type.
-EMERGENCY_DF   = make_sample_df(n=2)
-FOOD_DF        = pd.DataFrame({"indicator": ["food"], "estimate_pct": [10.0]})
-LGA_BOUNDS_DF  = pd.DataFrame({"lga_name": ["Melbourne"], "geometry": ["POLYGON(...)"]})
-LGA_POP_DF     = pd.DataFrame({"lga_name": ["Melbourne"], "lga_pid": ["LGA_PID_001"]})
+EMERGENCY_DF          = make_sample_df(n=2)
+FOOD_DF               = pd.DataFrame({"indicator": ["food"], "estimate_pct": [10.0]})
+LGA_BOUNDS_DF         = pd.DataFrame({"lga_name": ["Melbourne"], "geometry": ["POLYGON(...)"]})
+LGA_POP_DF            = pd.DataFrame({"lga_name": ["Melbourne"], "lga_pid": ["LGA_PID_001"]})
+DIET_INDICATOR_DF     = pd.DataFrame({"lga_name": ["Melbourne"], "diet_score": [7.5]})
+HEALTH_OUTCOME_DF     = pd.DataFrame({"lga_name": ["Melbourne"], "outcome": ["diabetes"]})
+LOW_COST_DIET_DF      = pd.DataFrame({"lga_name": ["Melbourne"], "weekly_cost": [120.0]})
+LOW_COST_DIET_HO_DF   = pd.DataFrame({"lga_name": ["Melbourne"], "linked_outcome": ["obesity"]})
+MACRONUTRIENT_DF      = pd.DataFrame({"lga_name": ["Melbourne"], "recommended_macronutrients_intake": [120.0]})
 
 
 @pytest.fixture
@@ -68,6 +73,28 @@ def mock_model():
     model = MagicMock()
     model.__name__ = "MockModel"
     return model
+
+
+def _all_loader_patches(overrides: dict = None):
+    """
+    Returns a dict of patch kwargs for all 9 loaders with their default
+    return values. Pass ``overrides`` to swap individual loaders
+    (e.g. ``{"load_emergency_services_dataset": side_effect=...}``).
+    """
+    defaults = {
+        "load_emergency_services_dataset":                EMERGENCY_DF,
+        "load_food_insecurity_dataset":                   FOOD_DF,
+        "load_lga_boundaries_dataset":                    LGA_BOUNDS_DF,
+        "load_lga_population_dataset":                    LGA_POP_DF,
+        "load_diet_indicator_dataset":                    DIET_INDICATOR_DF,
+        "load_health_outcome_dataset":                    HEALTH_OUTCOME_DF,
+        "load_low_cost_diet_dataset":                     LOW_COST_DIET_DF,
+        "load_low_cost_diet_health_outcome_dataset":      LOW_COST_DIET_HO_DF,
+        "load_recommended_macronutrients_intake_dataset": MACRONUTRIENT_DF,
+    }
+    if overrides:
+        defaults.update(overrides)
+    return defaults
 
 
 # ---------------------------------------------------------------------------
@@ -181,9 +208,11 @@ class TestSeedSupportServices:
 
 class TestDownloadDataset:
     """
-    download_dataset() checks whether all 5 raw files exist:
+    download_dataset() checks whether all 10 raw files exist:
         MELBOURNE_RAW_PATH, DATAGOV_RAW_PATH, FOOD_INSECURITY_RAW_PATH,
-        VICLGA_BOUNDARY_RAW_PATH, LGA_POPULATION_RAW_PATH
+        VICLGA_BOUNDARY_RAW_PATH, LGA_POPULATION_RAW_PATH, DIET_INDICATOR_RAW_PATH,
+        HEALTH_OUTCOME_RAW_PATH, LOW_COST_DIET_RAW_PATH,
+        LOW_COST_DIET_HEALTH_OUTCOME_RAW_PATH, RECOMMENDED_MACRONUTRIENTS_INTAKE_RAW_PATH
     and calls save_local_copy() only when at least one is missing.
     """
 
@@ -241,17 +270,62 @@ class TestDownloadDataset:
             download_dataset()
         mock_save.assert_called_once()
 
-    def test_checks_all_five_configured_paths(self):
+    def test_downloads_when_only_diet_indicator_file_missing(self):
+        """Tests that save_local_copy is called when only the diet indicator file is absent."""
+        with patch("src.services.data_seeding.os.path.exists",
+                   side_effect=lambda p: p != settings.DIET_INDICATOR_RAW_PATH), \
+             patch("src.services.data_seeding.save_local_copy") as mock_save:
+            download_dataset()
+        mock_save.assert_called_once()
+
+    def test_downloads_when_only_health_outcome_file_missing(self):
+        """Tests that save_local_copy is called when only the health outcome file is absent."""
+        with patch("src.services.data_seeding.os.path.exists",
+                   side_effect=lambda p: p != settings.HEALTH_OUTCOME_RAW_PATH), \
+             patch("src.services.data_seeding.save_local_copy") as mock_save:
+            download_dataset()
+        mock_save.assert_called_once()
+
+    def test_downloads_when_only_low_cost_diet_file_missing(self):
+        """Tests that save_local_copy is called when only the low cost diet file is absent."""
+        with patch("src.services.data_seeding.os.path.exists",
+                   side_effect=lambda p: p != settings.LOW_COST_DIET_RAW_PATH), \
+             patch("src.services.data_seeding.save_local_copy") as mock_save:
+            download_dataset()
+        mock_save.assert_called_once()
+
+    def test_downloads_when_only_low_cost_diet_health_outcome_file_missing(self):
+        """Tests that save_local_copy is called when only the low cost diet health outcome file is absent."""
+        with patch("src.services.data_seeding.os.path.exists",
+                   side_effect=lambda p: p != settings.LOW_COST_DIET_HEALTH_OUTCOME_RAW_PATH), \
+             patch("src.services.data_seeding.save_local_copy") as mock_save:
+            download_dataset()
+        mock_save.assert_called_once()
+
+    def test_downloads_when_only_recommended_macronutrients_intake_file_missing(self):
+        """Tests that save_local_copy is called when only the recommended macronutrients intake file is absent."""
+        with patch("src.services.data_seeding.os.path.exists",
+                   side_effect=lambda p: p != settings.RECOMMENDED_MACRONUTRIENTS_INTAKE_RAW_PATH), \
+             patch("src.services.data_seeding.save_local_copy") as mock_save:
+            download_dataset()
+        mock_save.assert_called_once()
+
+    def test_checks_all_ten_configured_paths(self):
         """Tests that os.path.exists is called for every configured raw file path."""
         with patch("src.services.data_seeding.os.path.exists", return_value=True) as mock_exists, \
              patch("src.services.data_seeding.save_local_copy"):
             download_dataset()
         checked = {c.args[0] for c in mock_exists.call_args_list}
-        assert settings.MELBOURNE_RAW_PATH        in checked
-        assert settings.DATAGOV_RAW_PATH          in checked
-        assert settings.FOOD_INSECURITY_RAW_PATH  in checked
-        assert settings.VICLGA_BOUNDARY_RAW_PATH  in checked
-        assert settings.LGA_POPULATION_RAW_PATH   in checked
+        assert settings.MELBOURNE_RAW_PATH                       in checked
+        assert settings.DATAGOV_RAW_PATH                         in checked
+        assert settings.FOOD_INSECURITY_RAW_PATH                 in checked
+        assert settings.VICLGA_BOUNDARY_RAW_PATH                 in checked
+        assert settings.LGA_POPULATION_RAW_PATH                  in checked
+        assert settings.DIET_INDICATOR_RAW_PATH                  in checked
+        assert settings.HEALTH_OUTCOME_RAW_PATH                  in checked
+        assert settings.LOW_COST_DIET_RAW_PATH                   in checked
+        assert settings.LOW_COST_DIET_HEALTH_OUTCOME_RAW_PATH    in checked
+        assert settings.RECOMMENDED_MACRONUTRIENTS_INTAKE_RAW_PATH in checked
 
     def test_save_local_copy_called_exactly_once_when_files_missing(self):
         """Tests that save_local_copy is called exactly once — not once per missing file."""
@@ -290,106 +364,211 @@ class TestDownloadDataset:
 
 class TestLoadDataset:
     """
-    load_dataset() calls 4 loaders and returns a 4-tuple:
-        (df_emergency_services, df_food_insecurity, df_lga_boundaries, df_lga_population)
+    load_dataset() calls 9 loaders and returns a list of 9 (df, model) tuples
+    in the following order:
+        (emergency_services_df, SupportService),
+        (food_insecurity_df,    FoodInsecurity),
+        (lga_boundaries_df,     VicLgaBoundary),
+        (lga_population_df,     LgaPopulation),
+        (diet_indicator_df,     DietIndicator),
+        (health_outcome_df,     HealthOutcome),
+        (low_cost_diet_df,      LowCostDiet),
+        (low_cost_diet_ho_df,   LowCostDietHealthOutcome),
+        (macronutrient_df,      RecommendedMacronutrientsIntake),
 
     Correct patch targets (functions imported into data_seeding):
         src.services.data_seeding.load_emergency_services_dataset
         src.services.data_seeding.load_food_insecurity_dataset
         src.services.data_seeding.load_lga_boundaries_dataset
         src.services.data_seeding.load_lga_population_dataset
+        src.services.data_seeding.load_diet_indicator_dataset
+        src.services.data_seeding.load_health_outcome_dataset
+        src.services.data_seeding.load_low_cost_diet_dataset
+        src.services.data_seeding.load_low_cost_diet_health_outcome_dataset
+        src.services.data_seeding.load_recommended_macronutrients_intake_dataset
     """
 
-    def test_returns_four_tuple(self):
-        """Tests that load_dataset returns a tuple of exactly 4 items."""
-        with patch("src.services.data_seeding.load_emergency_services_dataset", return_value=EMERGENCY_DF), \
-             patch("src.services.data_seeding.load_food_insecurity_dataset",    return_value=FOOD_DF), \
-             patch("src.services.data_seeding.load_lga_boundaries_dataset",     return_value=LGA_BOUNDS_DF), \
-             patch("src.services.data_seeding.load_lga_population_dataset",     return_value=LGA_POP_DF):
+    BASE = "src.services.data_seeding"
+
+    def _patch_all(self, overrides: dict = None):
+        """
+        Context manager that patches all 9 loaders. ``overrides`` maps a
+        short loader name to a ``side_effect`` or ``return_value`` dict,
+        e.g. ``{"load_emergency_services_dataset": {"side_effect": FileNotFoundError()}}``.
+        """
+        patches_cfg = _all_loader_patches()
+        active_patches = []
+        mocks = {}
+        for name, df in patches_cfg.items():
+            target = f"{self.BASE}.{name}"
+            kw = {"return_value": df}
+            if overrides and name in overrides:
+                kw = overrides[name]
+            p = patch(target, **kw)
+            active_patches.append(p)
+            mocks[name] = p
+        return active_patches
+
+    # -- helpers --
+
+    def _run_with_all_patches(self, overrides=None):
+        patches_cfg = _all_loader_patches()
+        patch_objs = []
+        for name, df in patches_cfg.items():
+            target = f"{self.BASE}.{name}"
+            if overrides and name in overrides:
+                p = patch(target, **overrides[name])
+            else:
+                p = patch(target, return_value=df)
+            patch_objs.append(p)
+
+        started = [p.start() for p in patch_objs]
+        try:
             result = load_dataset()
-        assert isinstance(result, tuple)
-        assert len(result) == 4
+        finally:
+            for p in patch_objs:
+                p.stop()
+        return result, started
 
-    def test_first_element_is_emergency_services_dataframe(self):
-        """Tests that the first tuple element is the emergency services DataFrame."""
-        with patch("src.services.data_seeding.load_emergency_services_dataset", return_value=EMERGENCY_DF), \
-             patch("src.services.data_seeding.load_food_insecurity_dataset",    return_value=FOOD_DF), \
-             patch("src.services.data_seeding.load_lga_boundaries_dataset",     return_value=LGA_BOUNDS_DF), \
-             patch("src.services.data_seeding.load_lga_population_dataset",     return_value=LGA_POP_DF):
-            df_emergency, _, _, _ = load_dataset()
-        assert df_emergency is EMERGENCY_DF
+    # -- structure tests --
 
-    def test_second_element_is_food_insecurity_dataframe(self):
-        """Tests that the second tuple element is the food insecurity DataFrame."""
-        with patch("src.services.data_seeding.load_emergency_services_dataset", return_value=EMERGENCY_DF), \
-             patch("src.services.data_seeding.load_food_insecurity_dataset",    return_value=FOOD_DF), \
-             patch("src.services.data_seeding.load_lga_boundaries_dataset",     return_value=LGA_BOUNDS_DF), \
-             patch("src.services.data_seeding.load_lga_population_dataset",     return_value=LGA_POP_DF):
-            _, df_food, _, _ = load_dataset()
-        assert df_food is FOOD_DF
+    def test_returns_list(self):
+        """Tests that load_dataset returns a list."""
+        result, _ = self._run_with_all_patches()
+        assert isinstance(result, list)
 
-    def test_third_element_is_lga_boundaries_dataframe(self):
-        """Tests that the third tuple element is the LGA boundaries DataFrame."""
-        with patch("src.services.data_seeding.load_emergency_services_dataset", return_value=EMERGENCY_DF), \
-             patch("src.services.data_seeding.load_food_insecurity_dataset",    return_value=FOOD_DF), \
-             patch("src.services.data_seeding.load_lga_boundaries_dataset",     return_value=LGA_BOUNDS_DF), \
-             patch("src.services.data_seeding.load_lga_population_dataset",     return_value=LGA_POP_DF):
-            _, _, df_lga, _ = load_dataset()
-        assert df_lga is LGA_BOUNDS_DF
+    def test_returns_correct_num_items(self):
+        """Tests that load_dataset returns exactly 9 (df, model) pairs."""
+        result, _ = self._run_with_all_patches()
+        assert len(result) == 9
 
-    def test_fourth_element_is_lga_population_dataframe(self):
-        """Tests that the fourth tuple element is the LGA population DataFrame."""
-        with patch("src.services.data_seeding.load_emergency_services_dataset", return_value=EMERGENCY_DF), \
-             patch("src.services.data_seeding.load_food_insecurity_dataset",    return_value=FOOD_DF), \
-             patch("src.services.data_seeding.load_lga_boundaries_dataset",     return_value=LGA_BOUNDS_DF), \
-             patch("src.services.data_seeding.load_lga_population_dataset",     return_value=LGA_POP_DF):
-            _, _, _, df_pop = load_dataset()
-        assert df_pop is LGA_POP_DF
+    def test_each_item_is_two_tuple(self):
+        """Tests that every item in the result is a 2-tuple of (DataFrame, model class)."""
+        result, _ = self._run_with_all_patches()
+        for item in result:
+            assert len(item) == 2
 
-    def test_all_four_loaders_are_called(self):
+    def test_each_first_element_is_dataframe(self):
+        """Tests that the first element of every pair is a DataFrame."""
+        result, _ = self._run_with_all_patches()
+        for df, _ in result:
+            assert isinstance(df, pd.DataFrame)
+
+    # -- ordering / identity tests --
+
+    def test_first_pair_is_emergency_services(self):
+        """Tests that the first pair contains the emergency services DataFrame."""
+        result, _ = self._run_with_all_patches()
+        df, _ = result[0]
+        assert df is EMERGENCY_DF
+
+    def test_second_pair_is_food_insecurity(self):
+        """Tests that the second pair contains the food insecurity DataFrame."""
+        result, _ = self._run_with_all_patches()
+        df, _ = result[1]
+        assert df is FOOD_DF
+
+    def test_third_pair_is_lga_boundaries(self):
+        """Tests that the third pair contains the LGA boundaries DataFrame."""
+        result, _ = self._run_with_all_patches()
+        df, _ = result[2]
+        assert df is LGA_BOUNDS_DF
+
+    def test_fourth_pair_is_lga_population(self):
+        """Tests that the fourth pair contains the LGA population DataFrame."""
+        result, _ = self._run_with_all_patches()
+        df, _ = result[3]
+        assert df is LGA_POP_DF
+
+    def test_fifth_pair_is_diet_indicator(self):
+        """Tests that the fifth pair contains the diet indicator DataFrame."""
+        result, _ = self._run_with_all_patches()
+        df, _ = result[4]
+        assert df is DIET_INDICATOR_DF
+
+    def test_sixth_pair_is_health_outcome(self):
+        """Tests that the sixth pair contains the health outcome DataFrame."""
+        result, _ = self._run_with_all_patches()
+        df, _ = result[5]
+        assert df is HEALTH_OUTCOME_DF
+
+    def test_seventh_pair_is_low_cost_diet(self):
+        """Tests that the seventh pair contains the low cost diet DataFrame."""
+        result, _ = self._run_with_all_patches()
+        df, _ = result[6]
+        assert df is LOW_COST_DIET_DF
+
+    def test_eighth_pair_is_low_cost_diet_health_outcome(self):
+        """Tests that the eighth pair contains the low cost diet health outcome DataFrame."""
+        result, _ = self._run_with_all_patches()
+        df, _ = result[7]
+        assert df is LOW_COST_DIET_HO_DF
+
+    def test_ninth_pair_is_recommended_macronutrients_intake(self):
+        """Tests that the ninth pair contains the recommended macronutrients intake DataFrame."""
+        result, _ = self._run_with_all_patches()
+        df, _ = result[8]
+        assert df is MACRONUTRIENT_DF
+
+    # -- all loaders called --
+
+    def test_all_nine_loaders_are_called(self):
         """Tests that every loader function is invoked exactly once."""
-        with patch("src.services.data_seeding.load_emergency_services_dataset", return_value=EMERGENCY_DF) as mel, \
-             patch("src.services.data_seeding.load_food_insecurity_dataset",    return_value=FOOD_DF)       as food, \
-             patch("src.services.data_seeding.load_lga_boundaries_dataset",     return_value=LGA_BOUNDS_DF) as lga, \
-             patch("src.services.data_seeding.load_lga_population_dataset",     return_value=LGA_POP_DF)    as pop:
+        loader_names = list(_all_loader_patches().keys())
+        patch_objs = []
+        mocks = []
+        for name in loader_names:
+            df = _all_loader_patches()[name]
+            p = patch(f"{self.BASE}.{name}", return_value=df)
+            patch_objs.append(p)
+            mocks.append(p.start())
+        try:
             load_dataset()
-        mel.assert_called_once()
-        food.assert_called_once()
-        lga.assert_called_once()
-        pop.assert_called_once()
+        finally:
+            for p in patch_objs:
+                p.stop()
+        for m in mocks:
+            m.assert_called_once()
+
+    # -- exception propagation --
+
+    def _assert_propagates(self, failing_loader: str):
+        overrides = {failing_loader: {"side_effect": FileNotFoundError("missing")}}
+        with pytest.raises(FileNotFoundError):
+            self._run_with_all_patches(overrides=overrides)
 
     def test_propagates_exception_from_emergency_services_loader(self):
         """Tests that a failure in load_emergency_services_dataset propagates up."""
-        with patch("src.services.data_seeding.load_emergency_services_dataset", side_effect=FileNotFoundError("missing")), \
-             patch("src.services.data_seeding.load_food_insecurity_dataset",    return_value=FOOD_DF), \
-             patch("src.services.data_seeding.load_lga_boundaries_dataset",     return_value=LGA_BOUNDS_DF), \
-             patch("src.services.data_seeding.load_lga_population_dataset",     return_value=LGA_POP_DF):
-            with pytest.raises(FileNotFoundError):
-                load_dataset()
+        self._assert_propagates("load_emergency_services_dataset")
 
     def test_propagates_exception_from_food_insecurity_loader(self):
         """Tests that a failure in load_food_insecurity_dataset propagates up."""
-        with patch("src.services.data_seeding.load_emergency_services_dataset", return_value=EMERGENCY_DF), \
-             patch("src.services.data_seeding.load_food_insecurity_dataset",    side_effect=FileNotFoundError("missing")), \
-             patch("src.services.data_seeding.load_lga_boundaries_dataset",     return_value=LGA_BOUNDS_DF), \
-             patch("src.services.data_seeding.load_lga_population_dataset",     return_value=LGA_POP_DF):
-            with pytest.raises(FileNotFoundError):
-                load_dataset()
+        self._assert_propagates("load_food_insecurity_dataset")
 
     def test_propagates_exception_from_lga_boundaries_loader(self):
         """Tests that a failure in load_lga_boundaries_dataset propagates up."""
-        with patch("src.services.data_seeding.load_emergency_services_dataset", return_value=EMERGENCY_DF), \
-             patch("src.services.data_seeding.load_food_insecurity_dataset",    return_value=FOOD_DF), \
-             patch("src.services.data_seeding.load_lga_boundaries_dataset",     side_effect=FileNotFoundError("missing")), \
-             patch("src.services.data_seeding.load_lga_population_dataset",     return_value=LGA_POP_DF):
-            with pytest.raises(FileNotFoundError):
-                load_dataset()
+        self._assert_propagates("load_lga_boundaries_dataset")
 
     def test_propagates_exception_from_lga_population_loader(self):
         """Tests that a failure in load_lga_population_dataset propagates up."""
-        with patch("src.services.data_seeding.load_emergency_services_dataset", return_value=EMERGENCY_DF), \
-             patch("src.services.data_seeding.load_food_insecurity_dataset",    return_value=FOOD_DF), \
-             patch("src.services.data_seeding.load_lga_boundaries_dataset",     return_value=LGA_BOUNDS_DF), \
-             patch("src.services.data_seeding.load_lga_population_dataset",     side_effect=FileNotFoundError("missing")):
-            with pytest.raises(FileNotFoundError):
-                load_dataset()
+        self._assert_propagates("load_lga_population_dataset")
+
+    def test_propagates_exception_from_diet_indicator_loader(self):
+        """Tests that a failure in load_diet_indicator_dataset propagates up."""
+        self._assert_propagates("load_diet_indicator_dataset")
+
+    def test_propagates_exception_from_health_outcome_loader(self):
+        """Tests that a failure in load_health_outcome_dataset propagates up."""
+        self._assert_propagates("load_health_outcome_dataset")
+
+    def test_propagates_exception_from_low_cost_diet_loader(self):
+        """Tests that a failure in load_low_cost_diet_dataset propagates up."""
+        self._assert_propagates("load_low_cost_diet_dataset")
+
+    def test_propagates_exception_from_low_cost_diet_health_outcome_loader(self):
+        """Tests that a failure in load_low_cost_diet_health_outcome_dataset propagates up."""
+        self._assert_propagates("load_low_cost_diet_health_outcome_dataset")
+
+    def test_propagates_exception_from_recommended_macronutrients_intake_loader(self):
+        """Tests that a failure in load_recommended_macronutrients_intake_dataset propagates up."""
+        self._assert_propagates("load_recommended_macronutrients_intake_dataset")

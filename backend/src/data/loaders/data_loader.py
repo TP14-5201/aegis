@@ -9,6 +9,11 @@ from src.data.wranglers.datagov_wrangler import wrangle_datagov
 from src.data.wranglers.food_insecurity_wrangler import wrangle_food_insecurity
 from src.data.wranglers.vic_lga_boundaries_wrangler import wrangle_viclga_boundaries, add_lga_pid_from_lga_population_data
 from src.data.wranglers.lga_population_wrangler import wrangle_lga_population
+from src.data.wranglers.diet_indicator_wrangler import wrangle_diet_indicator
+from src.data.wranglers.health_outcome_wrangler import wrangle_health_outcome
+from src.data.wranglers.low_cost_diet_wrangler import wrangle_low_cost_diet
+from src.data.wranglers.low_cost_diet_health_outcome_wrangler import wrangle_low_cost_diet_health_outcome
+from src.data.wranglers.recommended_macronutrients_intake_wrangler import wrangle_recommended_macronutrients_intake
 
 
 def _load_and_wrangle(
@@ -75,3 +80,28 @@ def load_food_insecurity_dataset() -> pd.DataFrame:
     except Exception as e:
         logger.error(f"Failed to load food insecurity dataset: {e}")
         raise
+
+
+def load_diet_indicator_dataset() -> pd.DataFrame:
+    """Load VPHS 2014 food insecurity diet indicators dataset (Table A1-18)."""
+    return _load_and_wrangle(settings.DIET_INDICATOR_RAW_PATH, wrangle_diet_indicator, "Diet Indicator")
+
+
+def load_health_outcome_dataset() -> pd.DataFrame:
+    """Load VPHS 2014 food insecurity health outcomes dataset (Table A1-19)."""
+    return _load_and_wrangle(settings.HEALTH_OUTCOME_RAW_PATH, wrangle_health_outcome, "Health Outcome")
+
+
+def load_low_cost_diet_dataset() -> pd.DataFrame:
+    """Load VPHS 2014 parents low cost diet table (Table A1-27)."""
+    return _load_and_wrangle(settings.LOW_COST_DIET_RAW_PATH, wrangle_low_cost_diet, "Low Cost Diet")
+
+
+def load_low_cost_diet_health_outcome_dataset() -> pd.DataFrame:
+    """Load VPHS 2014 parents low cost diet health outcomes table (Table A1-28)."""
+    return _load_and_wrangle(settings.LOW_COST_DIET_HEALTH_OUTCOME_RAW_PATH, wrangle_low_cost_diet_health_outcome, "Low Cost Diet Health Outcome")
+
+
+def load_recommended_macronutrients_intake_dataset() -> pd.DataFrame:
+    """Load recommended macronutrients intake dataset (Table A1-27)."""
+    return _load_and_wrangle(settings.RECOMMENDED_MACRONUTRIENTS_INTAKE_RAW_PATH, wrangle_recommended_macronutrients_intake, "Recommended Macronutrients Intake")
