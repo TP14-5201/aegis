@@ -36,7 +36,7 @@
         </p>
 
         <NuxtLink
-          to="/services"
+          to="/food-banks"
           class="group mt-6 inline-flex items-center justify-center gap-3
                 rounded-[20px]
                 h-[64px] lg:h-[76px]

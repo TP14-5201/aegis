@@ -5,7 +5,11 @@
 
     <!-- ── Search & Filter Header ── -->
     <div ref="headerEl" class="page-header">
-      <h1 style="font-family:'Noto Serif',serif; font-size:26px; font-weight:700; color:#1a1a1a; text-align:center; margin-bottom:18px;">
+      <h1
+        class="text-center font-volkhov font-bold text-navy
+              text-[24px] sm:text-[28px] lg:text-[32px]
+              mb-4 lg:mb-5"
+      >
         Find Nearby Food Banks
       </h1>
 
@@ -55,44 +59,6 @@
         </button>
       </div>
 
-      <!-- Filter row -->
-      <div style="display:flex; align-items:center; max-width:860px; margin:0 auto; gap:12px; flex-wrap:wrap;">
-        <div style="display:flex; border:1px solid #b8d9f8; border-radius:8px; overflow:hidden; background:white;">
-          <button v-for="tab in CATEGORY_TABS" :key="tab.value" @click="activeFilter = tab.value"
-            style="padding:9px 18px; border:none; cursor:pointer; font-size:14px; font-family:Inter,sans-serif; transition:background 0.15s;"
-            :style="{
-              fontWeight: activeFilter === tab.value ? '700' : '400',
-              color: activeFilter === tab.value ? '#0298C5' : '#777',
-              background: activeFilter === tab.value ? '#D8EDFF' : 'transparent',
-            }">{{ tab.label }}</button>
-        </div>
-        <!-- Filters dropdown (hover to open) -->
-        <div class="filters-dropdown" style="margin-left:auto; position:relative;">
-          <button
-            class="filters-btn"
-            style="border:1px solid #b8d9f8; background:white; border-radius:6px; padding:8px 14px; font-size:14px; cursor:pointer; display:flex; align-items:center; gap:6px; color:#444; font-family:Inter,sans-serif;"
-            :style="openNowFilter ? 'border-color:#0298C5; color:#0298C5; font-weight:600;' : ''"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-              <line x1="4" y1="6" x2="20" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              <line x1="7" y1="12" x2="17" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              <line x1="10" y1="18" x2="14" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-            Filters
-            <span v-if="openNowFilter"
-              style="background:#0298C5; color:white; border-radius:10px; font-size:11px; font-weight:700; padding:1px 7px; margin-left:2px;">1</span>
-          </button>
-
-          <!-- Dropdown panel -->
-          <div class="filters-panel">
-            <p style="font-size:11px; font-weight:700; color:#aaa; text-transform:uppercase; letter-spacing:0.7px; margin:0 0 10px;">Availability</p>
-            <label style="display:flex; align-items:center; gap:10px; font-size:14px; cursor:pointer; color:#333; user-select:none; font-family:Inter,sans-serif;">
-              <input type="checkbox" v-model="openNowFilter" style="width:16px; height:16px; accent-color:#0298C5; cursor:pointer;" />
-              <span>Open Now</span>
-            </label>
-          </div>
-        </div>
-      </div>
     </div>
 
     <!-- ── Main: Cards + Map ── -->
