@@ -33,13 +33,19 @@
           <div class="mt-2 lg:mt-4">
             <NuxtLink
               to="/nutrition-guide"
-              class="btn-cta inline-flex items-center justify-center
-                     bg-sky shadow-cta rounded-[20px]
-                     h-[64px] lg:h-[76px] px-8 lg:px-12
-                     font-roboto font-extrabold text-black
-                     text-[18px] lg:text-[24px]"
+              class="group inline-flex items-center justify-center gap-3
+                    bg-sky rounded-[20px]
+                    h-[64px] lg:h-[76px] px-8 lg:px-12
+                    font-roboto font-extrabold text-black
+                    text-[18px] lg:text-[24px]
+                    shadow-[0_12px_28px_rgba(68,154,196,0.22)]
+                    transition-transform duration-300 ease-out
+                    hover:-translate-y-1
+                    active:translate-y-0"
             >
               Start Learning
+              <span class="transition-transform duration-300 group-hover:translate-x-1">
+              </span>
             </NuxtLink>
           </div>
         </div>

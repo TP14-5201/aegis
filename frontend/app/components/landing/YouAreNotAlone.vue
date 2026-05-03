@@ -72,14 +72,41 @@
 
           <NuxtLink
             to="/learn-more"
-            class="btn-cta mt-10 lg:mt-14 inline-flex items-center justify-center
-                  bg-sky shadow-cta rounded-[20px]
+            class="group mt-10 lg:mt-14 inline-flex items-center justify-center gap-3
+                  bg-sky rounded-[20px]
                   h-[64px] lg:h-[74px] px-8 lg:px-12
                   font-roboto font-extrabold text-navy-deep
-                  text-[18px] lg:text-[24px]"
+                  text-[18px] lg:text-[24px]
+                  shadow-[0_12px_28px_rgba(68,154,196,0.22)]
+                  transition-transform duration-300 ease-out
+                  hover:-translate-y-1
+                  active:translate-y-0"
           >
             Get to Know More
+            <span class="transition-transform duration-300 group-hover:translate-x-1">
+            </span>
           </NuxtLink>
+        </div>
+      </div>
+
+      <!-- Data resources -->
+      <div class="mt-10 pt-6 border-t border-gray-200 text-[11px] text-ash">
+        <p class="font-bold uppercase tracking-widest mb-3 text-navy/60">
+          Data Resources Used
+        </p>
+
+        <div class="flex flex-wrap gap-x-8 gap-y-3">
+          <span class="flex items-center gap-2">
+            <span class="font-semibold text-navy/70">Food Insecurity:</span>
+            <a
+              href="https://www.foodbank.org.au/vic/hunger-report-victorian-snapshot-2025/"
+              target="_blank"
+              rel="noopener"
+              class="hover:text-sky-active underline decoration-gray-300 underline-offset-2"
+            >
+              The Hunger Report 2025 Foodbank Victoria
+            </a>
+          </span>
         </div>
       </div>
     </div>

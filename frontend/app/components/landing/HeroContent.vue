@@ -35,13 +35,26 @@
           No judgment, no barriers.
         </p>
 
-        <a
-          href="#services"
-          class="mt-6 inline-flex w-fit rounded-full bg-[#B8DEFF]
-                 px-7 py-3 font-bold text-navy"
+        <NuxtLink
+          to="/services"
+          class="group mt-6 inline-flex items-center justify-center gap-3
+                rounded-[20px]
+                h-[64px] lg:h-[76px]
+                px-8 lg:px-12
+                bg-sky
+                font-roboto font-extrabold text-navy-deep
+                text-[18px] lg:text-[24px]
+                max-w-[400px]
+                w-full
+                shadow-[0_12px_28px_rgba(68,154,196,0.22)]
+                transition-transform duration-300 ease-out
+                hover:-translate-y-1
+                active:translate-y-0"
         >
           Find Nearby Food Banks
-        </a>
+          <span class="transition-transform duration-300 group-hover:translate-x-1">
+          </span>
+        </NuxtLink>
 
         <p class="mt-4 text-sm text-gray-500">
           Browse anonymously · Available 24/7

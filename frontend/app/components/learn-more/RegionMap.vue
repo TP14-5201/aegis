@@ -62,7 +62,10 @@
           @click="useMyLocation"
         >
           <span v-if="isLoadingLocation" class="inline-block w-4 h-4 border-2 border-navy border-t-transparent rounded-full animate-spin" />
-          <span v-else>📍</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="3" stroke="navy" stroke-width="2"/>
+            <path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="navy" stroke-width="2" stroke-linecap="round"/>
+          </svg>
           Use My Location
         </button>
 
