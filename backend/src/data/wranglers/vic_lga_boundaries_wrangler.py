@@ -1,4 +1,6 @@
 import pandas as pd
+from shapely.geometry import MultiPolygon
+from shapely import wkt
 
 from .utils import initial_cleaning_pipeline, select_columns, rename_columns
 
@@ -29,6 +31,19 @@ def add_lga_pid_from_lga_population_data(df: pd.DataFrame, df_population: pd.Dat
     return df
 
 
+def ensure_multipolygon(df: pd.DataFrame) -> pd.DataFrame:
+    """Ensure all geometries are MultiPolygon WKT strings for DB insertion."""
+    def to_multipolygon_wkt(g):
+        if isinstance(g, str):
+            g = wkt.loads(g)
+        if g.geom_type == "Polygon":
+            g = MultiPolygon([g])
+        return g.wkt
+
+    df["geometry"] = df["geometry"].apply(to_multipolygon_wkt)
+    return df
+
+
 def wrangle_viclga_boundaries(df: pd.DataFrame, df_population: pd.DataFrame) -> pd.DataFrame:
     """Main wrangling pipeline for VIC LGA SA4 boundaries data."""
     VICLGA_COLUMN_MAP = {"lga_name": "lga_name_full", "abb_name": "lga_name"} # Use the abbreviated names as the primary LGA name
@@ -40,5 +55,6 @@ def wrangle_viclga_boundaries(df: pd.DataFrame, df_population: pd.DataFrame) -> 
     df = rename_columns(df, VICLGA_COLUMN_MAP)
     df = select_columns(df, VICLGA_INCLUED_COLS)
     df = add_lga_pid_from_lga_population_data(df, df_population)
+    df = ensure_multipolygon(df)
 
     return df

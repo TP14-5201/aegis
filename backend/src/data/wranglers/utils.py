@@ -94,7 +94,9 @@ def determine_emergency_service_lga(df: pd.DataFrame, df_lga_boundaries: pd.Data
         geometry=gpd.points_from_xy(df.longitude, df.latitude),
         crs="EPSG:4326"
     )
-    df_lga_boundaries['geometry'] = df_lga_boundaries['geometry'].apply(wkt.loads)
+    df_lga_boundaries['geometry'] = df_lga_boundaries['geometry'].apply(
+        lambda g: wkt.loads(g) if isinstance(g, str) else g
+    )
     df_lga_boundaries = gpd.GeoDataFrame(df_lga_boundaries, crs="EPSG:4326")
     df = gpd.sjoin(df, df_lga_boundaries, how="left", predicate="within")
     df = df.drop(columns=["lga_name", "geometry", "index_right"])
