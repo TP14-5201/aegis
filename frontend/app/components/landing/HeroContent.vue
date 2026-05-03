@@ -19,20 +19,22 @@
       <!-- LEFT CONTENT -->
       <div class="flex flex-col justify-center lg:self-center">
         <p class="text-sm font-bold uppercase tracking-wider text-[#DF6951]">
-          Food Banks around you
+          Ending Hunger Together
         </p>
 
         <h1
           class="mt-3 font-volkhov text-[42px] font-bold leading-[0.95]
                  text-navy lg:text-[64px]"
         >
-          Help is here<br />
-          when you need it
+          Dignity through<br />
+          <span class="text-sky-active">Community</span><br />
+          Nourishment
         </h1>
 
         <p class="mt-5 max-w-xl text-[18px] leading-tight text-black lg:text-[21px]">
-          Immediate access to food support across Victoria.
-          No judgment, no barriers.
+          The first step is always the hardest. We've mapped<br />
+          thousands of local food banks, ensuring that nutrition<br />
+          is never more than a mile away. 
         </p>
 
         <NuxtLink
@@ -67,7 +69,7 @@
                self-end lg:min-h-[640px]"
       >
         <img
-          src="/images/landing-hero.png"
+          src="/images/landing/landing-1.png"
           alt="Family"
           class="relative z-10 block w-[115%] max-w-[520px]
                  sm:max-w-[620px]

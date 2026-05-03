@@ -9,20 +9,13 @@
           <!-- wrapper to center everything -->
           <div class="relative w-full flex justify-center items-center">
 
-            <!-- Vector -->
-            <img
-              class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2
-                    w-[420px] lg:w-[620px] xl:w-[700px]
-                    opacity-100 object-contain z-0"
-              src="/images/Vector.png"
-            />
 
             <!-- Family image -->
             <img
               class="relative z-10 
                     w-[420px] lg:w-[520px] xl:w-[620px]
                     object-contain"
-              src="/images/landing-know-more.png"
+              src="/images/landing/landing-2.png"
             />
 
           </div>

@@ -1,15 +1,12 @@
 <template>
-  <div class="w-full bg-white overflow-x-hidden">
-    <TopNavigation />
+  <TopNavigation />
 
+  <main class="bg-white overflow-hidden">
     <LandingHeroContent />
-
     <LandingYouAreNotAlone />
-
     <LandingGroceryCostSection />
-
     <LandingFamilyNutrition />
-  </div>
+  </main>
 </template>
 
 <script setup lang="ts">
