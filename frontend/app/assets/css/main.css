@@ -56,24 +56,11 @@ body,
   transition: color 0.2s ease;
 }
 
-.nav-link::after {
-  content: '';
-  position: absolute;
-  bottom: -3px;
-  left: 0;
-  width: 0;
-  height: 2px;
-  background-color: #ffb900;
-  transition: width 0.25s cubic-bezier(0.22, 1, 0.36, 1);
-}
 
 .nav-link:hover::after {
   width: 100%;
 }
 
-.nav-link:hover {
-  color: #ffb900;
-}
 
 /* ─── CTA Button Hover ───────────────────────────────────── */
 .btn-cta {

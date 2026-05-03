@@ -143,7 +143,6 @@
             v-if="!selectedLgaStat"
             class="flex flex-col items-center justify-center text-center p-8 bg-sky-tint/40 rounded-[20px] border border-dashed border-sky min-h-[200px]"
           >
-            <span class="text-3xl mb-3">👆</span>
             <p class="font-roboto text-ash text-[16px] leading-relaxed">
               Select a region on the map or search above to view local statistics.
             </p>
@@ -291,9 +290,9 @@ const isMapLoading = ref(true)
 
 // ── Metric definitions (cherebowl palette) ────────────────────────────────
 const metrics = [
-  { key: 'foodInsecurity', label: '🔴 Food Insecurity', color: '#df6951' },  // coral
-  { key: 'foodBanks',       label: '🟢 Food Banks',       color: '#0d400d' },
-  { key: 'peopleAffected',  label: '🔵 People Affected',  color: '#6b88ff' },
+  { key: 'foodInsecurity', label: 'Food Insecurity', color: '#df6951' },  // coral
+  { key: 'foodBanks',       label: 'Food Banks',       color: '#0d400d' },
+  { key: 'peopleAffected',  label: 'People Affected',  color: '#6b88ff' },
 ]
 
 function setMetric(key) {

@@ -7,7 +7,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       googleMapsKey: '',   // set via NUXT_PUBLIC_GOOGLE_MAPS_KEY in .env
-      apiBase: 'http://localhost:8000',  // set via NUXT_PUBLIC_API_BASE in .env
+      apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:8000',  // set via NUXT_PUBLIC_API_BASE in .env
       mapboxToken: '',     // set via NUXT_PUBLIC_MAPBOX_TOKEN in .env
     },
   },
