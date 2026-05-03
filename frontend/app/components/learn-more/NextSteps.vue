@@ -45,7 +45,7 @@ const cards = [
   {
     title: 'Find Food Banks near me',
     desc:  'Find free food support open right now.',
-    to:    '/services',
+    to:    '/food-banks',
     ctaLabel: 'Find Nearby Food Banks',
   },
   {

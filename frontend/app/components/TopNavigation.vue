@@ -15,7 +15,7 @@
 
       <!-- Desktop nav -->
       <nav class="hidden lg:flex items-center gap-1 xl:gap-2">
-        <NavLink to="/services">Food Banks</NavLink>
+        <NavLink to="/food-banks">Food Banks</NavLink>
         <NavLink to="/get-food">Get Food</NavLink>
         <NavLink to="/nutrition-guide">Nutrition Guide</NavLink>
         <NavLink to="/learn-more">Learn More</NavLink>
@@ -57,7 +57,7 @@
         v-if="menuOpen"
         class="lg:hidden flex flex-col gap-1 px-5 pb-4 border-t border-gray-100"
       >
-        <NavLink to="/services" @navigate="menuOpen = false">Food Banks</NavLink>
+        <NavLink to="/food-banks" @navigate="menuOpen = false">Food Banks</NavLink>
         <NavLink to="/get-food" @navigate="menuOpen = false">Get Food</NavLink>
         <NavLink to="/nutrition-guide" @navigate="menuOpen = false">Nutrition Guide</NavLink>
         <NavLink to="/learn-more" @navigate="menuOpen = false">Learn More</NavLink>
