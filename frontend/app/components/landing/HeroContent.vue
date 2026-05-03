@@ -35,14 +35,10 @@
           No judgment, no barriers.
         </p>
 
-        <!-- CTA INSIDE HERO -->
-        <NuxtLink
-          to="/food-banks"
-          class="btn-cta mt-10 lg:mt-14 inline-flex items-center justify-center
-                 bg-sky shadow-cta rounded-[20px]
-                 h-[64px] lg:h-[76px] px-8 lg:px-12
-                 font-roboto font-extrabold text-navy-deep
-                 text-[18px] lg:text-[24px] w-fit"
+        <a
+          href="#services"
+          class="mt-6 inline-flex w-fit rounded-full bg-[#B8DEFF]
+                 px-7 py-3 font-bold text-navy"
         >
           Find Nearby Food Banks
         </a>
