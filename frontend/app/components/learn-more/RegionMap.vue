@@ -62,7 +62,10 @@
           @click="useMyLocation"
         >
           <span v-if="isLoadingLocation" class="inline-block w-4 h-4 border-2 border-navy border-t-transparent rounded-full animate-spin" />
-          <span v-else>📍</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="3" stroke="navy" stroke-width="2"/>
+            <path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="navy" stroke-width="2" stroke-linecap="round"/>
+          </svg>
           Use My Location
         </button>
 
@@ -143,7 +146,6 @@
             v-if="!selectedLgaStat"
             class="flex flex-col items-center justify-center text-center p-8 bg-sky-tint/40 rounded-[20px] border border-dashed border-sky min-h-[200px]"
           >
-            <span class="text-3xl mb-3">👆</span>
             <p class="font-roboto text-ash text-[16px] leading-relaxed">
               Select a region on the map or search above to view local statistics.
             </p>
@@ -291,9 +293,9 @@ const isMapLoading = ref(true)
 
 // ── Metric definitions (cherebowl palette) ────────────────────────────────
 const metrics = [
-  { key: 'foodInsecurity', label: '🔴 Food Insecurity', color: '#df6951' },  // coral
-  { key: 'foodBanks',       label: '🟢 Food Banks',       color: '#0d400d' },
-  { key: 'peopleAffected',  label: '🔵 People Affected',  color: '#6b88ff' },
+  { key: 'foodInsecurity', label: 'Food Insecurity', color: '#df6951' },  // coral
+  { key: 'foodBanks',       label: 'Food Banks',       color: '#0d400d' },
+  { key: 'peopleAffected',  label: 'People Affected',  color: '#6b88ff' },
 ]
 
 function setMetric(key) {

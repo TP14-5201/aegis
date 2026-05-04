@@ -161,7 +161,18 @@
         <div class="mt-10 flex justify-center">
           <button
             type="submit"
-            class="rounded-full bg-[#B8DEFF] px-8 py-4 font-bold text-navy transition hover:bg-[#9ed2ff]"
+            class="group mt-10 inline-flex items-center justify-center
+                  h-[58px] lg:h-[70px]
+                  rounded-[20px]
+                  bg-sky px-6
+                  font-roboto font-bold
+                  text-[16px] lg:text-[18px]
+                  text-navy-deep
+                  shadow-[0_12px_28px_rgba(68,154,196,0.22)]
+                  transition-all duration-300 ease-out
+                  hover:-translate-y-1 hover:bg-[#9ed2ff]
+                  hover:shadow-[0_16px_34px_rgba(68,154,196,0.28)]
+                  active:translate-y-0"
           >
             Get Ingredient Recommendations
           </button>

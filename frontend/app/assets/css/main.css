@@ -56,34 +56,21 @@ body,
   transition: color 0.2s ease;
 }
 
-.nav-link::after {
-  content: '';
-  position: absolute;
-  bottom: -3px;
-  left: 0;
-  width: 0;
-  height: 2px;
-  background-color: #ffb900;
-  transition: width 0.25s cubic-bezier(0.22, 1, 0.36, 1);
-}
 
 .nav-link:hover::after {
   width: 100%;
 }
 
-.nav-link:hover {
-  color: #ffb900;
-}
 
 /* ─── CTA Button Hover ───────────────────────────────────── */
 .btn-cta {
-  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+  transition: transform 0.25s ease;
 }
+
 .btn-cta:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 22px 38px rgba(241, 165, 1, 0.22);
-  filter: brightness(1.02);
+  transform: translateY(-4px);
 }
+
 .btn-cta:active {
   transform: translateY(0);
 }
@@ -97,9 +84,8 @@ body,
 }
 .img-hover-card:hover {
   transform: translateY(-8px);
-  box-shadow: 0 24px 60px -8px rgba(119, 90, 25, 0.35),
-              0 0 0 1px rgba(119, 90, 25, 0.12);
-  filter: brightness(1.06);
+  box-shadow: 0 24px 60px -8px rgba(68, 154, 196, 0.22),
+              0 0 0 1px rgba(68, 154, 196, 0.12);
+  filter: brightness(1.04);
 }
-
 

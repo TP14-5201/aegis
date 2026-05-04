@@ -45,9 +45,21 @@
               class="body-image"
             />
           </Transition>
-        </div>
 
-        
+          <!-- DASHED CONNECTOR LINE -->
+          <svg
+            v-if="selectedPart"
+            class="connector-svg"
+            viewBox="0 0 520 500"
+            preserveAspectRatio="none"
+            aria-hidden="true"
+          >
+            <path
+              :d="selectedPart.linePath"
+              class="connector-line"
+            />
+          </svg>
+        </div>
       </div>
 
       <!-- RIGHT PANEL -->
@@ -97,6 +109,7 @@ type BodyPart = {
   label: string
   icon: string
   image: string
+  linePath: string
   description: string
   foods: Food[]
   why: string
@@ -123,6 +136,7 @@ const bodyParts: BodyPart[] = [
     label: 'Brain',
     icon: '🧠',
     image: '/images/bodyparts/brain.svg',
+    linePath: 'M 245 88 C 320 80, 405 115, 515 165',
     description: 'Helps you think, learn, remember and stay focused.',
     foods: [
       { name: 'Eggs', image: image.eggs },
@@ -139,6 +153,7 @@ const bodyParts: BodyPart[] = [
     label: 'Eye',
     icon: '👁️',
     image: '/images/bodyparts/eyes.svg',
+    linePath: 'M 250 128 C 325 125, 410 145, 515 178',
     description: 'Supports healthy vision and helps children see clearly.',
     foods: [
       { name: 'Eggs', image: image.eggs },
@@ -152,6 +167,7 @@ const bodyParts: BodyPart[] = [
     label: 'Bones',
     icon: '🦴',
     image: '/images/bodyparts/bones.svg',
+    linePath: 'M 245 315 C 330 315, 410 270, 515 230',
     description: 'Gives your body shape and helps children stand, walk and grow strong.',
     foods: [
       { name: 'Milk', image: image.milk },
@@ -165,6 +181,7 @@ const bodyParts: BodyPart[] = [
     label: 'Muscles',
     icon: '💪',
     image: '/images/bodyparts/muscles.svg',
+    linePath: 'M 245 245 C 330 245, 415 235, 515 215',
     description: 'Helps children move, run, play and stay active.',
     foods: [
       { name: 'Eggs', image: image.eggs },
@@ -178,6 +195,7 @@ const bodyParts: BodyPart[] = [
     label: 'Immunity',
     icon: '🛡️',
     image: '/images/bodyparts/immunity.svg',
+    linePath: 'M 245 205 C 330 205, 415 205, 515 200',
     description: 'Protects your body from germs and helps children stay healthy.',
     foods: [
       { name: 'Eggs', image: image.eggs },
@@ -191,6 +209,7 @@ const bodyParts: BodyPart[] = [
     label: 'Energy',
     icon: '⚡',
     image: '/images/bodyparts/energy.svg',
+    linePath: 'M 245 275 C 330 280, 415 250, 515 220',
     description: 'Gives children power for learning, playing and daily activities.',
     foods: [
       { name: 'Oats', image: image.oats },
@@ -204,6 +223,7 @@ const bodyParts: BodyPart[] = [
     label: 'Teeth',
     icon: '🦷',
     image: '/images/bodyparts/teeth.svg',
+    linePath: 'M 250 155 C 330 155, 415 165, 515 190',
     description: 'Helps children bite, chew and keep a bright smile.',
     foods: [
       { name: 'Milk', image: image.milk },
@@ -313,6 +333,8 @@ const selectedPart = computed(() => {
   flex-direction: column;
   align-items: center;
   min-height: 520px;
+  position: relative;
+  z-index: 2;
 }
 
 .body-image-wrap {
@@ -320,6 +342,8 @@ const selectedPart = computed(() => {
   min-height: 470px;
   display: grid;
   place-items: center;
+  position: relative;
+  overflow: visible;
 }
 
 .body-image {
@@ -327,13 +351,40 @@ const selectedPart = computed(() => {
   max-height: 500px;
   object-fit: contain;
   display: block;
+  position: relative;
+  z-index: 2;
 }
 
-.hint {
-  margin: 18px 0 0;
-  color: #181e4b;
-  font-size: 14px;
-  font-weight: 500;
+/* DASHED CONNECTOR LINE */
+.connector-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 155%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+  overflow: visible;
+}
+
+.connector-line {
+  fill: none;
+  stroke: #181e4b;
+  stroke-width: 2.8;
+  stroke-linecap: round;
+  stroke-dasharray: 9 9;
+  opacity: 0.65;
+  animation: dashMove 1s linear infinite;
+}
+
+@keyframes dashMove {
+  from {
+    stroke-dashoffset: 18;
+  }
+
+  to {
+    stroke-dashoffset: 0;
+  }
 }
 
 .info-panel {
@@ -341,6 +392,8 @@ const selectedPart = computed(() => {
   border-radius: 28px;
   padding: 28px;
   background: #dff1ff;
+  position: relative;
+  z-index: 3;
 }
 
 .info-panel h3 {
@@ -447,6 +500,10 @@ const selectedPart = computed(() => {
     min-height: auto;
   }
 
+  .connector-svg {
+    display: none;
+  }
+
   .info-panel {
     order: 3;
     width: min(100%, 620px);
@@ -511,10 +568,6 @@ const selectedPart = computed(() => {
 
   .body-image {
     max-height: 360px;
-  }
-
-  .hint {
-    font-size: 13px;
   }
 
   .info-panel {

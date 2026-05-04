@@ -25,7 +25,18 @@
 
         <a
           href="#grocery-planner"
-          class="mt-6 inline-flex w-fit rounded-full bg-[#B8DEFF] px-7 py-3 font-bold text-navy"
+          class="group mt-6 inline-flex items-center justify-center gap-3
+                bg-sky rounded-[20px]
+                h-[64px] lg:h-[74px]
+                px-8 lg:px-12
+                font-roboto font-extrabold text-navy-deep
+                text-[18px] lg:text-[24px]
+                max-w-[400px]
+                w-full
+                shadow-[0_12px_28px_rgba(68,154,196,0.22)]
+                transition-all duration-300 ease-out
+                hover:-translate-y-1
+                active:translate-y-0"
         >
           Find my ingredients
         </a>

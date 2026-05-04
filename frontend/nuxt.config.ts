@@ -23,7 +23,7 @@ export default defineNuxtConfig({
         {
           rel: 'icon',
           type: 'image/png',
-          href: '/images/logo.png',
+          href: '/images/ChereBowl-Logo.png',
         },
         {
           rel: 'preconnect',
