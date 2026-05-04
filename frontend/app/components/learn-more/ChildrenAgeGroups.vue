@@ -189,8 +189,9 @@ interface NutrientData {
   actionable_guidance: string
 }
 
-const { data: macronutrientsData, pending } = await useFetch<NutrientData[]>(
-  `${apiBase}/recommended-macronutrients`
+const { data: macronutrientsData, pending } = useFetch<NutrientData[]>(
+  `${apiBase}/recommended-macronutrients`,
+  { lazy: true }
 )
 
 const ageImageMap: Record<string, string> = {
