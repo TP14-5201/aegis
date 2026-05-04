@@ -9,6 +9,7 @@ import math
 from datetime import datetime
 
 from fastapi import Depends, FastAPI, HTTPException, Query
+from pydantic import BaseModel
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -78,6 +79,18 @@ def on_startup() -> None:
 @app.get("/health")
 def health() -> dict:
     return {"status": "ok"}
+
+
+class _LoginRequest(BaseModel):
+    password: str
+
+_DEMO_PASSWORD = "password123"
+
+@app.post("/auth/login")
+def auth_login(body: _LoginRequest):
+    if body.password == _DEMO_PASSWORD:
+        return {"success": True}
+    raise HTTPException(status_code=401, detail="Incorrect password")
 
 
 @app.get("/lga/boundaries")

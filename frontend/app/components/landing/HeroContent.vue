@@ -17,7 +17,7 @@
              lg:min-h-[80vh] lg:grid-cols-2 lg:gap-12 lg:px-12 lg:pt-0"
     >
       <!-- LEFT CONTENT -->
-      <div class="flex flex-col justify-center lg:self-center">
+      <div class="flex flex-col justify-center">
         <p class="text-sm font-bold uppercase tracking-wider text-[#DF6951]">
           Ending Hunger Together
         </p>
