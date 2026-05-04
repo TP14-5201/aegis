@@ -12,6 +12,7 @@ export default defineNuxtConfig({
     },
   },
   app: {
+    pageTransition: { name: 'page' },
     head: {
       title: 'cherebowl',
       meta: [

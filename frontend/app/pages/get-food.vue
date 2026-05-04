@@ -2,6 +2,7 @@
   <TopNavigation />
 
   <div>
+    <div class="h-[72px] lg:h-[100px]" />
     <GetFoodHero />
 
     <GetFoodGroceryPlanner @submit-planner="handlePlannerSubmit" />
@@ -20,7 +21,6 @@ type PlannerData = {
   budget: number
   people: number
   dishes: number
-  cuisine: string | null
   dietaryNeeds: string[]
 }
 

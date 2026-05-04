@@ -1,12 +1,21 @@
 <template>
   <section id="grocery-recommendations" class="w-full bg-white py-16 lg:py-20">
     <div class="mx-auto max-w-7xl px-5 lg:px-8">
+      <!-- Loading / error states -->
+      <div v-if="loading" class="py-20 text-center font-roboto text-gray-500">
+        Loading recommendations…
+      </div>
+
+      <div v-else-if="error" class="py-12 text-center font-roboto text-red-500">
+        {{ error }}
+      </div>
+
+      <template v-else-if="dishes.length">
+
       <div class="mb-8">
         <h2 class="font-volkhov text-[30px] font-bold text-navy lg:text-[42px]">
           <span>{{ dishes.length }}</span>
-          <span class="italic text-coral">
-            {{ props.plannerData?.cuisine || 'recommended' }}
-          </span>
+          <span class="italic text-coral"> recommended </span>
           dishes for the family
         </h2>
 
@@ -17,34 +26,49 @@
 
       <!-- Dish cards -->
       <div class="mb-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <button
+        <div
           v-for="dish in dishes"
           :key="dish.name"
-          type="button"
-          @click="selectedDishName = dish.name"
           :class="[
-            'rounded-2xl px-5 py-5 text-left font-roboto shadow-md transition',
+            'flex flex-col rounded-2xl px-5 py-5 font-roboto shadow-md transition cursor-pointer',
             selectedDishName === dish.name
               ? 'bg-[#D9ECFF] text-navy ring-2 ring-navy'
               : 'bg-white text-gray-700 hover:bg-[#EEF7FF]'
           ]"
+          @click="selectedDishName = dish.name"
         >
-          <span class="block text-[17px] font-bold">
-            {{ dish.name }}
-          </span>
+          <div class="flex-1">
+            <span class="block text-[17px] font-bold">
+              {{ dish.name }}
+            </span>
 
-          <span class="mt-2 block text-[13px] text-gray-500">
-            {{ dish.ingredients.length }} ingredients
-          </span>
+            <span class="mt-2 block text-[13px] text-gray-500">
+              {{ dish.ingredients.length }} ingredients
+            </span>
 
-          <span class="mt-4 block text-[22px] font-bold text-navy">
-            ${{ getDishCost(dish).toFixed(2) }}
-          </span>
-        </button>
+            <span class="mt-4 block text-[22px] font-bold text-navy">
+              ${{ getDishCost(dish).toFixed(2) }}
+            </span>
+          </div>
+
+          <button
+            type="button"
+            @click.stop="swapDish(dish.name)"
+            :disabled="!swapPool.length"
+            :class="[
+              'mt-4 flex items-center gap-1 rounded-lg px-3 py-1.5 text-[12px] font-semibold transition self-start',
+              swapPool.length
+                ? 'bg-white/70 text-navy hover:bg-white'
+                : 'cursor-not-allowed bg-white/30 text-gray-400'
+            ]"
+          >
+            ↻ Swap dish
+          </button>
+        </div>
       </div>
 
       <!-- Selected dish panel -->
-      <div class="rounded-3xl bg-[#DCEEFF] px-5 py-7 lg:px-10 lg:py-9">
+      <div v-if="selectedDish" class="rounded-3xl bg-[#DCEEFF] px-5 py-7 lg:px-10 lg:py-9">
         <div class="mb-10 flex items-start justify-between gap-6">
           <div>
             <h3 class="font-volkhov text-[26px] font-bold text-navy lg:text-[32px]">
@@ -146,6 +170,8 @@
           ${{ totalEstimatedGroceryPrice.toFixed(2) }}
         </p>
       </div>
+
+      </template>
     </div>
   </section>
 </template>
@@ -155,7 +181,6 @@ type PlannerData = {
   budget: number
   people: number
   dishes: number
-  cuisine: string | null
   dietaryNeeds: string[]
 }
 
@@ -183,218 +208,83 @@ type Dish = {
   ingredients: Ingredient[]
 }
 
-// TEMP: Hardcoded recommendation result.
-// Later, replace this with backend API response based on plannerData.
-const dishes: Dish[] = [
-  {
-    name: 'Spaghetti Bolognese',
-    ingredients: [
-      {
-        name: 'Spaghetti',
-        amount: '500g pack',
-        price: 1.8,
-        benefits: ['Energy', 'Brain'],
-        swaps: [
-          { name: 'Wholemeal spaghetti', price: 2.2 },
-          { name: 'Penne pasta', price: 1.8 }
-        ]
-      },
-      {
-        name: 'Beef Mince',
-        amount: '500g pack',
-        price: 9.0,
-        benefits: ['Muscles', 'Energy', 'Immunity'],
-        swaps: [
-          { name: 'Lentils', price: 1.4 },
-          { name: 'Turkey mince', price: 8.5 },
-          { name: 'Canned beans', price: 1.6 }
-        ]
-      },
-      {
-        name: 'Canned Tomatoes',
-        amount: '400g tin',
-        price: 1.5,
-        benefits: ['Immunity', 'Brain'],
-        swaps: [
-          { name: 'Passata', price: 2.2 },
-          { name: 'Fresh tomatoes', price: 3.5 }
-        ]
-      },
-      {
-        name: 'Onions',
-        amount: '1 kg bag',
-        price: 2.0,
-        benefits: ['Immunity'],
-        swaps: [
-          { name: 'Frozen onion', price: 2.5 },
-          { name: 'Spring onion', price: 2.2 }
-        ]
-      },
-      {
-        name: 'Garlic',
-        amount: '1 bulb',
-        price: 1.5,
-        benefits: ['Immunity'],
-        swaps: [
-          { name: 'Garlic paste', price: 2.0 },
-          { name: 'Garlic powder', price: 1.8 }
-        ]
-      }
-    ]
-  },
-  {
-    name: 'Pesto Pasta',
-    ingredients: [
-      {
-        name: 'Fusilli',
-        amount: '500g pack',
-        price: 1.8,
-        benefits: ['Energy', 'Brain'],
-        swaps: [
-          { name: 'Penne pasta', price: 1.8 },
-          { name: 'Wholemeal pasta', price: 2.2 }
-        ]
-      },
-      {
-        name: 'Pesto Sauce',
-        amount: '190g jar',
-        price: 4.0,
-        benefits: ['Brain'],
-        swaps: [
-          { name: 'Spinach pesto', price: 3.8 },
-          { name: 'Tomato pasta sauce', price: 2.5 }
-        ]
-      },
-      {
-        name: 'Garlic',
-        amount: '1 bulb',
-        price: 1.5,
-        benefits: ['Immunity'],
-        swaps: [
-          { name: 'Garlic paste', price: 2.0 },
-          { name: 'Garlic powder', price: 1.8 }
-        ]
-      },
-      {
-        name: 'Parmesan Cheese',
-        amount: '200g block',
-        price: 5.5,
-        benefits: ['Bones', 'Teeth', 'Muscles'],
-        swaps: [
-          { name: 'Grated parmesan', price: 4.8 },
-          { name: 'Tasty cheese', price: 4.0 }
-        ]
-      }
-    ]
-  },
-  {
-    name: 'Margherita Pizza',
-    ingredients: [
-      {
-        name: 'Pizza Bases',
-        amount: '2 pack',
-        price: 3.0,
-        benefits: ['Energy'],
-        swaps: [
-          { name: 'Wraps', price: 2.8 },
-          { name: 'Flatbread', price: 3.2 }
-        ]
-      },
-      {
-        name: 'Canned Tomatoes',
-        amount: '400g tin',
-        price: 1.5,
-        benefits: ['Immunity', 'Brain'],
-        swaps: [
-          { name: 'Passata', price: 2.2 },
-          { name: 'Tomato paste', price: 1.6 }
-        ]
-      },
-      {
-        name: 'Mozzarella Cheese',
-        amount: '250g pack',
-        price: 4.5,
-        benefits: ['Bones', 'Teeth', 'Muscles'],
-        swaps: [
-          { name: 'Tasty cheese', price: 4.0 },
-          { name: 'Ricotta', price: 4.2 }
-        ]
-      },
-      {
-        name: 'Dried Oregano',
-        amount: '30g jar',
-        price: 2.0,
-        benefits: ['Immunity'],
-        swaps: [
-          { name: 'Mixed herbs', price: 2.0 },
-          { name: 'Dried basil', price: 2.1 }
-        ]
-      }
-    ]
-  },
-  {
-    name: 'Pasta Carbonara',
-    ingredients: [
-      {
-        name: 'Spaghetti',
-        amount: '500g pack',
-        price: 1.8,
-        benefits: ['Energy', 'Brain'],
-        swaps: [
-          { name: 'Wholemeal spaghetti', price: 2.2 },
-          { name: 'Rice noodles', price: 2.0 }
-        ]
-      },
-      {
-        name: 'Eggs',
-        amount: '12 pack',
-        price: 5.0,
-        benefits: ['Brain', 'Muscles', 'Energy'],
-        swaps: [
-          { name: 'Free-range eggs', price: 4.5 },
-          { name: 'Silken tofu', price: 1.8 }
-        ]
-      },
-      {
-        name: 'Bacon',
-        amount: '250g pack',
-        price: 5.0,
-        benefits: ['Energy', 'Muscles'],
-        swaps: [
-          { name: 'Turkey bacon', price: 4.8 },
-          { name: 'Mushrooms', price: 3.0 }
-        ]
-      },
-      {
-        name: 'Parmesan',
-        amount: '200g block',
-        price: 5.5,
-        benefits: ['Bones', 'Teeth', 'Muscles'],
-        swaps: [
-          { name: 'Grated parmesan', price: 4.8 },
-          { name: 'Tasty cheese', price: 4.0 }
-        ]
-      },
-      {
-        name: 'Garlic',
-        amount: '1 bulb',
-        price: 1.5,
-        benefits: ['Immunity'],
-        swaps: [
-          { name: 'Garlic paste', price: 2.0 },
-          { name: 'Garlic powder', price: 1.8 }
-        ]
-      }
-    ]
-  }
-]
+const config = useRuntimeConfig()
 
-const selectedDishName = ref(dishes[0].name)
+const dishes = ref<Dish[]>([])
+const swapPool = ref<Dish[]>([])
+const loading = ref(false)
+const error = ref<string | null>(null)
+
+function transformDishes(apiDishes: any[]): Dish[] {
+  return apiDishes.map(d => ({
+    name: d.name,
+    ingredients: (d.ingredients ?? []).map((ing: any) => ({
+      name: ing.name,
+      amount: ing.packLabel ?? '',
+      price: ing.priceAUD ?? 0,
+      benefits: ing.benefits ?? [],
+      swaps: (ing.alternatives ?? []).map((alt: any) => ({
+        name: alt.name,
+        price: alt.priceAUD ?? 0,
+      })),
+    })),
+  }))
+}
+
+watch(
+  () => props.plannerData,
+  async (data) => {
+    if (!data) return
+    loading.value = true
+    error.value = null
+    selectedSwaps.value = {}
+    try {
+      const res = await $fetch<any>(`${config.public.apiBase}/api/recommendations`, {
+        method: 'POST',
+        body: {
+          budget: data.budget,
+          numberOfPeople: data.people,
+          numberOfDishes: data.dishes,
+          dietaryNeeds: data.dietaryNeeds,
+        },
+      })
+      const all = transformDishes(res.dishes ?? [])
+      dishes.value = all.slice(0, data.dishes)
+      swapPool.value = all.slice(data.dishes)
+      selectedDishName.value = dishes.value[0]?.name ?? ''
+    } catch (e: any) {
+      error.value = e?.data?.detail ?? 'Something went wrong. Please try again.'
+    } finally {
+      loading.value = false
+    }
+  },
+  { immediate: true }
+)
+
+function swapDish(dishName: string) {
+  if (!swapPool.value.length) return
+  const idx = dishes.value.findIndex(d => d.name === dishName)
+  if (idx === -1) return
+  const [next, ...rest] = swapPool.value
+  const outgoing = dishes.value[idx]
+  dishes.value = [
+    ...dishes.value.slice(0, idx),
+    next,
+    ...dishes.value.slice(idx + 1),
+  ]
+  swapPool.value = [...rest, outgoing]
+  if (selectedDishName.value === dishName) {
+    selectedDishName.value = next.name
+  }
+}
+
+const selectedDishName = ref('')
 
 const selectedSwaps = ref<Record<string, Swap>>({})
 
 const selectedDish = computed(() => {
-  return dishes.find(dish => dish.name === selectedDishName.value) || dishes[0]
+  if (!dishes.value.length) return null
+  return dishes.value.find(dish => dish.name === selectedDishName.value) || dishes.value[0]
 })
 
 const ingredientKey = (dishName: string, ingredientName: string) => {
@@ -432,7 +322,7 @@ const getDishCost = (dish: Dish) => {
 }
 
 const totalEstimatedGroceryPrice = computed(() => {
-  return dishes.reduce((total, dish) => {
+  return dishes.value.reduce((total, dish) => {
     return total + getDishCost(dish)
   }, 0)
 })

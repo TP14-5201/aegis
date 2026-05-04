@@ -12,7 +12,7 @@
 
     <div
       class="relative z-10 mx-auto grid max-w-8xl
-             grid-cols-1 gap-6 px-5 pt-10
+             grid-cols-1 gap-6 px-5 pt-[84px]
              min-h-[70vh]
              lg:min-h-[80vh] lg:grid-cols-2 lg:gap-12 lg:px-12 lg:pt-0"
     >

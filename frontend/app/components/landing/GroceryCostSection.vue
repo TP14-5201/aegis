@@ -84,9 +84,9 @@
         </div>
 
         <!-- RIGHT IMAGE -->
-        <div class="self-end flex justify-center lg:justify-end">
+        <div class="self-end flex justify-center lg:justify-end pb-0 pt-4 lg:pt-0">
           <img
-            class="block w-full max-w-[680px] h-auto object-contain"
+            class="block w-full max-w-[480px] lg:max-w-[680px] h-auto object-contain"
             src="/images/landing/landing-3.png"
             alt="Fresh groceries on a kitchen table"
             loading="lazy"

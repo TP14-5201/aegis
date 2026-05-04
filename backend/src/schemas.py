@@ -118,3 +118,79 @@ class RecommendedMacronutrientsIntakeOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+# ---------------------------------------------------------------------------
+# ChereBowl recommendation schemas
+# ---------------------------------------------------------------------------
+
+ChildBenefit = str  # "Energy" | "Brain" | "Muscles" | "Immunity" | "HeartHealthy" | "BetterSleep" | "StressEasing"
+
+
+class RecommendationRequest(BaseModel):
+    budget: float = Field(..., gt=0, le=1000, description="Budget in AUD")
+    numberOfPeople: int = Field(..., ge=1, le=20)
+    numberOfDishes: int = Field(..., ge=1, le=20)
+    cuisine: Optional[str] = Field(None, description="Cuisine preference; null means mixed")
+    dietaryNeeds: List[str] = Field(default_factory=list, description="e.g. ['Vegetarian', 'Halal']")
+
+
+class NutritionPer100g(BaseModel):
+    energy_kcal: Optional[float] = None
+    protein: Optional[float] = None
+    carbohydrate: Optional[float] = None
+    total_fat: Optional[float] = None
+    vitamin_c: Optional[float] = None
+    calcium: Optional[float] = None
+    iron: Optional[float] = None
+
+    class Config:
+        from_attributes = True
+
+
+class AlternativeOut(BaseModel):
+    id: int
+    name: str
+    priceAUD: float
+    packLabel: str
+    benefits: List[ChildBenefit]
+    reason: str  # "cheaper" | "healthier" | "dietary_swap" | "availability"
+
+
+class IngredientOut(BaseModel):
+    id: int
+    name: str
+    packLabel: str
+    packGrams: Optional[float]
+    priceAUD: float
+    priceSource: str
+    priceAsOf: str
+    benefits: List[ChildBenefit]
+    alternatives: List[AlternativeOut]
+    nutrition: NutritionPer100g
+
+
+class DishOut(BaseModel):
+    id: int
+    name: str
+    cuisine: str
+    ingredientCount: int
+    dishCostAUD: float
+    ingredients: List[IngredientOut]
+    dietaryFlags: List[str]
+
+
+class Citation(BaseModel):
+    name: str
+    version: Optional[str] = None
+    url: str
+
+
+class RecommendationResponse(BaseModel):
+    dishes: List[DishOut]
+    totalEstimatedAUD: float
+    budgetAUD: float
+    people: int
+    cuisine: str
+    generatedAt: str
+    citations: List[Citation]
