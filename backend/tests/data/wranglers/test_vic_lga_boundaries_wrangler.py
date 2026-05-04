@@ -1,9 +1,12 @@
 import pytest
 import numpy as np
 import pandas as pd
+from shapely.geometry import Polygon, MultiPolygon
 
 from src.data.wranglers.vic_lga_boundaries_wrangler import (
+    add_lga_pid_from_lga_population_data,
     clean_lga_names,
+    ensure_multipolygon,
     take_latest_lga_boundaries,
     wrangle_viclga_boundaries,
 )
@@ -27,6 +30,13 @@ EXPECTED_OUTPUT_COLS = ["lga_name", "geometry", "lga_pid"]
 SAMPLE_GEOMETRY = (
     "POLYGON ((144.9 -37.8, 145.0 -37.8, "
     "145.0 -37.9, 144.9 -37.9, 144.9 -37.8))"
+)
+
+# ensure_multipolygon promotes POLYGON → MULTIPOLYGON, so the pipeline output
+# geometry will differ from the raw SAMPLE_GEOMETRY string.
+SAMPLE_MULTIPOLYGON_GEOMETRY = (
+    "MULTIPOLYGON (((144.9 -37.8, 145.0 -37.8, "
+    "145.0 -37.9, 144.9 -37.9, 144.9 -37.8)))"
 )
 
 
@@ -218,6 +228,164 @@ class TestCleanLgaNames:
 
 
 # ---------------------------------------------------------------------------
+# add_lga_pid_from_lga_population_data
+# ---------------------------------------------------------------------------
+
+class TestAddLgaPidFromLgaPopulationData:
+
+    def test_returns_dataframe(self):
+        """Tests that the function returns a DataFrame."""
+        df = pd.DataFrame([{"lga_name": "Melbourne", "geometry": SAMPLE_GEOMETRY}])
+        pop = make_population_df()
+        result = add_lga_pid_from_lga_population_data(df, pop)
+        assert isinstance(result, pd.DataFrame)
+
+    def test_lga_pid_is_added(self):
+        """Tests that lga_pid is present in the output after joining."""
+        df = pd.DataFrame([{"lga_name": "Melbourne", "geometry": SAMPLE_GEOMETRY}])
+        pop = make_population_df([{"lga_pid": "LGA_PID_001", "lga_name": "Melbourne"}])
+        result = add_lga_pid_from_lga_population_data(df, pop)
+        assert "lga_pid" in result.columns
+        assert result["lga_pid"].iloc[0] == "LGA_PID_001"
+
+    def test_correct_pid_matched_per_lga_name(self):
+        """Tests that each row receives the lga_pid matching its lga_name."""
+        df = pd.DataFrame([
+            {"lga_name": "Melbourne", "geometry": SAMPLE_GEOMETRY},
+            {"lga_name": "Ballarat",  "geometry": SAMPLE_GEOMETRY},
+        ])
+        pop = make_population_df([
+            {"lga_pid": "LGA_PID_MEL", "lga_name": "Melbourne"},
+            {"lga_pid": "LGA_PID_BAL", "lga_name": "Ballarat"},
+        ])
+        result = add_lga_pid_from_lga_population_data(df, pop)
+        assert result.set_index("lga_name").loc["Melbourne", "lga_pid"] == "LGA_PID_MEL"
+        assert result.set_index("lga_name").loc["Ballarat",  "lga_pid"] == "LGA_PID_BAL"
+
+    def test_rows_with_no_matching_pid_are_dropped(self):
+        """Tests that rows with no lga_pid match in the population DF are removed."""
+        df = pd.DataFrame([
+            {"lga_name": "UnknownRegion", "geometry": SAMPLE_GEOMETRY},
+        ])
+        pop = make_population_df([{"lga_pid": "LGA_PID_001", "lga_name": "Melbourne"}])
+        result = add_lga_pid_from_lga_population_data(df, pop)
+        assert len(result) == 0
+
+    def test_mixed_match_drops_only_unmatched_rows(self):
+        """Tests that only unmatched rows are dropped when some LGAs have no PID."""
+        df = pd.DataFrame([
+            {"lga_name": "Melbourne",     "geometry": SAMPLE_GEOMETRY},
+            {"lga_name": "UnknownRegion", "geometry": SAMPLE_GEOMETRY},
+        ])
+        pop = make_population_df([{"lga_pid": "LGA_PID_001", "lga_name": "Melbourne"}])
+        result = add_lga_pid_from_lga_population_data(df, pop)
+        assert len(result) == 1
+        assert result["lga_name"].iloc[0] == "Melbourne"
+
+    def test_only_lga_pid_and_lga_name_used_from_population_df(self):
+        """Tests that extra columns in df_population do not bleed into the output."""
+        df = pd.DataFrame([{"lga_name": "Melbourne", "geometry": SAMPLE_GEOMETRY}])
+        pop = pd.DataFrame([{
+            "lga_pid":    "LGA_PID_001",
+            "lga_name":   "Melbourne",
+            "extra_col":  "should not appear",
+        }])
+        result = add_lga_pid_from_lga_population_data(df, pop)
+        assert "extra_col" not in result.columns
+
+    def test_original_columns_are_preserved(self):
+        """Tests that all columns present in df are still present in the output."""
+        df = pd.DataFrame([{"lga_name": "Melbourne", "geometry": SAMPLE_GEOMETRY}])
+        pop = make_population_df()
+        result = add_lga_pid_from_lga_population_data(df, pop)
+        assert "lga_name" in result.columns
+        assert "geometry" in result.columns
+
+    def test_empty_input_dataframe_returns_empty(self):
+        """Tests that an empty input DataFrame yields an empty output."""
+        df = pd.DataFrame(columns=["lga_name", "geometry"])
+        pop = make_population_df()
+        result = add_lga_pid_from_lga_population_data(df, pop)
+        assert isinstance(result, pd.DataFrame)
+        assert len(result) == 0
+
+    def test_empty_population_dataframe_drops_all_rows(self):
+        """Tests that all rows are dropped when the population DF is empty."""
+        df = pd.DataFrame([{"lga_name": "Melbourne", "geometry": SAMPLE_GEOMETRY}])
+        pop = pd.DataFrame(columns=["lga_pid", "lga_name"])
+        result = add_lga_pid_from_lga_population_data(df, pop)
+        assert len(result) == 0
+
+
+# ---------------------------------------------------------------------------
+# ensure_multipolygon
+# ---------------------------------------------------------------------------
+
+class TestEnsureMultipolygon:
+
+    def test_returns_dataframe(self):
+        """Tests that the function returns a DataFrame."""
+        df = pd.DataFrame([{"geometry": SAMPLE_GEOMETRY}])
+        result = ensure_multipolygon(df)
+        assert isinstance(result, pd.DataFrame)
+
+    def test_polygon_wkt_is_promoted_to_multipolygon(self):
+        """Tests that a POLYGON WKT string is wrapped into a MULTIPOLYGON."""
+        df = pd.DataFrame([{"geometry": SAMPLE_GEOMETRY}])
+        result = ensure_multipolygon(df)
+        assert result["geometry"].iloc[0].startswith("MULTIPOLYGON")
+
+    def test_multipolygon_wkt_is_unchanged(self):
+        """Tests that a geometry already typed as MULTIPOLYGON passes through unaltered."""
+        df = pd.DataFrame([{"geometry": SAMPLE_MULTIPOLYGON_GEOMETRY}])
+        result = ensure_multipolygon(df)
+        assert result["geometry"].iloc[0].startswith("MULTIPOLYGON")
+
+    def test_output_geometry_is_valid_wkt_string(self):
+        """Tests that the output geometry column contains string values."""
+        df = pd.DataFrame([{"geometry": SAMPLE_GEOMETRY}])
+        result = ensure_multipolygon(df)
+        assert isinstance(result["geometry"].iloc[0], str)
+
+    def test_shapely_polygon_object_is_accepted(self):
+        """Tests that a shapely Polygon object (not a WKT string) is handled correctly."""
+        poly = Polygon([(144.9, -37.8), (145.0, -37.8), (145.0, -37.9), (144.9, -37.9)])
+        df = pd.DataFrame([{"geometry": poly}])
+        result = ensure_multipolygon(df)
+        assert result["geometry"].iloc[0].startswith("MULTIPOLYGON")
+
+    def test_shapely_multipolygon_object_is_accepted(self):
+        """Tests that a shapely MultiPolygon object is handled correctly."""
+        poly = Polygon([(144.9, -37.8), (145.0, -37.8), (145.0, -37.9), (144.9, -37.9)])
+        multi = MultiPolygon([poly])
+        df = pd.DataFrame([{"geometry": multi}])
+        result = ensure_multipolygon(df)
+        assert result["geometry"].iloc[0].startswith("MULTIPOLYGON")
+
+    def test_handles_multiple_rows_with_mixed_geometry_types(self):
+        """Tests that each row is independently promoted regardless of geometry type."""
+        poly = Polygon([(144.9, -37.8), (145.0, -37.8), (145.0, -37.9), (144.9, -37.9)])
+        multi = MultiPolygon([poly])
+        df = pd.DataFrame([
+            {"geometry": SAMPLE_GEOMETRY},
+            {"geometry": SAMPLE_MULTIPOLYGON_GEOMETRY},
+            {"geometry": poly},
+            {"geometry": multi},
+        ])
+        result = ensure_multipolygon(df)
+        assert all(g.startswith("MULTIPOLYGON") for g in result["geometry"])
+
+    def test_other_columns_are_not_affected(self):
+        """Tests that columns other than geometry are untouched."""
+        df = pd.DataFrame([{
+            "geometry": SAMPLE_GEOMETRY,
+            "lga_name": "Melbourne",
+        }])
+        result = ensure_multipolygon(df)
+        assert result["lga_name"].iloc[0] == "Melbourne"
+
+
+# ---------------------------------------------------------------------------
 # wrangle_viclga_boundaries (single-function pipeline)
 # ---------------------------------------------------------------------------
 
@@ -231,6 +399,8 @@ class TestWrangleViclgaBoundaries:
     - VICLGA_INCLUED_COLS is ["lga_name", "geometry"] — lga_pid is NOT in the raw data.
     - add_lga_pid_from_lga_population_data joins lga_pid from df_population after select.
     - Rows with no matching lga_pid in the population DF are dropped.
+    - ensure_multipolygon promotes POLYGON WKT to MULTIPOLYGON, so the geometry
+      column in the output will differ from the raw POLYGON string.
     """
 
     # --- Return type ---------------------------------------------------------
@@ -312,11 +482,11 @@ class TestWrangleViclgaBoundaries:
         result = wrangle_viclga_boundaries(df, pop)
         assert result["lga_name"].iloc[0] == "Ballarat"
 
-    def test_geometry_value_is_preserved_exactly(self):
-        """Tests that the geometry WKT string is passed through unmodified."""
+    def test_geometry_is_promoted_to_multipolygon(self):
+        """Tests that POLYGON input geometry is promoted to MULTIPOLYGON by the pipeline."""
         df = make_raw_df(geometry=SAMPLE_GEOMETRY)
         result = wrangle_viclga_boundaries(df, make_population_df())
-        assert result["geometry"].iloc[0] == SAMPLE_GEOMETRY
+        assert result["geometry"].iloc[0].startswith("MULTIPOLYGON")
 
     # --- Population join (lga_pid) -------------------------------------------
 

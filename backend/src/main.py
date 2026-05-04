@@ -6,6 +6,7 @@ import math
 from datetime import datetime
 
 from fastapi import Depends, FastAPI, HTTPException, Query
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from src.core.logging import logger
@@ -80,13 +81,15 @@ def get_lga_boundaries(db: Session = Depends(get_db)) -> dict:
             )
 
         if not features:
-            return {
-                "type": "FeatureCollection",
-                "features": [],
-                "message": "No boundaries found",
-            }
+            return JSONResponse(
+                content={"type": "FeatureCollection", "features": [], "message": "No boundaries found"},
+                headers={"Cache-Control": "public, max-age=86400, stale-while-revalidate=604800"},
+            )
 
-        return {"type": "FeatureCollection", "features": features}
+        return JSONResponse(
+            content={"type": "FeatureCollection", "features": features},
+            headers={"Cache-Control": "public, max-age=86400, stale-while-revalidate=604800"},
+        )
     except Exception as exc:
         logger.exception("Failed to fetch LGA boundaries: %s", exc)
         raise HTTPException(status_code=500, detail="Internal error fetching LGA boundaries")
@@ -273,15 +276,19 @@ def get_diet_indicators(db: Session = Depends(get_db)):
     try:
         # We fetch the full rows; the response_model filters the fields
         indicators = db.query(DietIndicator).all()
-        
+
         if not indicators:
-            return []
-            
-        return indicators
+            return JSONResponse(content=[], headers={"Cache-Control": "public, max-age=86400, stale-while-revalidate=604800"})
+
+        from fastapi.encoders import jsonable_encoder
+        return JSONResponse(
+            content=jsonable_encoder(indicators),
+            headers={"Cache-Control": "public, max-age=86400, stale-while-revalidate=604800"},
+        )
     except Exception as exc:
         logger.exception("Failed to fetch diet indicators: %s", exc)
         raise HTTPException(
-            status_code=500, 
+            status_code=500,
             detail="Internal error fetching dietary data"
         )
 
@@ -295,15 +302,19 @@ def get_health_outcomes(db: Session = Depends(get_db)):
     try:
         # Fetching and ordering by category to keep the data organized
         results = db.query(HealthOutcome).order_by(HealthOutcome.category).all()
-        
+
         if not results:
-            return []
-            
-        return results
+            return JSONResponse(content=[], headers={"Cache-Control": "public, max-age=86400, stale-while-revalidate=604800"})
+
+        from fastapi.encoders import jsonable_encoder
+        return JSONResponse(
+            content=jsonable_encoder(results),
+            headers={"Cache-Control": "public, max-age=86400, stale-while-revalidate=604800"},
+        )
     except Exception as exc:
         logger.exception("Failed to fetch health outcomes: %s", exc)
         raise HTTPException(
-            status_code=500, 
+            status_code=500,
             detail="Internal error fetching health outcome data"
         )
 
@@ -317,15 +328,19 @@ def get_low_cost_diet_stats(db: Session = Depends(get_db)):
     try:
         # Fetching all records from the low_cost_diet table
         rows = db.query(LowCostDiet).all()
-        
+
         if not rows:
-            return []
-            
-        return rows
+            return JSONResponse(content=[], headers={"Cache-Control": "public, max-age=86400, stale-while-revalidate=604800"})
+
+        from fastapi.encoders import jsonable_encoder
+        return JSONResponse(
+            content=jsonable_encoder(rows),
+            headers={"Cache-Control": "public, max-age=86400, stale-while-revalidate=604800"},
+        )
     except Exception as exc:
         logger.exception("Failed to fetch low-cost diet stats: %s", exc)
         raise HTTPException(
-            status_code=500, 
+            status_code=500,
             detail="Internal error fetching low-cost diet data"
         )
 
@@ -343,15 +358,19 @@ def get_low_cost_diet_health_outcomes(db: Session = Depends(get_db)):
             .order_by(LowCostDietHealthOutcome.category, LowCostDietHealthOutcome.health_outcome)
             .all()
         )
-        
+
         if not results:
-            return []
-            
-        return results
+            return JSONResponse(content=[], headers={"Cache-Control": "public, max-age=86400, stale-while-revalidate=604800"})
+
+        from fastapi.encoders import jsonable_encoder
+        return JSONResponse(
+            content=jsonable_encoder(results),
+            headers={"Cache-Control": "public, max-age=86400, stale-while-revalidate=604800"},
+        )
     except Exception as exc:
         logger.exception("Failed to fetch low-cost diet health outcomes: %s", exc)
         raise HTTPException(
-            status_code=500, 
+            status_code=500,
             detail="Internal error fetching dietary health outcome data"
         )
 
@@ -368,14 +387,18 @@ def get_all_macronutrient_goals(db: Session = Depends(get_db)):
             .order_by(RecommendedMacronutrientsIntake.age, RecommendedMacronutrientsIntake.nutrient)
             .all()
         )
-        
+
         if not results:
-            return []
-            
-        return results
+            return JSONResponse(content=[], headers={"Cache-Control": "public, max-age=86400, stale-while-revalidate=604800"})
+
+        from fastapi.encoders import jsonable_encoder
+        return JSONResponse(
+            content=jsonable_encoder(results),
+            headers={"Cache-Control": "public, max-age=86400, stale-while-revalidate=604800"},
+        )
     except Exception as exc:
         logger.exception("Failed to fetch recommended macronutrients: %s", exc)
         raise HTTPException(
-            status_code=500, 
+            status_code=500,
             detail="Internal error fetching recommended macronutrients"
         )
