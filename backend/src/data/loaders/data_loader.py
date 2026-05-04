@@ -117,12 +117,34 @@ def load_recommended_macronutrients_intake_dataset() -> pd.DataFrame:
 # ---------------------------------------------------------------------------
 
 def load_dishes_dataset() -> pd.DataFrame:
-    """Load Yummly dishes (id, cuisine, ingredients) and wrangle into DB-ready shape."""
+    """Load Yummly dishes (id, cuisine, ingredients) and wrangle into DB-ready shape.
+
+    Returns an empty DataFrame if the file does not yet exist — callers must
+    guard against this and skip seeding gracefully.
+    """
+    import os
+    if not os.path.exists(settings.DISHES_RAW_PATH):
+        logger.warning(
+            f"dishes_raw.csv not found at {settings.DISHES_RAW_PATH}. "
+            "Run the Yummly Kaggle download script first."
+        )
+        return pd.DataFrame(columns=["name", "cuisine", "ingredients", "base_servings", "source"])
     return _load_and_wrangle(settings.DISHES_RAW_PATH, wrangle_dishes, "Dishes")
 
 
 def load_ingredients_dataset() -> pd.DataFrame:
-    """Load VIC grocery pricing CSV and wrangle into Ingredient records."""
+    """Load VIC grocery pricing CSV and wrangle into Ingredient records.
+
+    Returns an empty DataFrame if the file does not yet exist — callers must
+    guard against this and skip seeding gracefully.
+    """
+    import os
+    if not os.path.exists(settings.INGREDIENTS_PRICING_RAW_PATH):
+        logger.warning(
+            f"ingredients_pricing_raw.csv not found at {settings.INGREDIENTS_PRICING_RAW_PATH}. "
+            "Run fetch_vic_grocery_ingredients first."
+        )
+        return pd.DataFrame(columns=["name", "price_aud", "price_per_100g", "pack_grams", "price_source", "price_as_of", "benefit_tags"])
     return _load_and_wrangle(settings.INGREDIENTS_PRICING_RAW_PATH, wrangle_ingredients, "Ingredients pricing")
 
 
