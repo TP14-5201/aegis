@@ -97,10 +97,10 @@ import * as d3 from 'd3';
 const config = useRuntimeConfig();
 const apiBase = config.public.apiBase || 'http://localhost:8000';
 
-const { data: dietIndicators } = await useFetch(`${apiBase}/diet-indicators`)
-const { data: healthOutcomes } = await useFetch(`${apiBase}/health-outcomes`)
-const { data: lowCostDiet } = await useFetch(`${apiBase}/low-cost-diet`)
-const { data: lcdHealthOutcomes } = await useFetch(`${apiBase}/low-cost-diet-health-outcomes`)
+const { data: dietIndicators } = useFetch(`${apiBase}/diet-indicators`, { lazy: true })
+const { data: healthOutcomes } = useFetch(`${apiBase}/health-outcomes`, { lazy: true })
+const { data: lowCostDiet } = useFetch(`${apiBase}/low-cost-diet`, { lazy: true })
+const { data: lcdHealthOutcomes } = useFetch(`${apiBase}/low-cost-diet-health-outcomes`, { lazy: true })
 
 const getStat = (source, category, response, valueKey, defaultVal) => {
   if (!source || !source.value) return defaultVal;

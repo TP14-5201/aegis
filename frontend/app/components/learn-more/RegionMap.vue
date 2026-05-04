@@ -141,9 +141,31 @@
 
         <!-- Stat cards (cherebowl visual style) -->
         <div class="flex flex-col gap-5">
-          <!-- Empty state -->
+          <!-- Skeleton shimmer while stats are loading -->
+          <div v-if="isStatsLoading" class="flex flex-col gap-5">
+            <div class="rounded-[20px] bg-[#d9d9d94a] shadow-nav p-5 lg:p-6 animate-pulse">
+              <div class="h-4 w-1/2 bg-gray-200 rounded mx-auto mb-3" />
+              <div class="h-10 w-2/3 bg-gray-200 rounded mx-auto mb-2" />
+              <div class="h-3 w-1/3 bg-gray-200 rounded mx-auto" />
+            </div>
+            <div class="rounded-[20px] bg-[#d9d9d94a] shadow-nav p-5 lg:p-6 animate-pulse">
+              <div class="h-4 w-1/2 bg-gray-200 rounded mx-auto mb-3" />
+              <div class="h-10 w-2/3 bg-gray-200 rounded mx-auto mb-4" />
+              <div class="space-y-2">
+                <div class="h-3 w-full bg-gray-200 rounded" />
+                <div class="h-3 w-full bg-gray-200 rounded" />
+              </div>
+            </div>
+            <div class="rounded-[20px] bg-[#d9d9d94a] shadow-nav p-5 lg:p-6 animate-pulse">
+              <div class="h-4 w-1/2 bg-gray-200 rounded mx-auto mb-3" />
+              <div class="h-10 w-2/3 bg-gray-200 rounded mx-auto mb-2" />
+              <div class="h-3 w-1/3 bg-gray-200 rounded mx-auto" />
+            </div>
+          </div>
+
+          <!-- Empty state (stats loaded, no LGA selected) -->
           <div
-            v-if="!selectedLgaStat"
+            v-else-if="!selectedLgaStat"
             class="flex flex-col items-center justify-center text-center p-8 bg-sky-tint/40 rounded-[20px] border border-dashed border-sky min-h-[200px]"
           >
             <p class="font-roboto text-ash text-[16px] leading-relaxed">
@@ -290,6 +312,7 @@ const showDropdown = ref(false)
 const searchIndex = ref([])
 const isLoadingLocation = ref(false)
 const isMapLoading = ref(true)
+const isStatsLoading = ref(true)
 
 // ── Metric definitions (cherebowl palette) ────────────────────────────────
 const metrics = [
@@ -492,23 +515,38 @@ watch(currentMetric, () => {
 
 // ── Init ──────────────────────────────────────────────────────────────────
 onMounted(async () => {
-  // Fetch stats
-  try {
-    const res = await fetch(`${API_URL}/lga/stats`)
-    lgaStats.value = await res.json()
-    searchIndex.value = [...new Set(lgaStats.value.map(s => s.lga_name))].sort()
-  } catch (e) {
-    console.error('Failed to fetch LGA stats', e)
-  }
-
   const token = config.public.mapboxToken
   if (!token) {
     console.warn('NUXT_PUBLIC_MAPBOX_TOKEN is not set; map will not load.')
     isMapLoading.value = false
-    return
   }
-  mapboxgl.accessToken = token
 
+  // Fetch /lga/stats and /lga/boundaries in parallel, and initialise the map at the same time
+  const [statsResult, boundariesResult] = await Promise.allSettled([
+    fetch(`${API_URL}/lga/stats`).then(r => r.json()),
+    fetch(`${API_URL}/lga/boundaries`).then(r => r.json()),
+  ])
+
+  // Populate stats
+  if (statsResult.status === 'fulfilled') {
+    lgaStats.value = statsResult.value
+    searchIndex.value = [...new Set(lgaStats.value.map(s => s.lga_name))].sort()
+  } else {
+    console.error('Failed to fetch LGA stats', statsResult.reason)
+  }
+  isStatsLoading.value = false
+
+  // Store boundaries (ready for when the map finishes loading)
+  if (boundariesResult.status === 'fulfilled') {
+    lgaGeojson = boundariesResult.value
+    lgaGeojson.features.forEach((f, i) => f.id = i)
+  } else {
+    console.error('Failed to fetch LGA boundaries', boundariesResult.reason)
+  }
+
+  if (!token) return
+
+  mapboxgl.accessToken = token
   await nextTick()
   mapInstance = new mapboxgl.Map({
     container: mapEl.value,
@@ -520,11 +558,13 @@ onMounted(async () => {
   mapInstance.addControl(new mapboxgl.NavigationControl(), 'top-right')
   tooltipPopup = new mapboxgl.Popup({ closeButton: false, closeOnClick: false, className: 'lga-tooltip-popup' })
 
-  mapInstance.on('load', async () => {
+  mapInstance.on('load', () => {
     try {
-      const r = await fetch(`${API_URL}/lga/boundaries`)
-      lgaGeojson = await r.json()
-      lgaGeojson.features.forEach((f, i) => f.id = i)
+      // lgaGeojson is already fetched in parallel above – no second network request needed
+      if (!lgaGeojson) {
+        console.warn('LGA boundaries not available; map layers skipped.')
+        return
+      }
 
       mapInstance.addSource('lga', { type: 'geojson', data: lgaGeojson })
       mapInstance.addLayer({
