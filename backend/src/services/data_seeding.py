@@ -18,6 +18,7 @@ from src.core.config import settings
 from src.core.logging import logger
 from src.scripts.download_dev_data import save_local_copy
 from src.scripts.fetch_vic_grocery_ingredients import fetch_vic_grocery_ingredients
+from src.data.extractors.cherebowl_extractor import fetch_yummly_dishes, fetch_miskg_substitutes
 from src.data.loaders.data_loader import (
     load_emergency_services_dataset,
     load_food_insecurity_dataset,
@@ -327,8 +328,41 @@ def download_dataset() -> None:
     else:
         logger.info("Base datasets present.")
 
-    fetch_vic_grocery_ingredients()
-    _fetch_nutrients()
+    if not os.path.exists(settings.DISHES_RAW_PATH):
+        try:
+            logger.info("Downloading Yummly dishes dataset from Kaggle ...")
+            df_dishes = fetch_yummly_dishes()
+            df_dishes.to_csv(settings.DISHES_RAW_PATH, index=False)
+            logger.info(f"dishes_raw.csv saved ({len(df_dishes)} rows) → {settings.DISHES_RAW_PATH}")
+        except Exception as exc:
+            logger.warning(f"fetch_yummly_dishes failed: {exc}. Dish seeding will be skipped.")
+    else:
+        logger.info("dishes_raw.csv already present — skipping Kaggle download.")
+
+    if not os.path.exists(settings.INGREDIENTS_PRICING_RAW_PATH):
+        try:
+            fetch_vic_grocery_ingredients()
+        except Exception as exc:
+            logger.warning(
+                f"fetch_vic_grocery_ingredients failed: {exc}. "
+                "Ingredient/dish seeding will be skipped."
+            )
+    else:
+        logger.info("ingredients_pricing_raw.csv already present — skipping Kaggle download.")
+
+    if not os.path.exists(settings.INGREDIENT_SUBSTITUTES_RAW_PATH):
+        try:
+            logger.info("Downloading MISKG ingredient substitutes from Kaggle ...")
+            df_subs = fetch_miskg_substitutes()
+            df_subs.to_csv(settings.INGREDIENT_SUBSTITUTES_RAW_PATH, index=False)
+            logger.info(f"ingredient_substitutes_raw.csv saved ({len(df_subs)} rows) → {settings.INGREDIENT_SUBSTITUTES_RAW_PATH}")
+        except Exception as exc:
+            logger.warning(f"fetch_miskg_substitutes failed: {exc}. Substitute seeding will be skipped.")
+    else:
+        logger.info("ingredient_substitutes_raw.csv already present — skipping Kaggle download.")
+
+    if os.path.exists(settings.INGREDIENTS_PRICING_RAW_PATH):
+        _fetch_nutrients()
 
 
 if __name__ == "__main__":
@@ -355,21 +389,27 @@ if __name__ == "__main__":
             seed_simple(db, loader(), model)
 
         # --- ChereBowl datasets (order matters: parents before children) ---
-        ingredient_name_to_id = seed_ingredients(db, load_ingredients_dataset())
+        df_ingredients = load_ingredients_dataset()
+        if df_ingredients.empty:
+            logger.warning("Skipping ChereBowl seeding — ingredients_pricing_raw.csv not available.")
+        else:
+            ingredient_name_to_id = seed_ingredients(db, df_ingredients)
 
-        df_dishes = load_dishes_dataset()
-        df_dishes = df_dishes.groupby("cuisine", group_keys=False).head(30).reset_index(drop=True)
-        dish_name_to_id = seed_dishes(db, df_dishes)
+            df_dishes = load_dishes_dataset()
+            if not df_dishes.empty:
+                df_dishes = df_dishes.groupby("cuisine", group_keys=False).head(30).reset_index(drop=True)
+                dish_name_to_id = seed_dishes(db, df_dishes)
+                seed_dish_ingredients(
+                    db,
+                    load_dish_ingredients_dataset(),
+                    dish_name_to_id,
+                    ingredient_name_to_id,
+                )
+            else:
+                logger.warning("Skipping dishes seeding — dishes_raw.csv not available.")
 
-        seed_dish_ingredients(
-            db,
-            load_dish_ingredients_dataset(),
-            dish_name_to_id,
-            ingredient_name_to_id,
-        )
-
-        seed_ingredient_nutrients(db, load_ingredient_nutrients_dataset(), ingredient_name_to_id)
-        seed_ingredient_substitutes(db, load_ingredient_substitutes_dataset(), ingredient_name_to_id)
+            seed_ingredient_nutrients(db, load_ingredient_nutrients_dataset(), ingredient_name_to_id)
+            seed_ingredient_substitutes(db, load_ingredient_substitutes_dataset(), ingredient_name_to_id)
 
     finally:
         db.close()

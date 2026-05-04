@@ -10,3 +10,7 @@ services:
         value: sqlite:///./app.db
       - key: PYTHON_VERSION
         value: 3.11.0
+      - key: KAGGLE_USERNAME
+        sync: false
+      - key: KAGGLE_KEY
+        sync: false
