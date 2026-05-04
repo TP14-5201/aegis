@@ -1,10 +1,10 @@
 <template>
-  <section class="relative w-full overflow-hidden bg-[#DBEDFF]/50">
+  <section class="relative w-full overflow-hidden bg-[#DBEDFF]/50 py-10 lg:py-0">
     <div class="max-w-8xl mx-auto px-5 lg:px-12">
       <div class="relative grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-stretch">
 
         <!-- Left image + vector -->
-        <div class="relative order-2 lg:order-1 self-stretch flex items-center justify-center min-h-[430px]">
+        <div class="relative order-2 lg:order-1 self-stretch flex items-center justify-center min-h-[260px] sm:min-h-[360px] lg:min-h-[430px]">
 
           <!-- wrapper to center everything -->
           <div class="relative w-full flex justify-center items-center">
@@ -12,8 +12,8 @@
 
             <!-- Family image -->
             <img
-              class="relative z-10 
-                    w-[420px] lg:w-[520px] xl:w-[620px]
+              class="relative z-10
+                    w-full max-w-[380px] sm:max-w-[420px] lg:max-w-[520px] xl:max-w-[620px]
                     object-contain"
               src="/images/landing/landing-2.png"
             />
@@ -31,33 +31,33 @@
             Thousands of families in Victoria face the same challenges every day.
           </p>
 
-          <div class="mt-10 lg:mt-14 grid grid-cols-1 sm:grid-cols-2 gap-8 sm:gap-8 max-w-3xl">
-            <div class="bg-white rounded-[16px] px-10 py-10 flex flex-col items-center text-center gap-4">
+          <div class="mt-10 lg:mt-14 grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 w-full max-w-3xl">
+            <div class="bg-white rounded-[16px] px-6 sm:px-10 py-8 sm:py-10 flex flex-col items-center text-center gap-4">
               <img
                 class="h-20 lg:h-[86px] w-auto object-contain"
                 src="/images/landing-1in3.png"
                 alt="People icon"
                 loading="lazy"
               />
-              <p class="font-roboto font-black text-[36px] lg:text-[40px] leading-none text-black">
+              <p class="font-roboto font-black text-[32px] lg:text-[40px] leading-none text-black">
                 1 in 3
               </p>
-              <p class="font-roboto text-[18px] lg:text-[22px] leading-snug text-black">
+              <p class="font-roboto text-[16px] lg:text-[22px] leading-snug text-black">
                 People experience<br />food insecurity
               </p>
             </div>
 
-            <div class="bg-white rounded-[16px] px-10 py-10 flex flex-col items-center text-center gap-4">
+            <div class="bg-white rounded-[16px] px-6 sm:px-10 py-8 sm:py-10 flex flex-col items-center text-center gap-4">
               <img
                 class="h-20 lg:h-[85px] w-auto object-contain"
                 src="/images/landing-piechart.png"
                 alt="Pie chart icon"
                 loading="lazy"
               />
-              <p class="font-roboto font-black text-[36px] lg:text-[40px] leading-none text-black">
+              <p class="font-roboto font-black text-[32px] lg:text-[40px] leading-none text-black">
                 48%
               </p>
-              <p class="font-roboto text-[18px] lg:text-[22px] leading-snug text-black">
+              <p class="font-roboto text-[16px] lg:text-[22px] leading-snug text-black">
                 Renters experience<br />food insecurity
               </p>
             </div>

@@ -4,7 +4,7 @@
       class="max-w-8xl mx-auto px-5 lg:px-12
              grid lg:grid-cols-2 gap-12
              min-h-[70vh] lg:min-h-[80vh]
-             items-center"
+             items-center pt-8 lg:pt-0"
     >
       <!-- LEFT CONTENT -->
       <div class="flex flex-col justify-center">

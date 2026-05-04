@@ -1,5 +1,6 @@
 <template>
-    <TopNavigation />    
+    <TopNavigation />
+    <div class="h-[72px] lg:h-[100px]" />
     <section class="w-full bg-sky-tint py-16 lg:py-24">
     <div class="max-w-5xl mx-auto px-5 lg:px-12 text-center">
 

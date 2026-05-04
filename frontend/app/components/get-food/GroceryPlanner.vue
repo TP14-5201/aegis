@@ -95,38 +95,6 @@
             </p>
           </div>
 
-          <!-- Cuisine (Optional) -->
-          <div>
-            <label for="cuisine" class="text-sm font-semibold text-navy">
-              Type of Cuisine <span class="text-gray-400">(optional)</span>
-            </label>
-
-            <div class="relative mt-2">
-              <select
-                id="cuisine"
-                v-model="cuisine"
-                class="h-12 w-full appearance-none rounded-xl bg-[#E6F0FA] px-4 pr-10 text-gray-700 outline-none focus:ring-2 focus:ring-[#B8DEFF]"
-              >
-                <option value="">No preference</option>
-                <option value="Australian">Australian</option>
-                <option value="Indian">Indian</option>
-                <option value="Chinese">Chinese</option>
-                <option value="Japanese">Japanese</option>
-                <option value="Italian">Italian</option>
-                <option value="Mediterranean">Mediterranean</option>
-                <option value="Thai">Thai</option>
-                <option value="Vietnamese">Vietnamese</option>
-              </select>
-
-              <span class="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">
-                ▼
-              </span>
-            </div>
-
-            <p class="mt-2 text-sm text-gray-500">
-              Leave blank to see a mix of cuisines.
-            </p>
-          </div>
         </div>
 
         <!-- Dietary Needs (Optional) -->
@@ -186,7 +154,6 @@
 const budget = ref('')
 const people = ref('')
 const dishes = ref('')
-const cuisine = ref('')
 const dietaryNeeds = ref<string[]>([])
 const formError = ref('')
 
@@ -197,7 +164,6 @@ const emit = defineEmits<{
     budget: number
     people: number
     dishes: number
-    cuisine: string | null
     dietaryNeeds: string[]
   }]
 }>()
@@ -299,7 +265,6 @@ const handleSubmit = () => {
     budget: Number(budget.value),
     people: Number(people.value),
     dishes: Number(dishes.value),
-    cuisine: cuisine.value || null,
     dietaryNeeds: dietaryNeeds.value
   }
 
