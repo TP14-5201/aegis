@@ -8,6 +8,10 @@
     >
       <!-- LEFT CONTENT -->
       <div class="flex flex-col justify-center">
+        <p class="text-sm font-bold uppercase tracking-wider text-[#DF6951]">
+          Under Development
+        </p>
+
         <h1
           class="font-volkhov font-bold text-navy
                  text-[42px] lg:text-[64px]
