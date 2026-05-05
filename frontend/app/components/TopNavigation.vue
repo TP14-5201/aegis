@@ -19,7 +19,6 @@
         <NavLink to="/get-food">Get Food</NavLink>
         <NavLink to="/nutrition-guide">Nutrition Guide</NavLink>
         <NavLink to="/learn-more">Learn More</NavLink>
-        <NavLink to="/about-us">About Us</NavLink>
       </nav>
 
       <!-- Mobile: hamburger -->
@@ -61,7 +60,6 @@
         <NavLink to="/get-food" @navigate="menuOpen = false">Get Food</NavLink>
         <NavLink to="/nutrition-guide" @navigate="menuOpen = false">Nutrition Guide</NavLink>
         <NavLink to="/learn-more" @navigate="menuOpen = false">Learn More</NavLink>
-        <NavLink to="/about-us" @navigate="menuOpen = false">About Us</NavLink>
       </nav>
     </Transition>
   </header>
