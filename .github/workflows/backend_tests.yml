@@ -2,9 +2,9 @@ name: Run Backend Tests
 
 on:
   push:
-    branches: [ main ]
+    branches: [ "underdevelopment" ]
   pull_request:
-    branches: [ main ]
+    branches: [ "main", "underdevelopment" ]
 
 jobs:
   test:
@@ -34,11 +34,15 @@ jobs:
         python -m pip install pytest pytest-cov coverage
         if [ -f backend/requirements.txt ]; then pip install -r backend/requirements.txt; fi
 
-    # - name: Lint with flake8
-    #   run: |
-    #     flake8 backend/src --max-line-length=120 --ignore=E501,W503
-
-    - name: Run tests
+    - name: Run tests and generate XML coverage
       working-directory: backend
       run: |
-        pytest tests/ -v --cov=src --cov-report=term-missing
+        # Changed report type to xml for better tool compatibility
+        pytest tests/ -v --cov=src --cov-report=xml
+      
+    - name: Pytest coverage comment
+      uses: MishaKav/pytest-coverage-comment@main
+      with:
+        pytest-xml-coverage-path: backend/coverage.xml
+        title: Backend Coverage Report
+        badge-title: Coverage
