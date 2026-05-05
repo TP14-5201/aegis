@@ -95,6 +95,38 @@
             </p>
           </div>
 
+          <!-- Cuisine (Optional) -->
+          <div>
+            <label for="cuisine" class="text-sm font-semibold text-navy">
+              Type of Cuisine <span class="text-gray-400">(optional)</span>
+            </label>
+
+            <div class="relative mt-2">
+              <select
+                id="cuisine"
+                v-model="cuisine"
+                class="h-12 w-full appearance-none rounded-xl bg-[#E6F0FA] px-4 pr-10 text-gray-700 outline-none focus:ring-2 focus:ring-[#B8DEFF]"
+              >
+                <option value="">No preference</option>
+                <option value="Australian">Australian</option>
+                <option value="Indian">Indian</option>
+                <option value="Chinese">Chinese</option>
+                <option value="Japanese">Japanese</option>
+                <option value="Italian">Italian</option>
+                <option value="Mediterranean">Mediterranean</option>
+                <option value="Thai">Thai</option>
+                <option value="Vietnamese">Vietnamese</option>
+              </select>
+
+              <span class="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">
+                ▼
+              </span>
+            </div>
+
+            <p class="mt-2 text-sm text-gray-500">
+              Leave blank to see a mix of cuisines.
+            </p>
+          </div>
         </div>
 
         <!-- Dietary Needs (Optional) -->
@@ -129,18 +161,7 @@
         <div class="mt-10 flex justify-center">
           <button
             type="submit"
-            class="group mt-10 inline-flex items-center justify-center
-                  h-[58px] lg:h-[70px]
-                  rounded-[20px]
-                  bg-sky px-6
-                  font-roboto font-bold
-                  text-[16px] lg:text-[18px]
-                  text-navy-deep
-                  shadow-[0_12px_28px_rgba(68,154,196,0.22)]
-                  transition-all duration-300 ease-out
-                  hover:-translate-y-1 hover:bg-[#9ed2ff]
-                  hover:shadow-[0_16px_34px_rgba(68,154,196,0.28)]
-                  active:translate-y-0"
+            class="rounded-full bg-[#B8DEFF] px-8 py-4 font-bold text-navy transition hover:bg-[#9ed2ff]"
           >
             Get Ingredient Recommendations
           </button>
@@ -154,6 +175,7 @@
 const budget = ref('')
 const people = ref('')
 const dishes = ref('')
+const cuisine = ref('')
 const dietaryNeeds = ref<string[]>([])
 const formError = ref('')
 
@@ -164,6 +186,7 @@ const emit = defineEmits<{
     budget: number
     people: number
     dishes: number
+    cuisine: string | null
     dietaryNeeds: string[]
   }]
 }>()
@@ -265,6 +288,7 @@ const handleSubmit = () => {
     budget: Number(budget.value),
     people: Number(people.value),
     dishes: Number(dishes.value),
+    cuisine: cuisine.value || null,
     dietaryNeeds: dietaryNeeds.value
   }
 

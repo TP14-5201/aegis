@@ -7,6 +7,10 @@
 
     <GetFoodGroceryPlanner @submit-planner="handlePlannerSubmit" />
 
+      <p class="mt-8 mb-2 text-center font-roboto text-[14px] lg:text-[15px] text-coral">
+        This feature is currently under development. Results shown are for demonstration purposes only.
+      </p>
+
     <GetFoodGroceryRecommendation
       v-if="showRecommendations"
       :planner-data="plannerData"
