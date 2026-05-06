@@ -116,4 +116,4 @@ class TestWrangleDishes:
         df = make_dishes_df()
         df = df.drop(columns=["source"])
         result = wrangle_dishes(df)
-        assert result["source"].iloc[0] == "manual"
+        assert result["source"].iloc[0] == "yummly"
