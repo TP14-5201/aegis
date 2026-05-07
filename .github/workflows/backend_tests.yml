@@ -1,18 +1,22 @@
-name: Run Backend Tests
+name: Backend CI/CD
 
 on:
-  push:
-    branches: [ "underdevelopment" ]
   pull_request:
-    branches: [ "main", "underdevelopment" ]
+    branches: [ "underdevelopment", "main" ]
+  push:
+    branches: [ "underdevelopment", "main" ]
 
 permissions:
-  contents: read
+  contents: write
   pull-requests: write
   deployments: write
 
 jobs:
+  # ─────────────────────────────────────────────────────────────────
+  # Run tests ONLY on pull_request events (not on merge/push)
+  # ─────────────────────────────────────────────────────────────────
   test:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
 
     steps:
@@ -42,25 +46,28 @@ jobs:
     - name: Run tests and generate XML coverage
       working-directory: backend
       run: |
-        # Changed report type to xml for better tool compatibility
         pytest tests/ -v --cov=src --cov-report=xml
-      
+
     - name: Pytest coverage comment
       uses: MishaKav/pytest-coverage-comment@main
       with:
         pytest-xml-coverage-path: backend/coverage.xml
         title: Backend Coverage Report
         badge-title: Coverage
-  
+
+  # ─────────────────────────────────────────────────────────────────
+  # Deploy ONLY on push events (i.e. after a PR is merged)
+  # Tests do NOT run again — deploy is independent of the test job
+  # ─────────────────────────────────────────────────────────────────
   deploy:
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
-    needs: test # CRITICAL: This ensures deployment ONLY happens if tests pass
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      # Deploy to Staging (cherebowl-dev) when pushing to underdevelopment
+      # Deploy to Staging when merged into underdevelopment
       - name: Deploy to Vercel (Staging)
         if: github.ref == 'refs/heads/underdevelopment'
         uses: amondnet/vercel-action@v25
@@ -69,7 +76,7 @@ jobs:
           vercel-org-id: ${{ secrets.ORG_ID }}
           vercel-project-id: ${{ secrets.PROJECT_ID }}
 
-      # Deploy to Production (cherebowl) when pushing to main (after merge)
+      # Deploy to Production when merged into main
       - name: Deploy to Vercel (Production)
         if: github.ref == 'refs/heads/main'
         uses: amondnet/vercel-action@v25
@@ -77,4 +84,4 @@ jobs:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.ORG_ID }}
           vercel-project-id: ${{ secrets.PROJECT_ID }}
-          vercel-args: '--prod' # This flag pushes to your production domain
+          vercel-args: '--prod'
