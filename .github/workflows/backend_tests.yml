@@ -67,21 +67,21 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+
       # Deploy to Staging when merged into underdevelopment
       - name: Deploy to Vercel (Staging)
         if: github.ref == 'refs/heads/underdevelopment'
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.ORG_ID }}
-          vercel-project-id: ${{ secrets.PROJECT_ID }}
+        run: vercel --token=${{ secrets.VERCEL_TOKEN }} --yes
+        env:
+          VERCEL_ORG_ID: ${{ secrets.ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.PROJECT_ID }}
 
       # Deploy to Production when merged into main
       - name: Deploy to Vercel (Production)
         if: github.ref == 'refs/heads/main'
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.ORG_ID }}
-          vercel-project-id: ${{ secrets.PROJECT_ID }}
-          vercel-args: '--prod'
+        run: vercel --prod --token=${{ secrets.VERCEL_TOKEN }} --yes
+        env:
+          VERCEL_ORG_ID: ${{ secrets.ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.PROJECT_ID }}
