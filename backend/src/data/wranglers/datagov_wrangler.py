@@ -2,7 +2,17 @@ import re
 
 import pandas as pd
 
-from .utils import initial_cleaning_pipeline, clean_na_values, normalize_website, normalize_coordinates, select_columns, add_source_column, rename_columns, determine_emergency_service_lga
+from .utils import (
+    initial_cleaning_pipeline,
+    clean_na_values,
+    normalize_website,
+    normalize_coordinates,
+    select_columns,
+    rename_columns,
+    add_source_column,
+    determine_emergency_service_lga,
+    exclude_non_victorian_services
+)
 from src.core.config import settings
 
 
@@ -66,6 +76,7 @@ def wrangle_datagov(df: pd.DataFrame, df_lga_boundaries: pd.DataFrame) -> pd.Dat
     df = extract_organisation_url(df)
     df = normalize_website(df)
     df = normalize_coordinates(df, lat_col="latitude", lon_col="longitude")
+    df = exclude_non_victorian_services(df)
     df = create_placeholder_columns(df)
     df = select_columns(df, settings.EMERGENCY_INCLUDED_COLS)
     df = add_source_column(df, source="DataGov")

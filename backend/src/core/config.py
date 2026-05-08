@@ -86,30 +86,13 @@ class Settings(BaseSettings):
     ### END OF Recommended Macronutrients Intake Data ###
 
 
-    ### ChereBowl / Grocery Recommendation Datasets ###
-    # Kaggle credentials (generate at https://www.kaggle.com/settings → API)
-    KAGGLE_USERNAME: str = ""
-    KAGGLE_KEY: str = ""
-
-    # Kaggle dataset slugs
-    YUMMLY_DISHES_DATASET: str = "kaggle/recipe-ingredients-dataset"
-    MISKG_SUBSTITUTES_DATASET: str = "kaggle/food-ingredient-substitutions"
-    GROCERY_KAGGLE_DATASET: str = "thedevastator/grocery-product-prices-for-australian-states"
-    OPENFOODFACTS_KAGGLE_DATASET: str = "openfoodfacts/world-food-facts"
-
-    # USDA FoodData Central (free key at https://fdc.nal.usda.gov/api-key-signup)
-    USDA_API_KEY: str = ""
-    USDA_API_BASE_URL: str = "https://api.nal.usda.gov/fdc/v1"
-    ### END OF ChereBowl / Grocery Recommendation Datasets ###
-
-
     ### Local file paths ###
     RAW_DATA_DIR: str = "src/data/raw"
 
     MELBOURNE_RAW_PATH: str = os.path.join(RAW_DATA_DIR, "melbourne_raw.csv")
     DATAGOV_RAW_PATH: str = os.path.join(RAW_DATA_DIR, "datagov_raw.csv")
     FOOD_INSECURITY_RAW_PATH: str = os.path.join(RAW_DATA_DIR, "food_insecurity_raw.xlsx")
-
+    
     VICLGA_BOUNDARY_RAW_ZIP_PATH: str = os.path.join(RAW_DATA_DIR, "viclga_boundary_raw.zip")
     VICLGA_BOUNDARY_RAW_UNZIP_PATH: str = os.path.join(RAW_DATA_DIR, "viclga_boundary_raw")
     VICLGA_BOUNDARY_RAW_PATH: str = os.path.join(VICLGA_BOUNDARY_RAW_UNZIP_PATH, "vic_lga.csv")
@@ -120,24 +103,8 @@ class Settings(BaseSettings):
     HEALTH_OUTCOME_RAW_PATH: str = os.path.join(RAW_DATA_DIR, "vphs_2014_food_insecurity_health_outcomes_table_a1_19_raw.csv")
     LOW_COST_DIET_RAW_PATH: str = os.path.join(RAW_DATA_DIR, "vphs_2014_parents_low_cost_diet_table_a1_27_raw.csv")
     LOW_COST_DIET_HEALTH_OUTCOME_RAW_PATH: str = os.path.join(RAW_DATA_DIR, "vphs_2014_parents_low_cost_health_outcomes_table_a1_28_raw.csv")
-
+    
     RECOMMENDED_MACRONUTRIENTS_INTAKE_RAW_PATH: str = os.path.join(RAW_DATA_DIR, "recommended_macronutrients_raw.csv")
-
-    # Food2Vec trained model — gensim Word2Vec .bin (from food2vec.train)
-    # or KeyedVectors .kv. See src/services/embedding.py for full workflow.
-    FOOD2VEC_MODEL_PATH: str = os.path.join(RAW_DATA_DIR, "food2vec.bin")
-
-    # ChereBowl raw data paths
-    DISHES_RAW_PATH: str = os.path.join(RAW_DATA_DIR, "dishes_raw.csv")
-    INGREDIENTS_PRICING_RAW_PATH: str = os.path.join(RAW_DATA_DIR, "ingredients_pricing_raw.csv")
-    DISH_INGREDIENTS_RAW_PATH: str = os.path.join(RAW_DATA_DIR, "dish_ingredients_raw.csv")
-    INGREDIENT_NUTRIENTS_RAW_PATH: str = os.path.join(RAW_DATA_DIR, "ingredient_nutrients_raw.csv")
-    INGREDIENT_SUBSTITUTES_RAW_PATH: str = os.path.join(RAW_DATA_DIR, "ingredient_substitutes_raw.csv")
-
-    # OpenNutrition dataset (zip → TSV, used for ingredient nutrient lookup)
-    OPENNUTRITION_URL: str = "https://downloads.opennutrition.app/opennutrition-dataset-2025.1.zip"
-    OPENNUTRITION_ZIP_PATH: str = os.path.join(RAW_DATA_DIR, "opennutrition.zip")
-    OPENNUTRITION_TSV_PATH: str = os.path.join(RAW_DATA_DIR, "opennutrition.tsv")
     ### END OF Local file paths ###
 
 settings = Settings()

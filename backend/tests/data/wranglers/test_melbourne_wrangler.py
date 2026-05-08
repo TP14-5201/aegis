@@ -719,12 +719,11 @@ class TestWrangleMelbourne:
         assert result["latitude"].dtype in [float, np.float64]
         assert result["longitude"].dtype in [float, np.float64]
 
-    def test_invalid_coordinates_become_nan(self):
+    def test_invalid_coordinates_is_removed(self):
         """Tests that non-numeric coordinate strings are coerced to NaN."""
         df = make_full_melbourne_df(latitude="invalid", longitude="bad")
         result = wrangle_melbourne(df, make_lga_boundaries_df())
-        assert pd.isna(result["latitude"].iloc[0])
-        assert pd.isna(result["longitude"].iloc[0])
+        assert len(result) == 0
 
     def test_http_website_upgraded_to_https(self):
         """Tests that an http:// website URL is normalised to https://."""

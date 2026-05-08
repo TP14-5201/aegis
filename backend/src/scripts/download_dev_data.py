@@ -1,42 +1,9 @@
 from pathlib import Path
-import glob
 import os
-import zipfile
-
-import requests
 
 from src.data.extractors.support_services_extractor import fetch_csv_from_url, fetch_excel_from_url, fetch_gdb_from_url, fetch_zip_from_url
 from src.core.config import settings
 from src.core.logging import logger
-from src.scripts.fetch_vic_grocery_ingredients import fetch_vic_grocery_ingredients
-
-
-def fetch_opennutrition() -> None:
-    """Downloads the OpenNutrition zip and extracts the TSV if not already present."""
-    if os.path.exists(settings.OPENNUTRITION_TSV_PATH):
-        logger.info("OpenNutrition TSV already exists — skipping download.")
-        return
-
-    logger.info(f"Downloading OpenNutrition dataset from {settings.OPENNUTRITION_URL} ...")
-    resp = requests.get(settings.OPENNUTRITION_URL, stream=True, timeout=120)
-    resp.raise_for_status()
-    with open(settings.OPENNUTRITION_ZIP_PATH, "wb") as f:
-        for chunk in resp.iter_content(65536):
-            f.write(chunk)
-
-    with zipfile.ZipFile(settings.OPENNUTRITION_ZIP_PATH, "r") as zf:
-        zf.extractall(Path(settings.OPENNUTRITION_ZIP_PATH).parent)
-
-    tsv_files = glob.glob(
-        os.path.join(Path(settings.OPENNUTRITION_ZIP_PATH).parent, "**", "*.tsv"),
-        recursive=True,
-    )
-    if not tsv_files:
-        raise FileNotFoundError("No TSV found after extracting OpenNutrition zip.")
-
-    tsv_files.sort(key=os.path.getsize, reverse=True)
-    os.rename(tsv_files[0], settings.OPENNUTRITION_TSV_PATH)
-    logger.info(f"OpenNutrition TSV saved to {settings.OPENNUTRITION_TSV_PATH}")
 
 
 def save_local_copy() -> None:
@@ -72,13 +39,3 @@ def save_local_copy() -> None:
             logger.info(f"Local dev file saved to {save_path}")
         except Exception as e:
             logger.error(f"Failed to download {url}: {e}")
-
-    try:
-        fetch_vic_grocery_ingredients()
-    except Exception as e:
-        logger.error(f"Failed to build VIC grocery ingredient list: {e}")
-
-    try:
-        fetch_opennutrition()
-    except Exception as e:
-        logger.error(f"Failed to download OpenNutrition dataset: {e}")
