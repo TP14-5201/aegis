@@ -34,6 +34,7 @@ ALLOWED_ORIGINS = [
     "https://cherebowl-dev.vercel.app",
     # Archived version
     "https://cherebowl-v1.vercel.app"
+    "https://cherebowl-v2.vercela.app"
 ]
 
 app.add_middleware(
