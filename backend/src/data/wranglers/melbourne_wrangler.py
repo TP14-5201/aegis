@@ -2,17 +2,7 @@ import re
 
 import pandas as pd
 
-from .utils import (
-    initial_cleaning_pipeline, 
-    clean_na_values, 
-    normalize_website, 
-    normalize_coordinates, 
-    select_columns, 
-    add_source_column, 
-    rename_columns, 
-    determine_emergency_service_lga, 
-    exclude_non_victorian_services
-)
+from .utils import initial_cleaning_pipeline, clean_na_values, normalize_website, normalize_coordinates, select_columns, rename_columns, add_source_column, determine_emergency_service_lga
 from src.core.config import settings
 
 
@@ -177,7 +167,6 @@ def wrangle_melbourne(df: pd.DataFrame, df_lga_boundaries: pd.DataFrame) -> pd.D
     df = normalize_website(df)
     df = normalize_social_media(df)
     df = normalize_coordinates(df, lat_col="latitude", lon_col="longitude")
-    df = exclude_non_victorian_services(df)
     df = transform_opening_hours(df)
     df = transform_categories(df)
     df = rename_columns(df, MEL_COLUMN_MAP)
