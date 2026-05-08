@@ -1,13 +1,22 @@
-name: Run Backend Tests
+name: Backend CI/CD
 
 on:
-  push:
-    branches: [ main ]
   pull_request:
-    branches: [ main ]
+    branches: [ "underdevelopment", "main" ]
+  push:
+    branches: [ "underdevelopment", "main" ]
+
+permissions:
+  contents: write
+  pull-requests: write
+  deployments: write
 
 jobs:
+  # ─────────────────────────────────────────────────────────────────
+  # Run tests ONLY on pull_request events (not on merge/push)
+  # ─────────────────────────────────────────────────────────────────
   test:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
 
     steps:
@@ -34,11 +43,45 @@ jobs:
         python -m pip install pytest pytest-cov coverage
         if [ -f backend/requirements.txt ]; then pip install -r backend/requirements.txt; fi
 
-    # - name: Lint with flake8
-    #   run: |
-    #     flake8 backend/src --max-line-length=120 --ignore=E501,W503
-
-    - name: Run tests
+    - name: Run tests and generate XML coverage
       working-directory: backend
       run: |
-        pytest tests/ -v --cov=src --cov-report=term-missing
+        pytest tests/ -v --cov=src --cov-report=xml
+
+    - name: Pytest coverage comment
+      uses: MishaKav/pytest-coverage-comment@main
+      with:
+        pytest-xml-coverage-path: backend/coverage.xml
+        title: Backend Coverage Report
+        badge-title: Coverage
+
+  # ─────────────────────────────────────────────────────────────────
+  # Deploy ONLY on push events (i.e. after a PR is merged)
+  # Tests do NOT run again — deploy is independent of the test job
+  # ─────────────────────────────────────────────────────────────────
+  deploy:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+
+      # Deploy to Staging when merged into underdevelopment
+      - name: Deploy to Vercel (Staging)
+        if: github.ref == 'refs/heads/underdevelopment'
+        run: vercel --token=${{ secrets.VERCEL_TOKEN }} --yes
+        env:
+          VERCEL_ORG_ID: ${{ secrets.ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.PROJECT_ID }}
+
+      # Deploy to Production when merged into main
+      - name: Deploy to Vercel (Production)
+        if: github.ref == 'refs/heads/main'
+        run: vercel --prod --token=${{ secrets.VERCEL_TOKEN }} --yes
+        env:
+          VERCEL_ORG_ID: ${{ secrets.ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.PROJECT_ID }}
