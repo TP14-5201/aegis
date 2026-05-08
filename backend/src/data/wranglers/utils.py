@@ -102,15 +102,3 @@ def determine_emergency_service_lga(df: pd.DataFrame, df_lga_boundaries: pd.Data
     df = df.drop(columns=["lga_name", "geometry", "index_right"])
 
     return df
-
-
-def exclude_non_victorian_services(df: pd.DataFrame) -> pd.DataFrame:
-    """Exclude emergency services that are not based within Victoria lat-long system."""
-    VIC_LAT_MIN, VIC_LAT_MAX = -39.2, -34.0
-    VIC_LONG_MIN, VIC_LONG_MAX = 140.9, 150.0
-    return df[
-        (df['latitude'] >= VIC_LAT_MIN) & 
-        (df['latitude'] <= VIC_LAT_MAX) &
-        (df['longitude'] >= VIC_LONG_MIN) & 
-        (df['longitude'] <= VIC_LONG_MAX)
-    ]
