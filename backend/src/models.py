@@ -1,5 +1,6 @@
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, Float, DateTime, JSON
+from sqlalchemy import Column, Integer, String, Float, DateTime, JSON, ForeignKey, PrimaryKeyConstraint
+from sqlalchemy.orm import relationship
 from geoalchemy2 import Geometry
 from src.database import Base
 
@@ -141,3 +142,60 @@ class RecommendedMacronutrientsIntake(Base):
     actionable_guidance = Column(String)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class Recipe(Base):
+    __tablename__ = "recipe"
+ 
+    recipe_id = Column(String, primary_key=True, index=True)
+    country = Column(String)
+ 
+    ingredients = relationship("RecipeIngredient", back_populates="recipe")
+
+
+class Ingredient(Base):
+    __tablename__ = "ingredient"
+
+    ingredient_code = Column(String, primary_key=True, index=True)
+    product_name = Column(String, nullable=False)
+    brands = Column(String)
+    main_category = Column(String)
+
+    nutrition = relationship("Nutrition", back_populates="ingredient", uselist=False)
+    recipes = relationship("RecipeIngredient", back_populates="ingredient_info")
+
+
+class Nutrition(Base):
+    __tablename__ = "nutrition"
+ 
+    ingredient_code = Column(String, ForeignKey("ingredient.ingredient_code"), primary_key=True, index=True)
+    nutrition_grade_fr = Column(String)
+    energy_100g = Column(Float)
+    proteins_100g = Column(Float)
+    carbohydrates_100g = Column(Float)
+    fat_100g = Column(Float)
+
+    ingredient = relationship("Ingredient", back_populates="nutrition")
+
+
+class RecipeIngredient(Base):
+    __tablename__ = "recipe_ingredient"
+
+    recipe_id = Column(String, ForeignKey("recipe.recipe_id"), index=True)
+    ingredient_code = Column(String, ForeignKey("ingredient.ingredient_code"), index=True)
+
+    __table_args__ = (
+        PrimaryKeyConstraint("recipe_id", "ingredient_code"),
+    )
+
+    recipe = relationship("Recipe", back_populates="ingredients")
+    ingredient_info = relationship("Ingredient", back_populates="recipes")
+
+
+class IngredientPrice(Base):
+    __tablename__ = "ingredient_price"
+
+    ingredient_code = Column(String, ForeignKey("ingredient.ingredient_code"), index=True, primary_key=True)
+    sub_category = Column(String)
+    retail_price = Column(Float)
+    

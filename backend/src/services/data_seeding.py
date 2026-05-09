@@ -7,7 +7,8 @@ from src.models import (
     Base, SupportService, FoodInsecurity, 
     VicLgaBoundary, LgaPopulation, 
     DietIndicator, HealthOutcome, LowCostDiet,
-    LowCostDietHealthOutcome, RecommendedMacronutrientsIntake
+    LowCostDietHealthOutcome, RecommendedMacronutrientsIntake,
+    Recipe, Ingredient, Nutrition, RecipeIngredient, IngredientPrice
 )
 
 from src.core.config import settings
@@ -22,7 +23,11 @@ from src.data.loaders.data_loader import (
     load_health_outcome_dataset,
     load_low_cost_diet_dataset,
     load_low_cost_diet_health_outcome_dataset,
-    load_recommended_macronutrients_intake_dataset
+    load_recommended_macronutrients_intake_dataset,
+    load_recipe_dataset,
+    load_master_ingredients_dataset,
+    load_recipe_ingredient_dataset,
+    load_ingredient_price_dataset
 )
 
 
@@ -62,7 +67,8 @@ def download_dataset() -> pd.DataFrame:
         settings.HEALTH_OUTCOME_RAW_PATH,
         settings.LOW_COST_DIET_RAW_PATH,
         settings.LOW_COST_DIET_HEALTH_OUTCOME_RAW_PATH,
-        settings.RECOMMENDED_MACRONUTRIENTS_INTAKE_RAW_PATH
+        settings.RECIPE_RAW_PATH,
+        settings.FOOD_FACTS_RAW_PATH
     ]
     if any(not os.path.exists(cfg) for cfg in data_configs):
         logger.info(f"Missing files detected. Downloading...")
@@ -82,7 +88,9 @@ def load_dataset() -> pd.DataFrame:
         (load_health_outcome_dataset, HealthOutcome),
         (load_low_cost_diet_dataset, LowCostDiet),
         (load_low_cost_diet_health_outcome_dataset, LowCostDietHealthOutcome),
-        (load_recommended_macronutrients_intake_dataset, RecommendedMacronutrientsIntake)
+        (load_recipe_dataset, Recipe),
+        (lambda: load_master_ingredients_dataset(mode="general"), Ingredient),
+        (lambda: load_master_ingredients_dataset(mode="nutrition"), Nutrition),
     ]
     
     return [(loader(), model) for loader, model in DATASET_REGISTRY]
@@ -98,5 +106,8 @@ if __name__ == "__main__":
     try:
         for df, model in datasets:
             seed_support_services(db, df, model)
+        # Seed AFTER both cuisine & ingredients are inserted to the db
+        seed_support_services(db, load_recipe_ingredient_dataset(), RecipeIngredient)
+        seed_support_services(db, load_ingredient_price_dataset(), IngredientPrice)
     finally:
         db.close()
