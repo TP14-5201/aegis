@@ -182,10 +182,17 @@ def get_all_services(
 ):
     """Return all support services. Used for full-map browse mode."""
     try:
-        rows = db.query(SupportService).filter(
-            SupportService.latitude.isnot(None),
-            SupportService.longitude.isnot(None),
-        ).all()
+        rows = [
+            row for row in db.query(SupportService).all()
+            if (
+                row.latitude is not None
+                and row.longitude is not None
+                and isinstance(row.latitude, (int, float))
+                and isinstance(row.longitude, (int, float))
+                and math.isfinite(row.latitude)
+                and math.isfinite(row.longitude)
+            )
+        ]
 
         results = []
         now_local = _now_in_tz(tz)

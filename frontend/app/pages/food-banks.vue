@@ -28,12 +28,7 @@
             style="flex:1; border:none; outline:none; font-size:15px; color:#333; height:48px; background:transparent; font-family:Inter,sans-serif;"
             @keydown.enter="searchByAddress"
           />
-          <button v-if="searchQuery" @click="searchQuery = ''"
-            style="background:none; border:none; cursor:pointer; padding:4px; color:#aaa; display:flex; align-items:center;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-              <path d="M18 6 6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-          </button>
+
         </div>
 
         <!-- Search button -->
@@ -58,6 +53,17 @@
           {{ locating ? 'Locating…' : 'Locate Me' }}
         </button>
       </div>
+      <div class="radius-row">
+        <button
+          v-for="option in radiusOptions"
+          :key="option.value"
+          class="radius-button"
+          :class="{ active: radiusKm === option.value }"
+          @click="setRadius(option.value)"
+        >
+          {{ option.label }}
+        </button>
+      </div>
 
     </div>
 
@@ -75,7 +81,7 @@
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                 <path d="M19 12H5M12 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
-              Back to results
+              Back to Food Banks Search Results
             </button>
 
             <!-- Route summary -->
@@ -163,7 +169,7 @@
 
           <!-- Service Cards -->
           <div v-else>
-            <div v-for="service in filteredServices" :key="service.id"
+            <div v-for="service in visibleServices" :key="service.id"
               style="background:white; border-radius:12px; padding:18px; margin-bottom:12px; cursor:pointer; transition:box-shadow 0.2s, border-color 0.2s;"
               :style="{
                 border: selectedService?.id === service.id ? '2px solid #0298C5' : '1px solid #e0edf8',
@@ -257,6 +263,13 @@
               </button>
             </div>
           </div>
+          <button
+            v-if="visibleCount < filteredServices.length"
+            @click="visibleCount += 5"
+            style="width:100%; padding:12px; border-radius:10px; border:none; background:#181e4b; color:white; font-weight:600; cursor:pointer;"
+          >
+            Show More
+          </button>
         </div>
       </div>
 
@@ -371,21 +384,44 @@ const directionsInfo = ref(null)
 const directionsSteps = ref([])
 const directionsLoading = ref(false)
 const showingDirections = ref(false)
+const visibleCount = ref(5)
+const radiusKm = ref(0.5)
 
 let mapInstance = null
 let markersMap = {}
 let userMarker = null
 let routeLayer = null
+let destinationMarker = null
 
 const config = useRuntimeConfig()
 const API_BASE = config.public.apiBase
 
 // ── Computed ───────────────────────────────────────────────────────────────
+const radiusOptions = [
+  { label: 'Within 500m', value: 0.5 },
+  { label: 'Within 1km', value: 1 },
+  { label: 'Within 2km', value: 2 },
+  { label: 'Show All', value: null },
+]
+
+const visibleServices = computed(() => {
+  return filteredServices.value.slice(0, visibleCount.value)
+})
+
 const filteredServices = computed(() => {
   let result = services.value
+
   if (activeFilter.value === 'food') result = result.filter(isFood)
   else if (activeFilter.value === 'housing') result = result.filter(isHousing)
+
   if (openNowFilter.value) result = result.filter(s => s.is_open_now === true)
+
+  if (userLocation.value && radiusKm.value !== null) {
+    result = result.filter(s =>
+      s.distance_km == null ? false : s.distance_km <= radiusKm.value
+    )
+  }
+
   return result
 })
 
@@ -480,6 +516,7 @@ function locateMe() {
       mapInstance?.setView([lat, lon], 13)
       placeUserMarker(lat, lon)
       sortByDistance(lat, lon)
+      visibleCount.value = 5
       updateMapMarkers()
     },
     () => { locating.value = false },
@@ -506,6 +543,7 @@ async function searchByAddress() {
     mapInstance?.setView([lat, lon], 13)
     placeUserMarker(lat, lon)
     sortByDistance(lat, lon)
+    visibleCount.value = 5
     updateMapMarkers()
   } catch {
     // Geocode failed — list stays sorted as-is
@@ -514,13 +552,34 @@ async function searchByAddress() {
   }
 }
 
+function setRadius(value) {
+  radiusKm.value = value
+  visibleCount.value = 5
+
+  if (userLocation.value) {
+    sortByDistance(userLocation.value.lat, userLocation.value.lon)
+  }
+
+  updateMapMarkers()
+}
+
 // ── Map helpers ────────────────────────────────────────────────────────────
+function createStartIcon() {
+  return L.divIcon({
+    className: 'start-dot',
+    html: `<div class="start-dot-inner"></div>`,
+    iconSize: [18, 18],
+    iconAnchor: [9, 9],
+  })
+}
+
 function placeUserMarker(lat, lon) {
   if (!mapInstance) return
+
   userMarker?.remove()
-  userMarker = L.circleMarker([lat, lon], {
-    radius: 9, fillColor: '#181e4b', fillOpacity: 1,
-    color: 'white', weight: 3
+
+  userMarker = L.marker([lat, lon], {
+    icon: createStartIcon(),
   }).addTo(mapInstance).bindPopup('<strong>Your location</strong>')
 }
 
@@ -540,6 +599,20 @@ function buildPopupHTML(s) {
       ${s.website ? `<a href="${s.website}" target="_blank" rel="noopener" style="font-size:12px;color:#0298C5;">Visit website ↗</a>` : ''}
     </div>
   `
+}
+
+function createDestinationIcon() {
+  return L.divIcon({
+    className: 'destination-pin',
+    html: `
+      <div class="pin-shape">
+        <div class="pin-hole"></div>
+      </div>
+    `,
+    iconSize: [34, 46],
+    iconAnchor: [17, 46],
+    popupAnchor: [0, -42],
+  })
 }
 
 function updateMapMarkers() {
@@ -589,6 +662,10 @@ async function getDirections(service) {
   // Remove previous route
   routeLayer?.remove()
   routeLayer = null
+  destinationMarker?.remove()
+  destinationMarker = L.marker([service.latitude, service.longitude], {
+    icon: createDestinationIcon(),
+  }).addTo(mapInstance).bindPopup(buildPopupHTML(service))
 
   try {
     const { lat, lon } = userLocation.value
@@ -635,6 +712,8 @@ async function getDirections(service) {
 function clearDirections() {
   routeLayer?.remove()
   routeLayer = null
+  destinationMarker?.remove()
+  destinationMarker = null
   directionsInfo.value = null
   directionsSteps.value = []
   showingDirections.value = false
@@ -740,6 +819,36 @@ onBeforeUnmount(() => {
   gap: 10px;
   max-width: 860px;
   margin: 0 auto 14px;
+}
+
+.radius-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  max-width: 860px;
+  margin: 12px auto 0;
+  padding: 4px;
+  background: rgba(24, 30, 75, 0.10);
+  border-radius: 12px;
+  gap: 0;
+}
+
+.radius-button {
+  height: 44px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: #181e4b;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: Inter, sans-serif;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.radius-button.active {
+  background: white;
+  color: #181e4b;
+  box-shadow: 0 2px 8px rgba(24, 30, 75, 0.12);
 }
 
 /* ── Main panel (cards + map side by side) ──────────── */
@@ -859,5 +968,44 @@ onBeforeUnmount(() => {
 /* Show panel on hover of either the button or the panel itself */
 .filters-dropdown:hover .filters-panel {
   display: block;
+}
+
+:deep(.start-dot) {
+  background: transparent;
+  border: none;
+}
+
+:deep(.start-dot-inner) {
+  width: 16px;
+  height: 16px;
+  background: #e60000;
+  border: 3px solid white;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+:deep(.destination-pin) {
+  background: transparent;
+  border: none;
+}
+
+:deep(.pin-shape) {
+  width: 34px;
+  height: 34px;
+  background: #e60000;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  position: relative;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+}
+
+:deep(.pin-hole) {
+  width: 12px;
+  height: 12px;
+  background: black;
+  border-radius: 50%;
+  position: absolute;
+  top: 11px;
+  left: 11px;
 }
 </style>
