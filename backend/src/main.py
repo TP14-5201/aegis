@@ -4,6 +4,7 @@ import json
 from typing import List, Optional
 import math
 from datetime import datetime
+import os
 
 from fastapi import Depends, FastAPI, HTTPException, Query
 from pydantic import BaseModel
@@ -20,7 +21,11 @@ from src.utils.opening_hours import is_open_now, _now_in_tz
 from sqlalchemy import func, Integer, case, distinct, Numeric
 from sqlalchemy.orm import Session
 from geoalchemy2.functions import ST_AsGeoJSON
+import os
+import requests
+from dotenv import load_dotenv
 
+load_dotenv()
 
 app = FastAPI(title="Aegis Support Services API", version="0.1.0")
 
@@ -33,8 +38,8 @@ ALLOWED_ORIGINS = [
     "https://cherebowl-underdevelopment.vercel.app",
     "https://cherebowl-dev.vercel.app",
     # Archived version
-    "https://cherebowl-v1.vercel.app"
-    "https://cherebowl-v2.vercel.app"
+    "https://cherebowl-v1.vercel.app",
+    "https://cherebowl-v2.vercel.app",
 ]
 
 app.add_middleware(
@@ -61,6 +66,80 @@ class _LoginRequest(BaseModel):
     password: str
 
 _DEMO_PASSWORD = "password123"
+
+class LatLng(BaseModel):
+    lat: float
+    lng: float
+
+class TransitRouteRequest(BaseModel):
+    origin: LatLng
+    destination: LatLng
+
+@app.post("/google/transit-route")
+def get_google_transit_route(body: TransitRouteRequest):
+    api_key = os.getenv("GOOGLE_ROUTES_API_KEY")
+
+    if not api_key:
+        raise HTTPException(status_code=500, detail="GOOGLE_ROUTES_API_KEY is missing")
+
+    url = "https://routes.googleapis.com/directions/v2:computeRoutes"
+
+    payload = {
+        "origin": {
+            "location": {
+                "latLng": {
+                    "latitude": body.origin.lat,
+                    "longitude": body.origin.lng,
+                }
+            }
+        },
+        "destination": {
+            "location": {
+                "latLng": {
+                    "latitude": body.destination.lat,
+                    "longitude": body.destination.lng,
+                }
+            }
+        },
+        "travelMode": "TRANSIT",
+        "computeAlternativeRoutes": False,
+        "languageCode": "en-AU",
+        "units": "METRIC",
+    }
+
+    headers = {
+        "Content-Type": "application/json",
+        "X-Goog-Api-Key": api_key,
+        "X-Goog-FieldMask": (
+            "routes.duration,"
+            "routes.distanceMeters,"
+            "routes.legs.steps.polyline.encodedPolyline,"
+            "routes.legs.steps.travelMode,"
+            "routes.legs.steps.navigationInstruction,"
+            "routes.legs.steps.localizedValues,"
+            "routes.legs.steps.transitDetails"
+        ),
+    }
+
+    try:
+        google_response = requests.post(url, json=payload, headers=headers, timeout=15)
+
+        print("GOOGLE ROUTES STATUS:", google_response.status_code)
+        print("GOOGLE ROUTES RESPONSE:", google_response.text)
+
+        if google_response.status_code != 200:
+            raise HTTPException(
+                status_code=google_response.status_code,
+                detail=google_response.json(),
+            )
+
+        return google_response.json()
+
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.exception("Failed to fetch Google transit route: %s", exc)
+        raise HTTPException(status_code=500, detail="Failed to fetch Google transit route")
 
 @app.post("/auth/login")
 def auth_login(body: _LoginRequest):
@@ -182,10 +261,17 @@ def get_all_services(
 ):
     """Return all support services. Used for full-map browse mode."""
     try:
-        rows = db.query(SupportService).filter(
-            SupportService.latitude.isnot(None),
-            SupportService.longitude.isnot(None),
-        ).all()
+        rows = [
+            row for row in db.query(SupportService).all()
+            if (
+                row.latitude is not None
+                and row.longitude is not None
+                and isinstance(row.latitude, (int, float))
+                and isinstance(row.longitude, (int, float))
+                and math.isfinite(row.latitude)
+                and math.isfinite(row.longitude)
+            )
+        ]
 
         results = []
         now_local = _now_in_tz(tz)
