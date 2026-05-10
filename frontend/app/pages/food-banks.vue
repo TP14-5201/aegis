@@ -429,7 +429,7 @@ const directionsSteps = ref([])
 const directionsLoading = ref(false)
 const showingDirections = ref(false)
 const visibleCount = ref(5)
-const radiusKm = ref(0.5)
+const radiusKm = ref(null)
 
 let mapInstance = null
 let markersMap = {}
@@ -588,6 +588,7 @@ function locateMe() {
       userLocation.value = { lat, lon }
 
       locationLabel.value = 'your location'
+      radiusKm.value = 0.5
 
       userAddress.value = await getAddressFromCoords(
         lat,
@@ -651,6 +652,7 @@ async function searchByAddress() {
     userLocation.value = { lat, lon }
 
     locationLabel.value = label
+    radiusKm.value = 0.5
 
     userAddress.value =
       data[0].display_name ||
