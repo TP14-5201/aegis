@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, Float, DateTime, JSON, ForeignKey, PrimaryKeyConstraint
+from sqlalchemy import Column, Integer, String, Float, DateTime, JSON, ForeignKey, PrimaryKeyConstraint, LargeBinary
 from sqlalchemy.orm import relationship
 from geoalchemy2 import Geometry
 from src.database import Base
@@ -199,4 +199,63 @@ class IngredientPrice(Base):
     ingredient_code = Column(String, ForeignKey("ingredient.ingredient_code"), index=True, primary_key=True)
     sub_category = Column(String)
     retail_price = Column(Float)
-    
+
+
+class IngredientEmbedding(Base):
+    """
+    Stores the 388-d hybrid embedding for every ingredient row.
+ 
+    The embedding column holds the raw bytes of a float32 NumPy array
+    (shape: (388,)) serialised with ndarray.tobytes().  At load time it is
+    recovered with np.frombuffer(..., dtype='float32').
+ 
+    The four nutritional columns mirror what the engine uses *after*
+    sub_category-median imputation so the in-memory DataFrame can be
+    reconstructed entirely from this table (no second join required).
+    """
+ 
+    __tablename__ = "ingredient_embedding"
+ 
+    ingredient_code = Column(
+        String,
+        ForeignKey("ingredient.ingredient_code", ondelete="CASCADE"),
+        primary_key=True,
+        index=True,
+    )
+    embedding = Column(
+        LargeBinary,
+        nullable=False,
+        comment="Raw float32 bytes of the 388-d hybrid vector (ndarray.tobytes())",
+    )
+    functional_role = Column(
+        String(32),
+        nullable=True,
+        index=True,
+        comment="Inferred from sub_category via _infer_role()",
+    )
+    # Post-imputation macro values (may differ from raw nutrition table)
+    proteins_100g      = Column(Float, nullable=True)
+    fat_100g           = Column(Float, nullable=True)
+    carbohydrates_100g = Column(Float, nullable=True)
+    energy_100g        = Column(Float, nullable=True)
+ 
+ 
+class SubstitutionMeta(Base):
+    """
+    General-purpose key/value store for substitution-engine artefacts.
+ 
+    Currently used for a single row:
+        key = "scaler"  →  value = pickle.dumps(StandardScaler instance)
+ 
+    Keeping it generic avoids a migration if more artefacts are needed later.
+    """
+ 
+    __tablename__ = "substitution_meta"
+ 
+    key   = Column(String(64), primary_key=True)
+    value = Column(
+        LargeBinary,
+        nullable=False,
+        comment="Pickled Python object (StandardScaler, config dict, …)",
+    )
+ 

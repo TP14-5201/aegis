@@ -8,7 +8,8 @@ from src.models import (
     VicLgaBoundary, LgaPopulation, 
     DietIndicator, HealthOutcome, LowCostDiet,
     LowCostDietHealthOutcome, RecommendedMacronutrientsIntake,
-    Recipe, Ingredient, Nutrition, RecipeIngredient, IngredientPrice
+    Recipe, Ingredient, Nutrition, RecipeIngredient, IngredientPrice,
+    IngredientEmbedding, SubstitutionMeta,
 )
 
 from src.core.config import settings
@@ -41,7 +42,6 @@ def seed_database(db: Session, df: pd.DataFrame, model: Base) -> None:
 
     records = df.to_dict(orient='records')
     try:
-        # Clear existing data to avoid duplicates if re-running
         db.query(model).delete()
         service_objects = [model(**data) for data in records]
         db.bulk_save_objects(service_objects)
@@ -98,6 +98,25 @@ def load_dataset() -> pd.DataFrame:
     return [(loader(), model) for loader, model in DATASET_REGISTRY]
 
 
+def seed_substitution_index(db: Session) -> None:
+    """
+    Build the FAISS substitution index from the already-seeded ingredient
+    tables and persist the result to IngredientEmbedding / SubstitutionMeta.
+
+    Must be called AFTER Ingredient, Nutrition, and IngredientPrice are
+    committed to the database.
+
+    Expected runtime: ~3–5 minutes on CPU for 33k ingredients.
+    """
+    # Import here so the heavy ML deps (sentence-transformers, faiss) are only
+    # pulled in when this function is actually invoked.
+    from src.services.ingredient_substitution import engine as substitution_engine
+
+    logger.info("Building substitution index and seeding to database…")
+    substitution_engine.build_index(db)
+    logger.info("Substitution index seeding complete.")
+
+
 if __name__ == "__main__":
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
@@ -108,8 +127,14 @@ if __name__ == "__main__":
     try:
         for df, model in datasets:
             seed_database(db, df, model)
+
         # Seed AFTER both cuisine & ingredients are inserted to the db
         seed_database(db, load_recipe_ingredient_dataset(), RecipeIngredient)
         seed_database(db, load_ingredient_price_dataset(), IngredientPrice)
+
+        # Seed AFTER Ingredient, Nutrition, and IngredientPrice are committed —
+        # the substitution engine joins all three to build its embeddings.
+        seed_substitution_index(db)
+
     finally:
         db.close()
