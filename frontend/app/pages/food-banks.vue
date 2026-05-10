@@ -15,37 +15,82 @@
 
       <!-- Search row -->
       <div class="search-row">
-        <div style="flex:1; display:flex; align-items:center; background:white; border:1.5px solid #b8d9f8; border-radius:10px; padding:0 16px; gap:10px;">
+
+        <!-- SEARCH AREA -->
+        <div
+          style="
+            flex:1;
+            display:flex;
+            align-items:center;
+            background:white;
+            border:1.5px solid #b8d9f8;
+            border-radius:10px;
+            padding:0 16px;
+            gap:10px;
+          "
+        >
           <svg width="18" height="18" fill="none" viewBox="0 0 24 24" style="flex-shrink:0;">
             <circle cx="11" cy="11" r="8" stroke="#9ca3af" stroke-width="2"/>
             <path d="m21 21-4.35-4.35" stroke="#9ca3af" stroke-width="2" stroke-linecap="round"/>
           </svg>
-          <input
-            ref="searchInputEl"
-            v-model="searchQuery"
-            type="text"
-            placeholder="Enter suburb or postcode"
-            style="flex:1; border:none; outline:none; font-size:15px; color:#333; height:48px; background:transparent; font-family:Inter,sans-serif;"
-            @keydown.enter="searchByAddress"
-          />
 
+          <div style="position:relative; flex:1;">
+            <input
+              ref="searchInputEl"
+              v-model="searchAreaText"
+              type="text"
+              placeholder="Search food banks near a suburb"
+              style="width:100%; border:none; outline:none; font-size:15px; color:#333; height:48px; background:transparent; font-family:Inter,sans-serif;"
+              @input="updateSearchSuggestions"
+            />
+
+            <!-- Suggestions -->
+            <div
+              v-if="searchSuggestions.length"
+              style="
+                position:absolute;
+                top:100%;
+                left:0;
+                right:0;
+                background:white;
+                border:1px solid #d8edff;
+                border-radius:10px;
+                margin-top:6px;
+                overflow:hidden;
+                box-shadow:0 4px 16px rgba(0,0,0,0.08);
+                z-index:1200;
+              "
+            >
+              <button
+                v-for="location in searchSuggestions"
+                :key="location.label"
+                @click="selectSearchArea(location)"
+                type="button"
+                style="
+                  width:100%;
+                  padding:12px 16px;
+                  border:none;
+                  background:white;
+                  text-align:left;
+                  cursor:pointer;
+                  transition:background 0.15s ease;
+                "
+                onmouseover="this.style.background='#DBEDFF'"
+                onmouseout="this.style.background='white'"
+              >
+                {{ location.label }}
+              </button>
+            </div>
+          </div>
         </div>
 
-        <!-- Search button -->
-        <button @click="searchByAddress" :disabled="!searchQuery.trim()"
+        <!-- Locate button -->
+        <button
+          @click="locateMe"
+          :disabled="locating"
           style="background:#181e4b; color:white; border:none; border-radius:10px; padding:0 20px; font-size:14px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px; white-space:nowrap; font-family:Inter,sans-serif;"
-          :style="!searchQuery.trim() ? 'opacity:0.45;cursor:not-allowed;' : ''">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-            <circle cx="11" cy="11" r="8" stroke="white" stroke-width="2"/>
-            <path d="m21 21-4.35-4.35" stroke="white" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-          Search
-        </button>
-
-        <!-- Locate Me button -->
-        <button @click="locateMe" :disabled="locating"
-          style="background:#181e4b; color:white; border:none; border-radius:10px; padding:0 20px; font-size:14px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px; white-space:nowrap; font-family:Inter,sans-serif;"
-          :style="locating ? 'opacity:0.7;cursor:not-allowed;' : ''">
+          :style="locating ? 'opacity:0.7;cursor:not-allowed;' : ''"
+        >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
             <circle cx="12" cy="12" r="3" stroke="white" stroke-width="2"/>
             <path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="white" stroke-width="2" stroke-linecap="round"/>
@@ -53,6 +98,7 @@
           {{ locating ? 'Locating…' : 'Locate Me' }}
         </button>
       </div>
+
       <div class="radius-row">
         <button
           v-for="option in radiusOptions"
@@ -74,15 +120,96 @@
       <div class="left-panel">
 
         <!-- ── Directions Panel ── -->
-        <div v-show="showingDirections" style="display:flex; flex-direction:column; flex:1; min-height:0; overflow:hidden;">
-          <div style="padding:14px 16px 0; flex-shrink:0;">
-            <button @click="clearDirections"
-              style="display:inline-flex; align-items:center; gap:6px; background:none; border:none; cursor:pointer; font-size:14px; font-weight:600; color:#0298C5; font-family:Inter,sans-serif; padding:0; margin-bottom:12px;">
+        <div
+          v-show="showingDirections"
+          style="display:flex; flex-direction:column; flex:1; min-height:0; overflow:hidden;"
+        >
+          <div style="padding:14px 16px 0; flex-shrink:0; max-height:45%; overflow-y:auto;">
+            <button
+              @click="clearDirections"
+              style="display:inline-flex; align-items:center; gap:6px; background:none; border:none; cursor:pointer; font-size:14px; font-weight:600; color:#0298C5; font-family:Inter,sans-serif; padding:0; margin-bottom:12px;"
+            >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                 <path d="M19 12H5M12 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
               Back to Food Banks Search Results
             </button>
+
+            <!-- Starting location box -->
+            <div style="background:white; border:1px solid #D8EDFF; border-radius:12px; padding:14px; margin-bottom:14px;">
+              <p style="font-size:12px; font-weight:700; color:#555; margin-bottom:8px;">
+                Start directions by
+              </p>
+
+              <button
+                @click="locateMeForDirections"
+                type="button"
+                style="background:#181e4b; color:white; border:none; border-radius:10px; padding:10px 14px; font-size:13px; font-weight:600; cursor:pointer; margin-bottom:10px; display:flex; align-items:center; gap:8px;"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="3" stroke="white" stroke-width="2"/>
+                  <path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                Using my current location
+              </button>
+              
+              <p style="font-size:12px; font-weight:700; color:#555; margin-bottom:8px;">
+                Or enter manual starting location
+              </p>
+              
+              <div
+                style="
+                  position:relative;
+                  display:flex;
+                  align-items:center;
+                  gap:10px;
+                  border:1.5px solid #b8d9f8;
+                  border-radius:10px;
+                  padding:0 14px;
+                  background:white;
+                "
+              >
+                <svg width="18" height="18" fill="none" viewBox="0 0 24 24" style="flex-shrink:0;">
+                  <circle cx="11" cy="11" r="8" stroke="#9ca3af" stroke-width="2"/>
+                  <path d="m21 21-4.35-4.35" stroke="#9ca3af" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+
+                <input
+                  v-model="startLocationText"
+                  type="text"
+                  placeholder="Enter street, address, or suburb"
+                  style="width:100%; border:none; outline:none; font-size:14px; height:44px; background:transparent;"
+                  @input="updateStartAddressSuggestions"
+                />
+
+                <div
+                  v-if="startAddressSuggestions.length"
+                  style="position:absolute; top:100%; left:0; right:0; background:white; border:1px solid #d8edff; border-radius:10px; margin-top:6px; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,0.08); z-index:1300;"
+                >
+                  <button
+                    v-for="place in startAddressSuggestions"
+                    :key="place.place_id"
+                    type="button"
+                    @click="selectStartAddress(place)"
+                    style="
+                      width:100%;
+                      padding:10px 12px;
+                      border:none;
+                      background:white;
+                      text-align:left;
+                      cursor:pointer;
+                      font-size:12px;
+                      line-height:1.35;
+                      transition:background 0.15s ease;
+                    "
+                    onmouseover="this.style.background='#DBEDFF'"
+                    onmouseout="this.style.background='white'"
+                  >
+                    {{ place.display_name }}
+                  </button>
+                </div>
+              </div>
+            </div>
 
             <!-- Route summary -->
             <div v-if="directionsInfo" style="background:white; border:1px solid #D8EDFF; border-radius:12px; padding:16px; margin-bottom:14px;">
@@ -119,7 +246,14 @@
           </div>
 
           <!-- Step list (rendered from OSRM) -->
-          <div class="cards-scroll" style="padding:0 16px 24px;">
+          <div
+            style="
+              flex:1;
+              min-height:0;
+              overflow-y:auto;
+              padding:0 16px 24px;
+            "
+          >
             <div v-if="directionsLoading" style="padding:20px 0; text-align:center; color:#aaa; font-size:14px;">
               Calculating route…
             </div>
@@ -292,12 +426,11 @@
               </div>
 
               <!-- Get Directions button -->
-              <button @click.stop="getDirections(service)" :disabled="!userLocation"
-                style="width:100%; display:flex; align-items:center; justify-content:center; gap:8px; padding:12px; border-radius:10px; font-size:14px; font-weight:600; cursor:pointer; font-family:Inter,sans-serif; border:none; transition:opacity 0.15s;"
-                :style="userLocation
-                  ? 'background:#0298C5; color:white;'
-                  : 'background:#e8f0fb; color:#aaa; cursor:not-allowed;'"
-                :title="userLocation ? 'Show route on map' : 'Enter your location first'">
+              <button
+                @click.stop="getDirections(service)"
+                style="width:100%; display:flex; align-items:center; justify-content:center; gap:8px; padding:12px; border-radius:10px; font-size:14px; font-weight:600; cursor:pointer; font-family:Inter,sans-serif; border:none; transition:opacity 0.15s; background:#0298C5; color:white;"
+                title="Choose a starting location"
+              >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
                   <path d="M3 11l19-9-9 19-2-8-8-2z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
                 </svg>
@@ -430,6 +563,13 @@ const directionsLoading = ref(false)
 const showingDirections = ref(false)
 const visibleCount = ref(5)
 const radiusKm = ref(null)
+const searchAreaText = ref('')
+const searchSuggestions = ref([])
+const selectedSearchArea = ref(null)
+const startLocationText = ref('')
+const startAddressSuggestions = ref([])
+const selectedStartLocation = ref(null)
+const useCurrentLocationAsStart = ref(true)
 
 let mapInstance = null
 let markersMap = {}
@@ -528,6 +668,38 @@ async function fetchAllServices() {
     await nextTick()
     updateMapMarkers()
     fitMapToMarkers()
+  }
+}
+
+async function updateSearchSuggestions() {
+  if (searchAreaText.value.trim().length < 2) {
+    searchSuggestions.value = []
+    return
+  }
+
+  searchSuggestions.value = await $fetch(
+    `${config.public.apiBase}/services/search-locations?q=${encodeURIComponent(searchAreaText.value)}`
+  )
+}
+
+
+async function updateStartAddressSuggestions() {
+  const q = startLocationText.value.trim()
+
+  if (q.length < 3) {
+    startAddressSuggestions.value = []
+    return
+  }
+
+  try {
+    const data = await $fetch(
+      `${API_BASE}/search-address?q=${encodeURIComponent(q)}`
+    )
+
+    startAddressSuggestions.value = data
+  } catch (err) {
+    console.error('Failed to fetch start address suggestions:', err)
+    startAddressSuggestions.value = []
   }
 }
 
@@ -685,6 +857,124 @@ function setRadius(value) {
   updateMapMarkers()
 }
 
+function selectSearchArea(location) {
+  selectedSearchArea.value = location
+  searchAreaText.value = location.label
+  searchSuggestions.value = []
+
+  userLocation.value = {
+    lat: location.latitude,
+    lon: location.longitude,
+  }
+
+  locationLabel.value = location.label
+  userAddress.value = location.label
+  radiusKm.value = 0.5
+
+  sortByDistance(location.latitude, location.longitude)
+  visibleCount.value = 5
+
+  mapInstance?.setView([location.latitude, location.longitude], 13)
+
+  placeUserMarker(location.latitude, location.longitude)
+
+  updateMapMarkers()
+}
+
+function selectStartLocation(location) {
+  selectedStartLocation.value = location
+  startLocationText.value = location.label
+  startSuggestions.value = []
+  useCurrentLocationAsStart.value = false
+
+  userLocation.value = {
+    lat: location.latitude,
+    lon: location.longitude,
+  }
+
+  userAddress.value = location.label
+
+  placeUserMarker(location.latitude, location.longitude)
+}
+
+async function searchStartLocationForDirections() {
+  if (!startLocationText.value.trim() || !selectedService.value) return
+
+  const q = startLocationText.value.trim()
+
+  const data = await $fetch(
+    `${API_BASE}/search-address?q=${encodeURIComponent(q)}`
+  )
+
+  if (!data.length) {
+    alert('Could not find that starting location.')
+    return
+  }
+
+  const lat = parseFloat(data[0].lat)
+  const lon = parseFloat(data[0].lon)
+
+  userLocation.value = { lat, lon }
+  userAddress.value = data[0].display_name
+
+  placeUserMarker(lat, lon)
+
+  await calculateRoute(selectedService.value)
+}
+
+function locateMeForDirections() {
+  if (!navigator.geolocation) {
+    alert('Geolocation not supported.')
+    return
+  }
+
+  directionsLoading.value = true
+
+  navigator.geolocation.getCurrentPosition(
+    async ({ coords: { latitude: lat, longitude: lon } }) => {
+      userLocation.value = { lat, lon }
+      userAddress.value = 'Your current location'
+
+      startLocationText.value = ''
+      startAddressSuggestions.value = []
+
+      placeUserMarker(lat, lon)
+
+      if (selectedService.value) {
+        await calculateRoute(selectedService.value)
+      }
+
+      directionsLoading.value = false
+    },
+    () => {
+      directionsLoading.value = false
+      alert('Could not get your location.')
+    },
+    { timeout: 10000 }
+  )
+}
+
+async function selectStartAddress(place) {
+  const details = await $fetch(
+    `${API_BASE}/place-details?place_id=${encodeURIComponent(place.place_id)}`
+  )
+
+  const lat = parseFloat(details.lat)
+  const lon = parseFloat(details.lon)
+
+  startLocationText.value = details.display_name || place.display_name
+  startAddressSuggestions.value = []
+
+  userLocation.value = { lat, lon }
+  userAddress.value = details.display_name || place.display_name
+
+  placeUserMarker(lat, lon)
+
+  if (selectedService.value) {
+    await calculateRoute(selectedService.value)
+  }
+}
+
 // ── Map helpers ────────────────────────────────────────────────────────────
 function createStartIcon() {
   return L.divIcon({
@@ -777,19 +1067,39 @@ function createTransitStopIcon(label) {
 
 // Re-draw on filter change
 watch(filteredServices, () => {
-  updateMapMarkers()
-  clearDirections()
+  if (!showingDirections.value) {
+    updateMapMarkers()
+    clearDirections()
+  }
 })
 
 // ── Directions via Google Transit Route ─────────────────────────────────────
 async function getDirections(service) {
-  if (!userLocation.value || !mapInstance) return
-
   selectedService.value = service
   showingDirections.value = true
+  directionsInfo.value = {
+    service: service.name,
+    distance: '—',
+    duration: '—',
+  }
+
+  if (!userLocation.value) {
+    directionsSteps.value = [
+      {
+        instruction: 'Choose a starting location to calculate directions.',
+        distance: '',
+        iconPath: 'M12 9v4M12 17h.01',
+      },
+    ]
+    return
+  }
+
+  await calculateRoute(service)
+}
+
+async function calculateRoute(service) {
   directionsLoading.value = true
   directionsSteps.value = []
-  directionsInfo.value = null
 
   // Clear previous route
   routeLayer?.remove()
@@ -1037,37 +1347,6 @@ function clearDirections() {
   showingDirections.value = false
 }
 
-// ── OSRM step formatting ───────────────────────────────────────────────────
-function formatManeuver(step) {
-  const t = step.maneuver?.type || ''
-  const mod = step.maneuver?.modifier || ''
-  const name = step.name ? ` onto ${step.name}` : ''
-  if (t === 'depart') return `Head ${mod || 'forward'}${name}`
-  if (t === 'arrive') return 'Arrive at your destination'
-  if (t === 'turn') return `Turn ${mod}${name}`
-  if (t === 'fork') return `Keep ${mod}${name}`
-  if (t === 'merge') return `Merge ${mod}${name}`
-  if (t === 'roundabout' || t === 'rotary') return `Enter roundabout${name}`
-  if (t === 'exit roundabout' || t === 'exit rotary') return `Exit roundabout${name}`
-  if (t === 'new name') return `Continue${name}`
-  return `Continue${name}`
-}
-
-function formatMeters(m) {
-  if (!m) return ''
-  return m < 1000 ? `${Math.round(m)} m` : `${(m/1000).toFixed(1)} km`
-}
-
-function maneuverIcon(maneuver) {
-  const mod = maneuver?.modifier || ''
-  const type = maneuver?.type || ''
-  if (type === 'arrive') return 'M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8zM12 10a2 2 0 1 0 0-4 2 2 0 0 0 0 4z'
-  if (type === 'depart') return 'M12 19V5M5 12l7-7 7 7'
-  if (mod.includes('left')) return 'M10 19l-7-7 7-7M3 12h18'
-  if (mod.includes('right')) return 'M14 5l7 7-7 7M21 12H3'
-  return 'M12 19V5M5 12l7-7 7 7' // straight
-}
-
 // ── Init ───────────────────────────────────────────────────────────────────
 onMounted(async () => {
   await nextTick()
@@ -1085,10 +1364,14 @@ onMounted(async () => {
     zoomControl: true,
   })
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-    maxZoom: 19,
-  }).addTo(mapInstance)
+  L.tileLayer(
+    'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+    {
+      attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+      subdomains: 'abcd',
+      maxZoom: 20,
+    }
+  ).addTo(mapInstance)
 
   await fetchAllServices()
 })
