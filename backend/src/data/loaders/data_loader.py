@@ -25,11 +25,6 @@ from src.data.wranglers.recipe_ingredient_wrangler import wrangle_recipe_ingredi
 from src.data.wranglers.price_wrangler import wrangle_ingredient_price
 
 
-load_dotenv()
-DATABASE_URL = os.getenv("DATABASE_URL")
-engine = create_engine(DATABASE_URL)
-
-
 def _load_and_wrangle(
     path: str, 
     wrangler_func: Callable[..., pd.DataFrame], # Flexible arguments to support different wranglers
@@ -130,6 +125,10 @@ def load_master_ingredients_dataset(mode: str) -> pd.DataFrame:
 
 
 def load_recipe_ingredient_dataset() -> pd.DataFrame:
+    load_dotenv()
+    DATABASE_URL = os.getenv("DATABASE_URL")
+    engine = create_engine(DATABASE_URL)
+
     recipe_with_ingredients_df = pd.read_csv(settings.RECIPE_RAW_PATH)
     recipe_df = pd.read_sql("SELECT recipe_id FROM recipe", engine)
     ingredient_df = pd.read_sql("SELECT * FROM ingredient", engine)
@@ -139,6 +138,10 @@ def load_recipe_ingredient_dataset() -> pd.DataFrame:
 
 
 def load_ingredient_price_dataset() -> pd.DataFrame:
+    load_dotenv()
+    DATABASE_URL = os.getenv("DATABASE_URL")
+    engine = create_engine(DATABASE_URL)
+
     price_df = pd.read_csv(settings.GROCERY_PRICES_RAW_PATH)
     ingredient_df = pd.read_sql("SELECT * FROM ingredient", engine) 
     price_df = wrangle_ingredient_price(price_df, ingredient_df)
