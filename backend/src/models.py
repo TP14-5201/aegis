@@ -149,6 +149,7 @@ class Recipe(Base):
  
     recipe_id = Column(String, primary_key=True, index=True)
     country = Column(String)
+    dish_name = Column(String)
  
     ingredients = relationship("RecipeIngredient", back_populates="recipe")
 
