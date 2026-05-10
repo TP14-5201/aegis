@@ -3,7 +3,7 @@
 import math
 from typing import Any, Dict, List, Optional
 
-from sqlalchemy import String, and_, cast, or_
+from sqlalchemy import String, and_, cast, or_, func
 from sqlalchemy.orm import Session
 
 from src.models import SupportService
@@ -127,3 +127,46 @@ def find_nearby_support_services(
 
     results.sort(key=lambda x: x["distance_km"])  # nearest first
     return results[: max(0, limit)]
+
+def search_support_service_suburbs(
+    db: Session,
+    q: str = "",
+    limit: int = 8,
+) -> List[Dict[str, Any]]:
+    """Return suburb suggestions from the support services table."""
+
+    search = f"%{q.strip()}%"
+
+    query = (
+        db.query(
+            func.initcap(func.lower(SupportService.suburb)).label("suburb"),
+            func.avg(SupportService.latitude).label("latitude"),
+            func.avg(SupportService.longitude).label("longitude"),
+        )
+        .filter(
+            SupportService.suburb.isnot(None),
+            SupportService.latitude.isnot(None),
+            SupportService.longitude.isnot(None),
+        )
+    )
+
+    if q.strip():
+        query = query.filter(SupportService.suburb.ilike(search))
+
+    rows = (
+        query
+        .group_by(func.lower(SupportService.suburb))
+        .order_by(func.lower(SupportService.suburb))
+        .limit(limit)
+        .all()
+    )
+
+    return [
+        {
+            "label": f"{row.suburb}, VIC",
+            "suburb": row.suburb,
+            "latitude": round(float(row.latitude), 6),
+            "longitude": round(float(row.longitude), 6),
+        }
+        for row in rows
+    ]
