@@ -69,6 +69,7 @@ def download_dataset() -> pd.DataFrame:
         settings.LOW_COST_DIET_HEALTH_OUTCOME_RAW_PATH,
         settings.RECOMMENDED_MACRONUTRIENTS_INTAKE_RAW_PATH,
         settings.RECIPE_RAW_PATH,
+        settings.GROCERY_PRICES_RAW_PATH,
         settings.FOOD_FACTS_RAW_PATH
     ]
     if any(not os.path.exists(cfg) for cfg in data_configs):
