@@ -31,8 +31,8 @@ from src.data.loaders.data_loader import (
 )
 
 
-def seed_support_services(db: Session, df: pd.DataFrame, model: Base) -> None:
-    """Clears and re-seeds the support_services table from the given DataFrame.
+def seed_database(db: Session, df: pd.DataFrame, model: Base) -> None:
+    """Clears and re-seeds the table from the given DataFrame.
 
     Deletes all existing rows before inserting to avoid duplicates on re-runs.
     Rolls back and re-raises on any error.
@@ -105,9 +105,9 @@ if __name__ == "__main__":
     db = SessionLocal()
     try:
         for df, model in datasets:
-            seed_support_services(db, df, model)
+            seed_database(db, df, model)
         # Seed AFTER both cuisine & ingredients are inserted to the db
-        seed_support_services(db, load_recipe_ingredient_dataset(), RecipeIngredient)
-        seed_support_services(db, load_ingredient_price_dataset(), IngredientPrice)
+        seed_database(db, load_recipe_ingredient_dataset(), RecipeIngredient)
+        seed_database(db, load_ingredient_price_dataset(), IngredientPrice)
     finally:
         db.close()

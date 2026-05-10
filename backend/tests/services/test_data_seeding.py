@@ -4,7 +4,7 @@ import numpy as np
 from unittest.mock import patch, MagicMock, call
 
 from src.services.data_seeding import (
-    seed_support_services,
+    seed_database,
     download_dataset,
     load_dataset,
 )
@@ -98,16 +98,16 @@ def _all_loader_patches(overrides: dict = None):
 
 
 # ---------------------------------------------------------------------------
-# seed_support_services
+# seed_database
 # ---------------------------------------------------------------------------
 
-class TestSeedSupportServices:
-    """seed_support_services(db, df, model) requires THREE arguments."""
+class TestSeedDatabase:
+    """seed_database(db, df, model) requires THREE arguments."""
 
     def test_queries_and_deletes_the_given_model(self, mock_db, mock_model):
         """Tests that the correct model is queried and its rows are deleted."""
         df = make_sample_df()
-        seed_support_services(mock_db, df, mock_model)
+        seed_database(mock_db, df, mock_model)
         mock_db.query.assert_called_once_with(mock_model)
         mock_db.query.return_value.delete.assert_called_once()
 
@@ -116,67 +116,67 @@ class TestSeedSupportServices:
         call_order = []
         mock_db.query.return_value.delete.side_effect = lambda: call_order.append("delete")
         mock_db.bulk_save_objects.side_effect = lambda objs: call_order.append("bulk_save")
-        seed_support_services(mock_db, make_sample_df(), mock_model)
+        seed_database(mock_db, make_sample_df(), mock_model)
         assert call_order == ["delete", "bulk_save"]
 
     def test_bulk_saves_correct_number_of_objects(self, mock_db, mock_model):
         """Tests that the correct number of model instances are bulk-saved."""
-        seed_support_services(mock_db, make_sample_df(n=3), mock_model)
+        seed_database(mock_db, make_sample_df(n=3), mock_model)
         args, _ = mock_db.bulk_save_objects.call_args
         assert len(args[0]) == 3
 
     def test_model_instantiated_from_each_row(self, mock_db, mock_model):
         """Tests that the model constructor is called once per DataFrame row."""
-        seed_support_services(mock_db, make_sample_df(n=4), mock_model)
+        seed_database(mock_db, make_sample_df(n=4), mock_model)
         assert mock_model.call_count == 4
 
     def test_commits_after_successful_insert(self, mock_db, mock_model):
         """Tests that db.commit() is called after a successful bulk save."""
-        seed_support_services(mock_db, make_sample_df(), mock_model)
+        seed_database(mock_db, make_sample_df(), mock_model)
         mock_db.commit.assert_called_once()
 
     def test_rollback_on_bulk_save_exception(self, mock_db, mock_model):
         """Tests that db.rollback() is called when bulk_save_objects raises."""
         mock_db.bulk_save_objects.side_effect = Exception("DB error")
         with pytest.raises(Exception):
-            seed_support_services(mock_db, make_sample_df(), mock_model)
+            seed_database(mock_db, make_sample_df(), mock_model)
         mock_db.rollback.assert_called_once()
 
     def test_rollback_on_delete_exception(self, mock_db, mock_model):
         """Tests that db.rollback() is called when the initial delete raises."""
         mock_db.query.return_value.delete.side_effect = Exception("Delete failed")
         with pytest.raises(Exception):
-            seed_support_services(mock_db, make_sample_df(), mock_model)
+            seed_database(mock_db, make_sample_df(), mock_model)
         mock_db.rollback.assert_called_once()
 
     def test_reraises_exception_after_rollback(self, mock_db, mock_model):
         """Tests that the original exception is re-raised after rollback."""
         mock_db.bulk_save_objects.side_effect = RuntimeError("Unexpected failure")
         with pytest.raises(RuntimeError, match="Unexpected failure"):
-            seed_support_services(mock_db, make_sample_df(), mock_model)
+            seed_database(mock_db, make_sample_df(), mock_model)
 
     def test_does_not_commit_on_exception(self, mock_db, mock_model):
         """Tests that db.commit() is NOT called when an exception occurs."""
         mock_db.bulk_save_objects.side_effect = Exception("DB error")
         with pytest.raises(Exception):
-            seed_support_services(mock_db, make_sample_df(), mock_model)
+            seed_database(mock_db, make_sample_df(), mock_model)
         mock_db.commit.assert_not_called()
 
     def test_returns_none(self, mock_db, mock_model):
-        """Tests that seed_support_services returns None."""
-        result = seed_support_services(mock_db, make_sample_df(), mock_model)
+        """Tests that seed_database returns None."""
+        result = seed_database(mock_db, make_sample_df(), mock_model)
         assert result is None
 
     def test_logs_start_with_record_count(self, mock_db, mock_model):
         """Tests that the start log includes the number of records to be inserted."""
         with patch("src.services.data_seeding.logger") as mock_logger:
-            seed_support_services(mock_db, make_sample_df(n=5), mock_model)
+            seed_database(mock_db, make_sample_df(n=5), mock_model)
         mock_logger.info.assert_any_call("Starting database seed with 5 records...")
 
     def test_logs_success_with_inserted_count(self, mock_db, mock_model):
         """Tests that a success log is emitted with the count of inserted records."""
         with patch("src.services.data_seeding.logger") as mock_logger:
-            seed_support_services(mock_db, make_sample_df(n=2), mock_model)
+            seed_database(mock_db, make_sample_df(n=2), mock_model)
         mock_logger.info.assert_any_call(
             "Database seeding completed successfully! Inserted 2 records."
         )
@@ -186,18 +186,18 @@ class TestSeedSupportServices:
         mock_db.bulk_save_objects.side_effect = Exception("DB error")
         with patch("src.services.data_seeding.logger") as mock_logger:
             with pytest.raises(Exception):
-                seed_support_services(mock_db, make_sample_df(), mock_model)
+                seed_database(mock_db, make_sample_df(), mock_model)
         mock_logger.error.assert_called_once()
 
     def test_empty_dataframe_still_deletes_and_commits(self, mock_db, mock_model):
         """Tests that an empty DataFrame still triggers delete and commit."""
-        seed_support_services(mock_db, make_sample_df(n=0), mock_model)
+        seed_database(mock_db, make_sample_df(n=0), mock_model)
         mock_db.query.return_value.delete.assert_called_once()
         mock_db.commit.assert_called_once()
 
     def test_empty_dataframe_bulk_saves_zero_objects(self, mock_db, mock_model):
         """Tests that an empty DataFrame passes an empty list to bulk_save_objects."""
-        seed_support_services(mock_db, make_sample_df(n=0), mock_model)
+        seed_database(mock_db, make_sample_df(n=0), mock_model)
         args, _ = mock_db.bulk_save_objects.call_args
         assert len(args[0]) == 0
 
