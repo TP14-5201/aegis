@@ -67,6 +67,7 @@ def download_dataset() -> pd.DataFrame:
         settings.HEALTH_OUTCOME_RAW_PATH,
         settings.LOW_COST_DIET_RAW_PATH,
         settings.LOW_COST_DIET_HEALTH_OUTCOME_RAW_PATH,
+        settings.RECOMMENDED_MACRONUTRIENTS_INTAKE_RAW_PATH,
         settings.RECIPE_RAW_PATH,
         settings.FOOD_FACTS_RAW_PATH
     ]
@@ -88,6 +89,7 @@ def load_dataset() -> pd.DataFrame:
         (load_health_outcome_dataset, HealthOutcome),
         (load_low_cost_diet_dataset, LowCostDiet),
         (load_low_cost_diet_health_outcome_dataset, LowCostDietHealthOutcome),
+        (load_recommended_macronutrients_intake_dataset, RecommendedMacronutrientsIntake),
         (load_recipe_dataset, Recipe),
         (lambda: load_master_ingredients_dataset(mode="general"), Ingredient),
         (lambda: load_master_ingredients_dataset(mode="nutrition"), Nutrition),

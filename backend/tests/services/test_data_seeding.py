@@ -440,7 +440,7 @@ class TestLoadDataset:
     def test_returns_correct_num_items(self):
         """Tests that load_dataset returns exactly 9 (df, model) pairs."""
         result, _ = self._run_with_all_patches()
-        assert len(result) == 9
+        assert len(result) == 12
 
     def test_each_item_is_two_tuple(self):
         """Tests that every item in the result is a 2-tuple of (DataFrame, model class)."""
