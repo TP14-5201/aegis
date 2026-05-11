@@ -554,6 +554,7 @@ const locating = ref(false)
 const services = ref([])
 const selectedService = ref(null)
 const userLocation = ref(null)
+const searchLocation = ref(null)
 const locationLabel = ref('')
 const userAddress = ref('')
 const mainHeight = ref('600px')
@@ -602,7 +603,7 @@ const filteredServices = computed(() => {
 
   if (openNowFilter.value) result = result.filter(s => s.is_open_now === true)
 
-  if (userLocation.value && radiusKm.value !== null) {
+  if (searchLocation.value && radiusKm.value !== null) {
     result = result.filter(s =>
       s.distance_km == null ? false : s.distance_km <= radiusKm.value
     )
@@ -762,10 +763,7 @@ function locateMe() {
       locationLabel.value = 'your location'
       radiusKm.value = 0.5
 
-      userAddress.value = await getAddressFromCoords(
-        lat,
-        lon
-      )
+      userAddress.value = await getAddressFromCoords(lat, lon)
 
       mapInstance?.setView([lat, lon], 13)
 
@@ -776,6 +774,10 @@ function locateMe() {
       visibleCount.value = 5
 
       updateMapMarkers()
+
+      if (selectedService.value && showingDirections.value) {
+        await calculateRoute(selectedService.value)
+      }
     },
     () => {
       locating.value = false
@@ -821,7 +823,7 @@ async function searchByAddress() {
     const label =
       data[0].display_name.split(',')[0]
 
-    userLocation.value = { lat, lon }
+    searchLocation.value = { lat, lon }
 
     locationLabel.value = label
     radiusKm.value = 0.5
@@ -831,8 +833,6 @@ async function searchByAddress() {
       `${lat.toFixed(5)}, ${lon.toFixed(5)}`
 
     mapInstance?.setView([lat, lon], 13)
-
-    placeUserMarker(lat, lon)
 
     sortByDistance(lat, lon)
 
@@ -850,7 +850,7 @@ function setRadius(value) {
   radiusKm.value = value
   visibleCount.value = 5
 
-  if (userLocation.value) {
+  if (searchLocation.value) {
     sortByDistance(userLocation.value.lat, userLocation.value.lon)
   }
 
@@ -862,7 +862,7 @@ function selectSearchArea(location) {
   searchAreaText.value = location.label
   searchSuggestions.value = []
 
-  userLocation.value = {
+  searchLocation.value = {
     lat: location.latitude,
     lon: location.longitude,
   }
@@ -874,11 +874,9 @@ function selectSearchArea(location) {
   sortByDistance(location.latitude, location.longitude)
   visibleCount.value = 5
 
-  mapInstance?.setView([location.latitude, location.longitude], 13)
-
-  placeUserMarker(location.latitude, location.longitude)
-
   updateMapMarkers()
+
+  mapInstance?.setView([location.latitude, location.longitude], 14)
 }
 
 function selectStartLocation(location) {
@@ -1077,31 +1075,18 @@ watch(filteredServices, () => {
 async function getDirections(service) {
   selectedService.value = service
   showingDirections.value = true
+
   directionsInfo.value = {
     service: service.name,
     distance: '—',
     duration: '—',
   }
 
-  if (!userLocation.value) {
-    directionsSteps.value = [
-      {
-        instruction: 'Choose a starting location to calculate directions.',
-        distance: '',
-        iconPath: 'M12 9v4M12 17h.01',
-      },
-    ]
-    return
-  }
-
   await calculateRoute(service)
 }
 
 async function calculateRoute(service) {
-  directionsLoading.value = true
-  directionsSteps.value = []
-
-  // Clear previous route
+    // Clear previous route
   routeLayer?.remove()
   routeLayer = null
 
@@ -1112,6 +1097,30 @@ async function calculateRoute(service) {
   transitMarkers = []
 
   destinationMarker?.remove()
+  destinationMarker = null
+
+  if (!userLocation.value) {
+    directionsLoading.value = false
+
+    directionsInfo.value = {
+      service: service.name,
+      distance: '—',
+      duration: '—',
+    }
+
+    directionsSteps.value = [
+      {
+        instruction: 'Choose a starting location to calculate directions.',
+        distance: '',
+        iconPath: 'M12 9v4M12 17h.01',
+      },
+    ]
+
+    return
+  }
+
+  directionsLoading.value = true
+  directionsSteps.value = []
 
   destinationMarker = L.marker(
     [service.latitude, service.longitude],
