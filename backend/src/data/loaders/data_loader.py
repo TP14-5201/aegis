@@ -1,11 +1,15 @@
+import os
 import pandas as pd
 from typing import Callable
+from dotenv import load_dotenv
+from sqlalchemy import create_engine
 
 from src.core.config import settings
 from src.core.logging import logger
 
 from src.data.wranglers.melbourne_wrangler import wrangle_melbourne
 from src.data.wranglers.datagov_wrangler import wrangle_datagov
+
 from src.data.wranglers.food_insecurity_wrangler import wrangle_food_insecurity
 from src.data.wranglers.vic_lga_boundaries_wrangler import wrangle_viclga_boundaries, add_lga_pid_from_lga_population_data
 from src.data.wranglers.lga_population_wrangler import wrangle_lga_population
@@ -14,6 +18,11 @@ from src.data.wranglers.health_outcome_wrangler import wrangle_health_outcome
 from src.data.wranglers.low_cost_diet_wrangler import wrangle_low_cost_diet
 from src.data.wranglers.low_cost_diet_health_outcome_wrangler import wrangle_low_cost_diet_health_outcome
 from src.data.wranglers.recommended_macronutrients_intake_wrangler import wrangle_recommended_macronutrients_intake
+
+from src.data.wranglers.recipe_wrangler import wrangle_recipe
+from src.data.wranglers.ingredient_wrangler import wrangle_ingredient
+from src.data.wranglers.recipe_ingredient_wrangler import wrangle_recipe_ingredient
+from src.data.wranglers.price_wrangler import wrangle_ingredient_price
 
 
 def _load_and_wrangle(
@@ -105,3 +114,39 @@ def load_low_cost_diet_health_outcome_dataset() -> pd.DataFrame:
 def load_recommended_macronutrients_intake_dataset() -> pd.DataFrame:
     """Load recommended macronutrients intake dataset (Table A1-27)."""
     return _load_and_wrangle(settings.RECOMMENDED_MACRONUTRIENTS_INTAKE_RAW_PATH, wrangle_recommended_macronutrients_intake, "Recommended Macronutrients Intake")
+
+
+def load_recipe_dataset() -> pd.DataFrame:
+    return _load_and_wrangle(settings.RECIPE_RAW_PATH, wrangle_recipe, "Country Cuisine")
+
+
+def load_master_ingredients_dataset(mode: str) -> pd.DataFrame:
+    return _load_and_wrangle(settings.FOOD_FACTS_RAW_PATH, wrangle_ingredient, "Ingredient", mode=mode)
+
+
+def load_recipe_ingredient_dataset() -> pd.DataFrame:
+    load_dotenv()
+    DATABASE_URL = os.getenv("DATABASE_URL")
+    engine = create_engine(DATABASE_URL)
+
+    recipe_with_ingredients_df = pd.read_csv(settings.RECIPE_RAW_PATH)
+    recipe_df = pd.read_sql("SELECT recipe_id FROM recipe", engine)
+    ingredient_df = pd.read_sql("SELECT * FROM ingredient", engine)
+    recipe_df = wrangle_recipe_ingredient(recipe_with_ingredients_df, recipe_df, ingredient_df)
+
+    return recipe_df
+
+
+def load_ingredient_price_dataset() -> pd.DataFrame:
+    load_dotenv()
+    DATABASE_URL = os.getenv("DATABASE_URL")
+    engine = create_engine(DATABASE_URL)
+
+    price_df = pd.read_csv(settings.GROCERY_PRICES_RAW_PATH)
+    ingredient_df = pd.read_sql("SELECT * FROM ingredient", engine) 
+    price_df = wrangle_ingredient_price(price_df, ingredient_df)
+    return price_df
+
+
+if __name__ == "__main__":
+    load_ingredient_price_dataset()
