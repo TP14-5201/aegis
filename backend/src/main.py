@@ -433,6 +433,8 @@ def _result_to_dict(result: SubstituteResult) -> dict:
             "product_name": s.product_name,
             "brands": s.brands,
             "sub_category": s.sub_category,
+            "health_benefits": s.health_benefits,
+            "dietary_tags": s.dietary_tags,
             "retail_price": s.retail_price,
             "nutrition_grade": s.nutrition_grade,
             "proteins_100g": s.proteins_100g,
