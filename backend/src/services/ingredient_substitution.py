@@ -110,6 +110,7 @@ def _infer_role(sub_category: Optional[str]) -> str:
 class SubstituteSlot:
     ingredient_code: str
     product_name: str
+    brands: Optional[str]
     sub_category: Optional[str]
     retail_price: Optional[float]
     nutrition_grade: Optional[str]
@@ -408,6 +409,7 @@ class IngredientSubstitutionEngine:
             return SubstituteSlot(
                 ingredient_code=row.name,
                 product_name=str(row.get("product_name", "")),
+                brands=row.get("brands"),
                 sub_category=row.get("sub_category"),
                 retail_price=_nullable_float(row.get("retail_price")),
                 nutrition_grade=row.get("nutrition_grade_fr"),

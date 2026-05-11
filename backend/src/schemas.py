@@ -126,6 +126,7 @@ class SubstituteSlotOut(BaseModel):
 
     ingredient_code: str
     product_name: str
+    brands: Optional[str] = None
     sub_category: Optional[str] = None
     retail_price: Optional[float] = None
     nutrition_grade: Optional[str] = None
@@ -142,7 +143,7 @@ class SubstituteSlotOut(BaseModel):
         description="Score on the objective that selected this candidate (0–1)",
     )
 
-    @validator("sub_category", pre=True)
+    @validator("sub_category", "brands", pre=True)
     def handle_nan(cls, v: Any) -> Optional[str]:
         # If the value is a float and is NaN, return None
         if isinstance(v, float) and math.isnan(v):
