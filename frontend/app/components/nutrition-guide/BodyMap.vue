@@ -181,13 +181,13 @@ const bodyParts: BodyPart[] = [
       'Vitamin-rich foods, protein and minerals help support everyday eye health.',
   },
   {
-    key: 'bones',
-    label: 'Bones',
-    icon: '/images/bodymap/bm-3.png',
-    image: '/images/bodymap/bones.svg',
-    linePath: 'M 245 315 C 330 315, 410 270, 515 230',
+    key: 'teeth',
+    label: 'Teeth',
+    icon: '/images/bodymap/bm-7.png',
+    image: '/images/bodymap/teeth.svg',
+    linePath: 'M 210 155 C 360 155, 500 175, 660 210',
     description:
-      'Bones give the body shape and help children stand, walk and grow strong.',
+      'Teeth help children bite, chew and keep a bright smile.',
     foods: [
       { name: 'milk', image: image.milk },
       { name: 'Eggs', image: image.eggs },
@@ -195,7 +195,24 @@ const bodyParts: BodyPart[] = [
       { name: 'Blueberries', image: image.blueberries },
     ],
     why:
-      'Calcium, vitamin D and protein help build strong bones during childhood.',
+      'Calcium-rich and low-sugar foods help protect teeth and support healthy gums.',
+  },
+  {
+    key: 'energy',
+    label: 'Energy',
+    icon: '/images/bodymap/bm-6.png',
+    image: '/images/bodymap/energy.svg',
+    linePath: 'M 205 220 C 330 200, 515 150, 600 200',
+    description:
+      'Energy gives children power for learning, playing and daily activities.',
+    foods: [
+      { name: 'Eggs', image: image.eggs },
+      { name: 'milk', image: image.milk },
+      { name: 'Blueberries', image: image.blueberries },
+      { name: 'Walnuts', image: image.walnuts },
+    ],
+    why:
+      'Balanced meals provide steady energy throughout the day.',
   },
   {
     key: 'muscles',
@@ -219,7 +236,7 @@ const bodyParts: BodyPart[] = [
     label: 'Immunity',
     icon: '/images/bodymap/bm-5.png',
     image: '/images/bodymap/immunity.svg',
-    linePath: 'M 245 205 C 330 205, 415 205, 515 200',
+    linePath: 'M 245 315 C 330 315, 410 270, 515 230',
     description:
       'Immunity protects the body from germs and helps children stay healthy.',
     foods: [
@@ -232,30 +249,13 @@ const bodyParts: BodyPart[] = [
       'Vitamins, minerals and protein support the immune system and help the body fight sickness.',
   },
   {
-    key: 'energy',
-    label: 'Energy',
-    icon: '/images/bodymap/bm-6.png',
-    image: '/images/bodymap/energy.svg',
-    linePath: 'M 245 275 C 330 280, 415 250, 515 220',
+    key: 'bones',
+    label: 'Bones',
+    icon: '/images/bodymap/bm-3.png',
+    image: '/images/bodymap/bones.svg',
+    linePath: 'M 235 385 C 330 205, 415 205, 515 200',
     description:
-      'Energy gives children power for learning, playing and daily activities.',
-    foods: [
-      { name: 'Eggs', image: image.eggs },
-      { name: 'milk', image: image.milk },
-      { name: 'Blueberries', image: image.blueberries },
-      { name: 'Walnuts', image: image.walnuts },
-    ],
-    why:
-      'Balanced meals provide steady energy throughout the day.',
-  },
-  {
-    key: 'teeth',
-    label: 'Teeth',
-    icon: '/images/bodymap/bm-7.png',
-    image: '/images/bodymap/teeth.svg',
-    linePath: 'M 250 155 C 330 155, 415 165, 515 190',
-    description:
-      'Teeth help children bite, chew and keep a bright smile.',
+      'Bones give the body shape and help children stand, walk and grow strong.',
     foods: [
       { name: 'milk', image: image.milk },
       { name: 'Eggs', image: image.eggs },
@@ -263,8 +263,8 @@ const bodyParts: BodyPart[] = [
       { name: 'Blueberries', image: image.blueberries },
     ],
     why:
-      'Calcium-rich and low-sugar foods help protect teeth and support healthy gums.',
-  },
+      'Calcium, vitamin D and protein help build strong bones during childhood.',
+  }, 
 ]
 
 const selectedPart = computed(() => {
