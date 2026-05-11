@@ -128,6 +128,8 @@ class SubstituteSlotOut(BaseModel):
     product_name: str
     brands: Optional[str] = None
     sub_category: Optional[str] = None
+    health_benefits: Optional[List[str]] = None
+    dietary_tags: Optional[List[str]] = None
     retail_price: Optional[float] = None
     nutrition_grade: Optional[str] = None
     proteins_100g: Optional[float] = None
