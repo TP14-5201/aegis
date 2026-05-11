@@ -34,31 +34,30 @@ def _filter_unhealthy_food_categories(df: pd.DataFrame) -> pd.DataFrame:
 def _apply_health_and_dietary_tags(df: pd.DataFrame) -> pd.DataFrame:
     """Applies benefit icons and allergen tags based on sub_category."""
     INGREDIENT_METADATA = {
-        "Vegetables": {"benefits": ["Immunity", "Eye"], "tags": ["Vegan", "Vegetarian", "Gluten-free", "Dairy-free", "Halal"]},
-        "Fruit": {"benefits": ["Immunity", "Energy"], "tags": ["Vegan", "Vegetarian", "Gluten-free", "Dairy-free", "Halal"]},
-        "Oils & vinegars": {"benefits": ["Brain", "Energy"], "tags": ["Vegan", "Vegetarian", "Gluten-free", "Dairy-free", "Halal"]},
-        "Dairy": {"benefits": ["Bones", "Teeth"], "tags": ["Vegetarian", "Gluten-free", "Halal"]},
-        "Milk": {"benefits": ["Bones", "Teeth"], "tags": ["Vegetarian", "Gluten-free", "Halal"]},
-        "Cheese": {"benefits": ["Bones", "Teeth", "Muscles"], "tags": ["Vegetarian", "Gluten-free", "Halal"]},
-        "Eggs": {"benefits": ["Muscles", "Brain"], "tags": ["Vegetarian", "Gluten-free", "Dairy-free", "Halal"]},
-        "Seafood": {"benefits": ["Brain", "Immunity"], "tags": ["Gluten-free", "Dairy-free", "Halal"]},
-        "Poultry": {"benefits": ["Muscles", "Energy"], "tags": ["Gluten-free", "Dairy-free", "Halal"]},
-        "Beef & veal": {"benefits": ["Muscles", "Energy", "Immunity"], "tags": ["Gluten-free", "Dairy-free", "Halal"]},
-        "Mince": {"benefits": ["Muscles", "Energy"], "tags": ["Gluten-free", "Dairy-free", "Halal"]},
-        "Lamb": {"benefits": ["Muscles", "Immunity"], "tags": ["Gluten-free", "Dairy-free", "Halal"]},
-        "Pork": {"benefits": ["Muscles", "Energy"], "tags": ["Gluten-free", "Dairy-free"]},
-        "Packaged Breads": {"benefits": ["Energy"], "tags": ["Vegan", "Vegetarian", "Dairy-free", "Halal"]},
-        "Breakfast": {"benefits": ["Energy", "Bones"], "tags": ["Vegetarian", "Halal"]},
-        "Tea": {"benefits": ["Brain", "Immunity"], "tags": ["Vegan", "Vegetarian", "Gluten-free", "Dairy-free", "Halal"]},
-        "Jams, honey & spreads": {"benefits": ["Energy"], "tags": ["Vegetarian", "Gluten-free", "Halal"]},
-        "Sports drinks": {"benefits": ["Energy"], "tags": ["Vegan", "Vegetarian", "Gluten-free", "Dairy-free", "Halal"]}
+        "Vegetables": {"benefits": ["Immunity", "Eye"]},
+        "Fruit": {"benefits": ["Immunity", "Energy"]},
+        "Oils & vinegars": {"benefits": ["Brain", "Energy"]},
+        "Dairy": {"benefits": ["Bones", "Teeth"]},
+        "Milk": {"benefits": ["Bones", "Teeth"]},
+        "Cheese": {"benefits": ["Bones", "Teeth", "Muscles"]},
+        "Eggs": {"benefits": ["Muscles", "Brain"]},
+        "Seafood": {"benefits": ["Brain", "Immunity"]},
+        "Poultry": {"benefits": ["Muscles", "Energy"]},
+        "Beef & veal": {"benefits": ["Muscles", "Energy", "Immunity"]},
+        "Mince": {"benefits": ["Muscles", "Energy"]},
+        "Lamb": {"benefits": ["Muscles", "Immunity"]},
+        "Pork": {"benefits": ["Muscles", "Energy"]},
+        "Packaged Breads": {"benefits": ["Energy"]},
+        "Breakfast": {"benefits": ["Energy", "Bones"]},
+        "Tea": {"benefits": ["Brain", "Immunity"]},
+        "Jams, honey & spreads": {"benefits": ["Energy"]},
+        "Sports drinks": {"benefits": ["Energy"]}
     }
     
     def get_meta(cat, key):
         return INGREDIENT_METADATA.get(cat, {}).get(key, [])
 
     df["health_benefits"] = df["sub_category"].apply(lambda x: get_meta(x, "benefits"))
-    df["dietary_tags"] = df["sub_category"].apply(lambda x: get_meta(x, "tags"))
     
     return df
 
@@ -113,6 +112,6 @@ def wrangle_ingredient_price(price_df: pd.DataFrame, ingredient_df: pd.DataFrame
 
     ingredient_to_price_map = _perform_ingredient_name_matching(price_df, ingredient_df)
     price_df = _map_ingredients_to_price(ingredient_to_price_map, price_df, ingredient_df)
-    price_df = select_columns(price_df,  included_cols=["ingredient_code", "sub_category", "retail_price", "health_benefits", "dietary_tags"])
+    price_df = select_columns(price_df,  included_cols=["ingredient_code", "sub_category", "retail_price", "health_benefits"])
 
     return price_df

@@ -7,14 +7,16 @@ def _remove_ingredients_with_null_codes(df: pd.DataFrame) -> pd.DataFrame:
     return df[df["code"].notnull()]
 
 
+def _remove_duplicate_product_names(df: pd.DataFrame) -> pd.DataFrame:
+    return df.drop_duplicates(subset=['product_name'])
+
+
 def wrangle_ingredient(df: pd.DataFrame, mode: str) -> pd.DataFrame:
     """Clean and prepare price dataset."""
     if mode == "general":
         MAIN_INGREDIENT_COLS = [
             'code',
             'product_name',
-            'brands',            
-            'main_category'
         ]
     else:
         MAIN_INGREDIENT_COLS = [
@@ -31,6 +33,7 @@ def wrangle_ingredient(df: pd.DataFrame, mode: str) -> pd.DataFrame:
     df = initial_cleaning_pipeline(df)
     df = clean_na_values(df)
     df = _remove_ingredients_with_null_codes(df)
+    df = _remove_duplicate_product_names(df)
     df = select_columns(df, included_cols=MAIN_INGREDIENT_COLS)
     df = rename_columns(df, cols_rename_map=MAIN_INGREDIENT_MAPPING)
     

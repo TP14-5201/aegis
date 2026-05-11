@@ -159,8 +159,6 @@ class Ingredient(Base):
 
     ingredient_code = Column(String, primary_key=True, index=True)
     product_name = Column(String, nullable=False)
-    brands = Column(String)
-    main_category = Column(String)
 
     nutrition = relationship("Nutrition", back_populates="ingredient", uselist=False)
     recipes = relationship("RecipeIngredient", back_populates="ingredient_info")

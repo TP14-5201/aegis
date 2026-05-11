@@ -110,10 +110,8 @@ def _infer_role(sub_category: Optional[str]) -> str:
 class SubstituteSlot:
     ingredient_code: str
     product_name: str
-    brands: Optional[str]
     sub_category: Optional[str]
     health_benefits: Optional[List[str]]
-    dietary_tags: Optional[List[str]]
     retail_price: Optional[float]
     nutrition_grade: Optional[str]
     proteins_100g: Optional[float]
@@ -411,10 +409,8 @@ class IngredientSubstitutionEngine:
             return SubstituteSlot(
                 ingredient_code=row.name,
                 product_name=str(row.get("product_name", "")),
-                brands=row.get("brands"),
                 sub_category=row.get("sub_category"),
                 health_benefits=row.get("health_benefits"),
-                dietary_tags=row.get("dietary_tags"),
                 retail_price=_nullable_float(row.get("retail_price")),
                 nutrition_grade=row.get("nutrition_grade_fr"),
                 proteins_100g=_nullable_float(row.get("proteins_100g")),
@@ -448,8 +444,6 @@ class IngredientSubstitutionEngine:
             db.query(
                 Ingredient.ingredient_code,
                 Ingredient.product_name,
-                Ingredient.brands,
-                Ingredient.main_category,
                 Nutrition.nutrition_grade_fr,
                 Nutrition.energy_100g,
                 Nutrition.proteins_100g,
@@ -458,7 +452,6 @@ class IngredientSubstitutionEngine:
                 IngredientPrice.sub_category,
                 IngredientPrice.retail_price,
                 IngredientPrice.health_benefits,
-                IngredientPrice.dietary_tags,
             )
             .outerjoin(Nutrition,       Nutrition.ingredient_code       == Ingredient.ingredient_code)
             .outerjoin(IngredientPrice, IngredientPrice.ingredient_code == Ingredient.ingredient_code)
@@ -466,10 +459,9 @@ class IngredientSubstitutionEngine:
         )
 
         df = pd.DataFrame(rows, columns=[
-            "ingredient_code", "product_name", "brands", "main_category",
-            "nutrition_grade_fr", "energy_100g", "proteins_100g",
-            "carbohydrates_100g", "fat_100g",
-            "sub_category", "retail_price", "health_benefits", "dietary_tags",
+            "ingredient_code", "product_name", "nutrition_grade_fr", 
+            "energy_100g", "proteins_100g", "carbohydrates_100g", "fat_100g", 
+            "sub_category", "retail_price", "health_benefits"
         ]).set_index("ingredient_code")
 
         df["nutrition_grade_fr"] = df["nutrition_grade_fr"].str.lower().where(
@@ -513,9 +505,8 @@ class IngredientSubstitutionEngine:
             self._model = SentenceTransformer(MODEL_NAME)
 
         texts = (
-            df["product_name"].fillna("").str.strip()
-            + " | " + df["sub_category"].fillna("").str.strip()
-            + " | " + df["brands"].fillna("").str.strip()
+            df["product_name"].fillna("").str.strip() + 
+            " | " + df["sub_category"].fillna("").str.strip()
         ).tolist()
 
         logger.info("Encoding %d ingredient texts…", len(texts))
