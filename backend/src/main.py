@@ -16,6 +16,7 @@ from src.models import LgaPopulation, FoodInsecurity, VicLgaBoundary, SupportSer
 from src.schemas import NearbyServiceOut, FoodInsecurityRegion, LgaStatsOut, DietIndicatorOut, HealthOutcomeOut, LowCostDietOut, LowCostDietHealthOutcomeOut, RecommendedMacronutrientsIntakeOut, IngredientSubstitutesOut
 from src.services.ingredient_substitution import engine as substitution_engine, SubstituteResult
 from src.services.nearby_search import DEFAULT_KEYWORDS, find_nearby_support_services, search_support_service_suburbs
+from src.services.gtfsr import fetch_vehicle_positions, fetch_trip_updates
 from src.utils.opening_hours import is_open_now, _now_in_tz
 
 from sqlalchemy import func, Integer, case, distinct, Numeric
@@ -433,6 +434,8 @@ def _result_to_dict(result: SubstituteResult) -> dict:
             "product_name": s.product_name,
             "brands": s.brands,
             "sub_category": s.sub_category,
+            "health_benefits": s.health_benefits,
+            "dietary_tags": s.dietary_tags,
             "retail_price": s.retail_price,
             "nutrition_grade": s.nutrition_grade,
             "proteins_100g": s.proteins_100g,
@@ -482,4 +485,35 @@ def get_ingredient_substitutes(
             status_code=500,
             detail="Internal error generating ingredient substitutes",
         )
-    
+
+
+# ---------------------------------------------------------------------------
+# GTFSR — real-time vehicle positions + trip updates (proxied from backend
+# so the API key never reaches the browser)
+# ---------------------------------------------------------------------------
+
+@app.get("/gtfsr/vehicles")
+async def gtfsr_vehicles(route_ids: Optional[str] = None):
+    """Return live vehicle positions, optionally filtered by comma-separated route IDs."""
+    try:
+        vehicles = await fetch_vehicle_positions()
+        if route_ids:
+            ids = set(route_ids.split(","))
+            vehicles = [v for v in vehicles if v.get("route_id") in ids]
+        return vehicles
+    except Exception as exc:
+        logger.exception("GTFSR vehicle positions error: %s", exc)
+        raise HTTPException(status_code=502, detail="Could not fetch vehicle positions from GTFSR feed")
+
+
+@app.get("/gtfsr/trip-update")
+async def gtfsr_trip_update(trip_id: str, mode: str = "train"):
+    """Return real-time stop_time_updates for a specific trip.
+    mode: train | tram | bus | vline
+    """
+    try:
+        updates = await fetch_trip_updates(trip_id, mode=mode)
+        return updates
+    except Exception as exc:
+        logger.exception("GTFSR trip update error for trip %s: %s", trip_id, exc)
+        raise HTTPException(status_code=502, detail="Could not fetch trip updates from GTFSR feed")

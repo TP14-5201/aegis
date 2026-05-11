@@ -24,3 +24,4 @@ sentence-transformers==3.0.1
 faiss-cpu>=1.9.0
 scikit-learn==1.5.2
 rapidfuzz==3.14.5
+gtfs-realtime-bindings==1.0.0

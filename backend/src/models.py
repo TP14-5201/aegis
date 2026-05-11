@@ -199,6 +199,8 @@ class IngredientPrice(Base):
     ingredient_code = Column(String, ForeignKey("ingredient.ingredient_code"), index=True, primary_key=True)
     sub_category = Column(String)
     retail_price = Column(Float)
+    health_benefits = Column(JSON)
+    dietary_tags = Column(JSON)
 
 
 class IngredientEmbedding(Base):
