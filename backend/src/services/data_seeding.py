@@ -8,8 +8,7 @@ from src.models import (
     VicLgaBoundary, LgaPopulation, 
     DietIndicator, HealthOutcome, LowCostDiet,
     LowCostDietHealthOutcome, RecommendedMacronutrientsIntake,
-    Recipe, Ingredient, Nutrition, RecipeIngredient, IngredientPrice,
-    IngredientEmbedding, SubstitutionMeta,
+    Ingredient, IngredientNutrition
 )
 
 from src.core.config import settings
@@ -25,10 +24,8 @@ from src.data.loaders.data_loader import (
     load_low_cost_diet_dataset,
     load_low_cost_diet_health_outcome_dataset,
     load_recommended_macronutrients_intake_dataset,
-    load_recipe_dataset,
-    load_master_ingredients_dataset,
-    load_recipe_ingredient_dataset,
-    load_ingredient_price_dataset
+    load_ingredient_dataset,
+    load_ingredient_nutrition_dataset
 )
 
 
@@ -68,7 +65,6 @@ def download_dataset() -> pd.DataFrame:
         settings.LOW_COST_DIET_RAW_PATH,
         settings.LOW_COST_DIET_HEALTH_OUTCOME_RAW_PATH,
         settings.RECOMMENDED_MACRONUTRIENTS_INTAKE_RAW_PATH,
-        settings.RECIPE_RAW_PATH,
         settings.GROCERY_PRICES_RAW_PATH,
         settings.FOOD_FACTS_RAW_PATH
     ]
@@ -91,31 +87,10 @@ def load_dataset() -> pd.DataFrame:
         (load_low_cost_diet_dataset, LowCostDiet),
         (load_low_cost_diet_health_outcome_dataset, LowCostDietHealthOutcome),
         (load_recommended_macronutrients_intake_dataset, RecommendedMacronutrientsIntake),
-        (load_recipe_dataset, Recipe),
-        (lambda: load_master_ingredients_dataset(mode="general"), Ingredient),
-        (lambda: load_master_ingredients_dataset(mode="nutrition"), Nutrition),
+        (load_ingredient_dataset, Ingredient)
     ]
     
     return [(loader(), model) for loader, model in DATASET_REGISTRY]
-
-
-def seed_substitution_index(db: Session) -> None:
-    """
-    Build the FAISS substitution index from the already-seeded ingredient
-    tables and persist the result to IngredientEmbedding / SubstitutionMeta.
-
-    Must be called AFTER Ingredient, Nutrition, and IngredientPrice are
-    committed to the database.
-
-    Expected runtime: ~3–5 minutes on CPU for 33k ingredients.
-    """
-    # Import here so the heavy ML deps (sentence-transformers, faiss) are only
-    # pulled in when this function is actually invoked.
-    from src.services.ingredient_substitution import engine as substitution_engine
-
-    logger.info("Building substitution index and seeding to database…")
-    substitution_engine.build_index(db)
-    logger.info("Substitution index seeding complete.")
 
 
 if __name__ == "__main__":
@@ -129,13 +104,7 @@ if __name__ == "__main__":
         for df, model in datasets:
             seed_database(db, df, model)
 
-        # Seed AFTER both cuisine & ingredients are inserted to the db
-        seed_database(db, load_recipe_ingredient_dataset(), RecipeIngredient)
-        seed_database(db, load_ingredient_price_dataset(), IngredientPrice)
-
-        # Seed AFTER Ingredient, Nutrition, and IngredientPrice are committed —
-        # the substitution engine joins all three to build its embeddings.
-        seed_substitution_index(db)
-
+        # Seed AFTER ingredients are inserted to the db
+        seed_database(db, load_ingredient_nutrition_dataset(), IngredientNutrition)
     finally:
         db.close()

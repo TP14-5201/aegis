@@ -26,7 +26,7 @@ def clean_whitespaces(df: pd.DataFrame) -> pd.DataFrame:
     # df.apply operates on columns (Series), so isinstance(col, str) is always
     # False — the previous implementation was a no-op.
     str_cols = df.select_dtypes(include="object").columns
-    df[str_cols] = df[str_cols].apply(lambda col: col.str.strip())
+    df[str_cols] = df[str_cols].apply(lambda col: col.astype("str").str.strip())
     return df
 
 

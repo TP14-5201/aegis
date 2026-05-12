@@ -144,118 +144,25 @@ class RecommendedMacronutrientsIntake(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
-class Recipe(Base):
-    __tablename__ = "recipe"
- 
-    recipe_id = Column(String, primary_key=True, index=True)
-    country = Column(String)
-    dish_name = Column(String)
- 
-    ingredients = relationship("RecipeIngredient", back_populates="recipe")
-
-
 class Ingredient(Base):
     __tablename__ = "ingredient"
 
     ingredient_code = Column(String, primary_key=True, index=True)
     product_name = Column(String, nullable=False)
+    sub_category = Column(String, nullable=False)
+    retail_price = Column(Float, nullable=False)
 
-    nutrition = relationship("Nutrition", back_populates="ingredient", uselist=False)
-    recipes = relationship("RecipeIngredient", back_populates="ingredient_info")
+    ingredient_nutrition = relationship("IngredientNutrition", back_populates="ingredient", uselist=False)
 
+class IngredientNutrition(Base):
+    __tablename__ = "ingredient_nutrition"
 
-class Nutrition(Base):
-    __tablename__ = "nutrition"
- 
     ingredient_code = Column(String, ForeignKey("ingredient.ingredient_code"), primary_key=True, index=True)
-    nutrition_grade_fr = Column(String)
-    energy_100g = Column(Float)
-    proteins_100g = Column(Float)
-    carbohydrates_100g = Column(Float)
-    fat_100g = Column(Float)
+    protein_g = Column(String)
+    fat_total_g = Column(Float)
+    total_dietary_fibre_g = Column(Float)
+    total_sugars_g = Column(Float)
+    available_carbohydrate_without_sugar_alcohols_g = Column(Float)
+    sodium_na_mg = Column(Float)
 
-    ingredient = relationship("Ingredient", back_populates="nutrition")
-
-
-class RecipeIngredient(Base):
-    __tablename__ = "recipe_ingredient"
-
-    recipe_id = Column(String, ForeignKey("recipe.recipe_id"), index=True)
-    ingredient_code = Column(String, ForeignKey("ingredient.ingredient_code"), index=True)
-
-    __table_args__ = (
-        PrimaryKeyConstraint("recipe_id", "ingredient_code"),
-    )
-
-    recipe = relationship("Recipe", back_populates="ingredients")
-    ingredient_info = relationship("Ingredient", back_populates="recipes")
-
-
-class IngredientPrice(Base):
-    __tablename__ = "ingredient_price"
-
-    ingredient_code = Column(String, ForeignKey("ingredient.ingredient_code"), index=True, primary_key=True)
-    sub_category = Column(String)
-    retail_price = Column(Float)
-    health_benefits = Column(JSON)
-    dietary_tags = Column(JSON)
-
-
-class IngredientEmbedding(Base):
-    """
-    Stores the 388-d hybrid embedding for every ingredient row.
- 
-    The embedding column holds the raw bytes of a float32 NumPy array
-    (shape: (388,)) serialised with ndarray.tobytes().  At load time it is
-    recovered with np.frombuffer(..., dtype='float32').
- 
-    The four nutritional columns mirror what the engine uses *after*
-    sub_category-median imputation so the in-memory DataFrame can be
-    reconstructed entirely from this table (no second join required).
-    """
- 
-    __tablename__ = "ingredient_embedding"
- 
-    ingredient_code = Column(
-        String,
-        ForeignKey("ingredient.ingredient_code", ondelete="CASCADE"),
-        primary_key=True,
-        index=True,
-    )
-    embedding = Column(
-        LargeBinary,
-        nullable=False,
-        comment="Raw float32 bytes of the 388-d hybrid vector (ndarray.tobytes())",
-    )
-    functional_role = Column(
-        String(32),
-        nullable=True,
-        index=True,
-        comment="Inferred from sub_category via _infer_role()",
-    )
-    # Post-imputation macro values (may differ from raw nutrition table)
-    proteins_100g      = Column(Float, nullable=True)
-    fat_100g           = Column(Float, nullable=True)
-    carbohydrates_100g = Column(Float, nullable=True)
-    energy_100g        = Column(Float, nullable=True)
- 
- 
-class SubstitutionMeta(Base):
-    """
-    General-purpose key/value store for substitution-engine artefacts.
- 
-    Currently used for a single row:
-        key = "scaler"  →  value = pickle.dumps(StandardScaler instance)
- 
-    Keeping it generic avoids a migration if more artefacts are needed later.
-    """
- 
-    __tablename__ = "substitution_meta"
- 
-    key   = Column(String(64), primary_key=True)
-    value = Column(
-        LargeBinary,
-        nullable=False,
-        comment="Pickled Python object (StandardScaler, config dict, …)",
-    )
- 
+    ingredient = relationship("Ingredient", back_populates="ingredient_nutrition")

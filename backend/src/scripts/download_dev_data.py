@@ -28,9 +28,8 @@ def save_local_copy() -> None:
         (fetch_csv_from_url, settings.LOW_COST_DIET_URL, settings.LOW_COST_DIET_RAW_PATH, {"separator": settings.LOW_COST_DIET_SEP}),
         (fetch_csv_from_url, settings.LOW_COST_DIET_HEALTH_OUTCOME_URL, settings.LOW_COST_DIET_HEALTH_OUTCOME_RAW_PATH, {"separator": settings.LOW_COST_DIET_HEALTH_OUTCOME_SEP}),
         (fetch_csv_from_url, settings.RECOMMENDED_MACRONUTRIENTS_INTAKE_URL, settings.RECOMMENDED_MACRONUTRIENTS_INTAKE_RAW_PATH, {"separator": settings.RECOMMENDED_MACRONUTRIENTS_INTAKE_SEP}),
-        (fetch_json_from_kaggle, settings.RECIPE_DATASET, settings.RECIPE_RAW_PATH, {"filename": settings.RECIPE_DATASET_FILENAME, "output_dir": settings.RAW_DATA_DIR}),
         (fetch_csv_from_kaggle, settings.GROCERY_PRICES_DATASET, settings.GROCERY_PRICES_RAW_PATH, {"filename": settings.GROCERY_PRICES_DATASET_FILENAME, "output_dir": settings.RAW_DATA_DIR, "usecols": settings.GROCERY_PRICES_COLS, "separator": settings.GROCERY_PRICES_SEP}),
-        (fetch_csv_from_kaggle, settings.FOOD_FACTS_DATASET, settings.FOOD_FACTS_RAW_PATH, {"filename": settings.FOOD_FACTS_DATASET_FILENAME, "output_dir": settings.RAW_DATA_DIR, "usecols": settings.FOOD_FACTS_COLS, "separator": settings.FOOD_FACTS_SEP})
+        (fetch_excel_from_url, settings.FOOD_FACTS_DATASET_URL, settings.FOOD_FACTS_RAW_PATH, {"sheet_name": settings.FOOD_FACTS_SHEET_NAME})
     ]
 
     # Download all necessary files
@@ -44,6 +43,7 @@ def save_local_copy() -> None:
             logger.info(f"Local dev file saved to {save_path}")
         except Exception as e:
             logger.error(f"Failed to download {url}: {e}")
+
 
 if __name__ == "__main__":
     save_local_copy()

@@ -86,9 +86,6 @@ class Settings(BaseSettings):
     ### END OF Recommended Macronutrients Intake Data ###
 
     ### "Get Food" Page Food & Ingredient Recommendation ###
-    RECIPE_DATASET: str = "kaggle/recipe-ingredients-dataset"
-    RECIPE_DATASET_FILENAME: str = "train.json"
-    
     GROCERY_PRICES_DATASET: str = "thedevastator/grocery-product-prices-for-australian-states"
     GROCERY_PRICES_DATASET_FILENAME: str = "Australia_Grocery_2022Sep.csv"
     GROCERY_PRICES_SEP: str = ","
@@ -102,38 +99,17 @@ class Settings(BaseSettings):
         "unit_price_unit"
     ]
 
-    FOOD_FACTS_DATASET: str = "openfoodfacts/world-food-facts"
-    FOOD_FACTS_DATASET_FILENAME: str = "en.openfoodfacts.org.products.tsv"
-    FOOD_FACTS_SEP: str = "\t"
+    FOOD_FACTS_DATASET_URL: str = "https://www.foodstandards.gov.au/sites/default/files/2025-12/AFCD%20Release%203%20-%20Nutrient%20profiles.xlsx"
+    FOOD_FACTS_SHEET_NAME: any = 1
     FOOD_FACTS_COLS: list[str] = [
         # Main ingredient info
-        'code',
-        'product_name',
-        'brands',
-        'nutrition_grade_fr',   
-        'energy_100g',   
-        'proteins_100g',       
-        'carbohydrates_100g',   
-        'fat_100g',             
-        'main_category',
-        # Ingredient nutrition info
-        'sugars_100g',          
-        'salt_100g',            
-        'fiber_100g',           
-        'calcium_100g',         
-        'iron_100g',            
-        'additives_n',          
-        'vitamin-a_100g',
-        'vitamin-b12_100g',
-        'vitamin-b1_100g',
-        'vitamin-b2_100g',
-        'vitamin-b6_100g',
-        'vitamin-b9_100g',
-        'vitamin-c_100g',
-        'vitamin-d_100g',
-        'vitamin-e_100g',
-        'vitamin-k_100g',
-        'vitamin-pp_100g',
+        'ingredient_code',
+        'protein_g',
+        'fat_total_g',   
+        'total_dietary_fibre_g',   
+        'total_sugars_g',       
+        'available_carbohydrate_without_sugar_alcohols_g',             
+        'sodium_na_mg'
     ]
 
     ### END OF "Get Food" Page Food & Ingredient Recommendation ###
@@ -159,9 +135,8 @@ class Settings(BaseSettings):
     
     RECOMMENDED_MACRONUTRIENTS_INTAKE_RAW_PATH: str = os.path.join(RAW_DATA_DIR, "recommended_macronutrients_raw.csv")
     
-    RECIPE_RAW_PATH: str = os.path.join(RAW_DATA_DIR, "recipes.csv")
     GROCERY_PRICES_RAW_PATH: str = os.path.join(RAW_DATA_DIR, "grocery_prices.csv")
-    FOOD_FACTS_RAW_PATH: str = os.path.join(RAW_DATA_DIR, "food_facts.csv")
+    FOOD_FACTS_RAW_PATH: str = os.path.join(RAW_DATA_DIR, "nutrient_profiles.xlsx")
     ### END OF Local file paths ###
 
 settings = Settings()

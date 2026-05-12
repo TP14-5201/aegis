@@ -19,10 +19,8 @@ from src.data.wranglers.low_cost_diet_wrangler import wrangle_low_cost_diet
 from src.data.wranglers.low_cost_diet_health_outcome_wrangler import wrangle_low_cost_diet_health_outcome
 from src.data.wranglers.recommended_macronutrients_intake_wrangler import wrangle_recommended_macronutrients_intake
 
-from src.data.wranglers.recipe_wrangler import wrangle_recipe
 from src.data.wranglers.ingredient_wrangler import wrangle_ingredient
-from src.data.wranglers.recipe_ingredient_wrangler import wrangle_recipe_ingredient
-from src.data.wranglers.price_wrangler import wrangle_ingredient_price
+from src.data.wranglers.nutrition_wrangler import wrangle_ingredient_nutrition
 
 
 def _load_and_wrangle(
@@ -120,33 +118,16 @@ def load_recipe_dataset() -> pd.DataFrame:
     return _load_and_wrangle(settings.RECIPE_RAW_PATH, wrangle_recipe, "Country Cuisine")
 
 
-def load_master_ingredients_dataset(mode: str) -> pd.DataFrame:
-    return _load_and_wrangle(settings.FOOD_FACTS_RAW_PATH, wrangle_ingredient, "Ingredient", mode=mode)
+def load_ingredient_dataset() -> pd.DataFrame:
+    return _load_and_wrangle(settings.GROCERY_PRICES_RAW_PATH, wrangle_ingredient, "Ingredient")
 
 
-def load_recipe_ingredient_dataset() -> pd.DataFrame:
+def load_ingredient_nutrition_dataset() -> pd.DataFrame:
     load_dotenv()
     DATABASE_URL = os.getenv("DATABASE_URL")
     engine = create_engine(DATABASE_URL)
 
-    recipe_with_ingredients_df = pd.read_csv(settings.RECIPE_RAW_PATH)
-    recipe_df = pd.read_sql("SELECT recipe_id FROM recipe", engine)
-    ingredient_df = pd.read_sql("SELECT * FROM ingredient", engine)
-    recipe_df = wrangle_recipe_ingredient(recipe_with_ingredients_df, recipe_df, ingredient_df)
-
-    return recipe_df
-
-
-def load_ingredient_price_dataset() -> pd.DataFrame:
-    load_dotenv()
-    DATABASE_URL = os.getenv("DATABASE_URL")
-    engine = create_engine(DATABASE_URL)
-
-    price_df = pd.read_csv(settings.GROCERY_PRICES_RAW_PATH)
     ingredient_df = pd.read_sql("SELECT * FROM ingredient", engine) 
-    price_df = wrangle_ingredient_price(price_df, ingredient_df)
-    return price_df
-
-
-if __name__ == "__main__":
-    load_ingredient_price_dataset()
+    nutrition_df = pd.read_excel(settings.FOOD_FACTS_RAW_PATH)
+    ingredient_nutrition_df = wrangle_ingredient_nutrition(ingredient_df, nutrition_df)
+    return ingredient_nutrition_df
