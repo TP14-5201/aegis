@@ -5,6 +5,7 @@
   <NutritionGuideBodyMap />
   <NutritionGuideFoodGuide />
   <NutritionGuideWellnessGuide />
+  <Footer />
 </template>
 
 <script setup lang="ts">
