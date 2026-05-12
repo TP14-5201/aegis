@@ -1,7 +1,11 @@
 <template>
   <section class="relative overflow-hidden bg-[linear-gradient(154deg,#233144_0%,#565e74_100%)] px-6 py-20 lg:px-10 lg:py-[100px]">
-    <div class="vertical-word">
-      NUTRITION FIRST
+    <div class="marquee-wrap">
+      <div class="marquee-track">
+        <span class="marquee-text">NUTRITION FIRST&nbsp;&nbsp;&nbsp;</span>
+        <span class="marquee-text">NUTRITION FIRSTR&nbsp;&nbsp;&nbsp;</span>
+        <span class="marquee-text">NUTRITION FIRST&nbsp;&nbsp;&nbsp;</span>
+      </div>
     </div>
 
     <div class="relative z-10 mx-auto grid max-w-[1200px] items-center gap-12 lg:grid-cols-2">
@@ -179,20 +183,44 @@ const cards = [
   transform: translateY(-4px);
   box-shadow: 0 12px 24px #00000014;
 }
-.vertical-word {
+.marquee-wrap {
   pointer-events: none;
   position: absolute;
-  left: 50%;
-  top: 50%;
+  left: 13%;
+  bottom: 0px;
   z-index: 0;
-  transform: translate(-40%, -50%) rotate(90deg);
-  color: white;
-  font-family: 'Playfair Display', serif;
-  font-size: 180px;
-  font-weight: 600;
-  line-height: 270px;
-  opacity: 0.05;
+  width: 100%;
+  height: 180px;
+  overflow: hidden;
+  opacity: 0.035;
+  transform: rotate(90deg);
+}
+
+.marquee-track {
+  display: flex;
+  width: max-content;
   white-space: nowrap;
+  animation: marquee-scroll 22s linear infinite;
+}
+
+.marquee-text {
+  flex-shrink: 0;
+  color: #ffffff;
+  font-family: 'Playfair Display', serif;
+  font-size: 240px;
+  font-weight: 600;
+  line-height: 160px;
+  letter-spacing: -2px;
+}
+
+@keyframes marquee-scroll {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-33.333%);
+  }
 }
 
 .nutrition-image-wrap {
