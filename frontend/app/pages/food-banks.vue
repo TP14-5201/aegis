@@ -15,99 +15,69 @@
 
       <!-- Search row -->
       <div class="search-row">
-
-        <!-- SEARCH AREA -->
-        <div
-          style="
-            flex:1;
-            display:flex;
-            align-items:center;
-            background:white;
-            border:1.5px solid #b8d9f8;
-            border-radius:10px;
-            padding:0 16px;
-            gap:10px;
-          "
-        >
-          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" style="flex-shrink:0;">
-            <circle cx="11" cy="11" r="8" stroke="#9ca3af" stroke-width="2"/>
-            <path d="m21 21-4.35-4.35" stroke="#9ca3af" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-
-          <div style="position:relative; flex:1;">
+        <div style="flex:1; position:relative;">
+          <div style="display:flex; align-items:center; background:white; border:1.5px solid #b8d9f8; border-radius:10px; padding:0 16px; gap:10px;">
+            <svg width="18" height="18" fill="none" viewBox="0 0 24 24" style="flex-shrink:0;">
+              <circle cx="11" cy="11" r="8" stroke="#9ca3af" stroke-width="2"/>
+              <path d="m21 21-4.35-4.35" stroke="#9ca3af" stroke-width="2" stroke-linecap="round"/>
+            </svg>
             <input
               ref="searchInputEl"
-              v-model="searchAreaText"
+              v-model="searchQuery"
               type="text"
-              placeholder="Search food banks near a suburb"
-              style="width:100%; border:none; outline:none; font-size:15px; color:#333; height:48px; background:transparent; font-family:Inter,sans-serif;"
-              @input="updateSearchSuggestions"
+              placeholder="Enter an address or suburb to find nearby food banks"
+              style="flex:1; border:none; outline:none; font-size:15px; color:#333; height:48px; background:transparent; font-family:Inter,sans-serif;"
+              @keydown.enter="searchByAddress"
+              @input="onSearchInput"
+              @blur="hideSuggestionsDelayed"
             />
+            <button v-if="searchQuery" @click="searchQuery = ''; addressSuggestions = []; showSuggestions = false"
+              style="background:none; border:none; cursor:pointer; padding:4px; color:#aaa; display:flex; align-items:center;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M18 6 6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </button>
+          </div>
 
-            <!-- Suggestions -->
-            <div
-              v-if="searchSuggestions.length"
-              style="
-                position:absolute;
-                top:100%;
-                left:0;
-                right:0;
-                background:white;
-                border:1px solid #d8edff;
-                border-radius:10px;
-                margin-top:6px;
-                overflow:hidden;
-                box-shadow:0 4px 16px rgba(0,0,0,0.08);
-                z-index:1200;
-              "
-            >
-              <button
-                v-for="location in searchSuggestions"
-                :key="location.label"
-                @click="selectSearchArea(location)"
-                type="button"
-                style="
-                  width:100%;
-                  padding:12px 16px;
-                  border:none;
-                  background:white;
-                  text-align:left;
-                  cursor:pointer;
-                  transition:background 0.15s ease;
-                "
-                onmouseover="this.style.background='#DBEDFF'"
-                onmouseout="this.style.background='white'"
-              >
-                {{ location.label }}
-              </button>
+          <!-- Autocomplete suggestions dropdown -->
+          <div v-if="showSuggestions && addressSuggestions.length"
+            style="position:absolute; top:calc(100% + 4px); left:0; right:0; background:white;
+                   border:1.5px solid #b8d9f8; border-radius:10px; z-index:1200;
+                   box-shadow:0 4px 16px rgba(0,0,0,0.10); overflow:hidden;">
+            <div v-for="(s, i) in addressSuggestions" :key="s.place_id"
+              @mousedown.prevent="selectSuggestion(s)"
+              style="padding:11px 16px; cursor:pointer; font-size:14px; color:#333; font-family:Inter,sans-serif;
+                     display:flex; align-items:center; gap:10px;"
+              :style="i < addressSuggestions.length - 1 ? 'border-bottom:1px solid #f0f4ff;' : ''">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="flex-shrink:0; color:#9ca3af;">
+                <path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z" stroke="currentColor" stroke-width="2"/>
+                <circle cx="12" cy="10" r="3" stroke="currentColor" stroke-width="2"/>
+              </svg>
+              {{ s.description }}
             </div>
           </div>
         </div>
 
-        <!-- Locate button -->
-        <button
-          @click="locateMe"
-          :disabled="locating"
+        <!-- Search button -->
+        <button @click="searchByAddress" :disabled="!searchQuery.trim()"
           style="background:#181e4b; color:white; border:none; border-radius:10px; padding:0 20px; font-size:14px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px; white-space:nowrap; font-family:Inter,sans-serif;"
-          :style="locating ? 'opacity:0.7;cursor:not-allowed;' : ''"
-        >
+          :style="!searchQuery.trim() ? 'opacity:0.45;cursor:not-allowed;' : ''">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <circle cx="11" cy="11" r="8" stroke="white" stroke-width="2"/>
+            <path d="m21 21-4.35-4.35" stroke="white" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          Search
+        </button>
+
+        <!-- Locate Me button -->
+        <button @click="locateMe" :disabled="locating"
+          style="background:#181e4b; color:white; border:none; border-radius:10px; padding:0 20px; font-size:14px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px; white-space:nowrap; font-family:Inter,sans-serif;"
+          :style="locating ? 'opacity:0.7;cursor:not-allowed;' : ''">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
             <circle cx="12" cy="12" r="3" stroke="white" stroke-width="2"/>
             <path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="white" stroke-width="2" stroke-linecap="round"/>
           </svg>
           {{ locating ? 'Locating…' : 'Locate Me' }}
-        </button>
-      </div>
-
-      <div class="radius-row">
-        <button
-          v-for="option in radiusOptions"
-          :key="option.value"
-          class="radius-button"
-          :class="{ active: radiusKm === option.value }"
-          @click="setRadius(option.value)"
-        >
-          {{ option.label }}
         </button>
       </div>
 
@@ -120,99 +90,58 @@
       <div class="left-panel">
 
         <!-- ── Directions Panel ── -->
-        <div
-          v-show="showingDirections"
-          style="display:flex; flex-direction:column; flex:1; min-height:0; overflow:hidden;"
-        >
-          <div style="padding:14px 16px 0; flex-shrink:0; max-height:45%; overflow-y:auto;">
-            <button
-              @click="clearDirections"
-              style="display:inline-flex; align-items:center; gap:6px; background:none; border:none; cursor:pointer; font-size:14px; font-weight:600; color:#0298C5; font-family:Inter,sans-serif; padding:0; margin-bottom:12px;"
-            >
+        <div v-show="showingDirections" style="display:flex; flex-direction:column; flex:1; min-height:0; overflow:hidden;">
+          <div style="padding:14px 16px 0; flex-shrink:0;">
+            <button @click="clearDirections"
+              style="display:inline-flex; align-items:center; gap:6px; background:none; border:none; cursor:pointer; font-size:14px; font-weight:600; color:#0298C5; font-family:Inter,sans-serif; padding:0; margin-bottom:12px;">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                 <path d="M19 12H5M12 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
-              Back to Food Banks Search Results
+              Back to results
             </button>
 
-            <!-- Starting location box -->
-            <div style="background:white; border:1px solid #D8EDFF; border-radius:12px; padding:14px; margin-bottom:14px;">
-              <p style="font-size:12px; font-weight:700; color:#555; margin-bottom:8px;">
-                Start directions by
-              </p>
-
-              <button
-                @click="locateMeForDirections"
-                type="button"
-                style="background:#181e4b; color:white; border:none; border-radius:10px; padding:10px 14px; font-size:13px; font-weight:600; cursor:pointer; margin-bottom:10px; display:flex; align-items:center; gap:8px;"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                  <circle cx="12" cy="12" r="3" stroke="white" stroke-width="2"/>
-                  <path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="white" stroke-width="2" stroke-linecap="round"/>
+            <!-- Drive / Transit mode toggle -->
+            <div style="display:flex; gap:8px; margin-bottom:12px;">
+              <button @click="setRouteMode('drive')"
+                :style="routeMode === 'drive'
+                  ? 'background:#181e4b; color:white; border:none;'
+                  : 'background:white; color:#181e4b; border:1.5px solid #181e4b;'"
+                style="flex:1; border-radius:8px; padding:9px 8px; font-size:13px; font-weight:600; cursor:pointer; font-family:Inter,sans-serif; display:flex; align-items:center; justify-content:center; gap:6px;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+                  <path d="M5 17H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h13l4 4v6a2 2 0 0 1-2 2h-2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <circle cx="7.5" cy="17.5" r="2.5" stroke="currentColor" stroke-width="2"/>
+                  <circle cx="17.5" cy="17.5" r="2.5" stroke="currentColor" stroke-width="2"/>
                 </svg>
-                Using my current location
+                Drive
               </button>
-              
-              <p style="font-size:12px; font-weight:700; color:#555; margin-bottom:8px;">
-                Or enter manual starting location
-              </p>
-              
-              <div
-                style="
-                  position:relative;
-                  display:flex;
-                  align-items:center;
-                  gap:10px;
-                  border:1.5px solid #b8d9f8;
-                  border-radius:10px;
-                  padding:0 14px;
-                  background:white;
-                "
-              >
-                <svg width="18" height="18" fill="none" viewBox="0 0 24 24" style="flex-shrink:0;">
-                  <circle cx="11" cy="11" r="8" stroke="#9ca3af" stroke-width="2"/>
-                  <path d="m21 21-4.35-4.35" stroke="#9ca3af" stroke-width="2" stroke-linecap="round"/>
+              <button @click="setRouteMode('transit')"
+                :style="routeMode === 'transit'
+                  ? 'background:#181e4b; color:white; border:none;'
+                  : 'background:white; color:#181e4b; border:1.5px solid #181e4b;'"
+                style="flex:1; border-radius:8px; padding:9px 8px; font-size:13px; font-weight:600; cursor:pointer; font-family:Inter,sans-serif; display:flex; align-items:center; justify-content:center; gap:6px;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+                  <rect x="3" y="2" width="18" height="14" rx="3" stroke="currentColor" stroke-width="2"/>
+                  <path d="M7 16v3M17 16v3M3 9h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <circle cx="7.5" cy="12.5" r="1" fill="currentColor"/>
+                  <circle cx="16.5" cy="12.5" r="1" fill="currentColor"/>
                 </svg>
-
-                <input
-                  v-model="startLocationText"
-                  type="text"
-                  placeholder="Enter street, address, or suburb"
-                  style="width:100%; border:none; outline:none; font-size:14px; height:44px; background:transparent;"
-                  @input="updateStartAddressSuggestions"
-                />
-
-                <div
-                  v-if="startAddressSuggestions.length"
-                  style="position:absolute; top:100%; left:0; right:0; background:white; border:1px solid #d8edff; border-radius:10px; margin-top:6px; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,0.08); z-index:1300;"
-                >
-                  <button
-                    v-for="place in startAddressSuggestions"
-                    :key="place.place_id"
-                    type="button"
-                    @click="selectStartAddress(place)"
-                    style="
-                      width:100%;
-                      padding:10px 12px;
-                      border:none;
-                      background:white;
-                      text-align:left;
-                      cursor:pointer;
-                      font-size:12px;
-                      line-height:1.35;
-                      transition:background 0.15s ease;
-                    "
-                    onmouseover="this.style.background='#DBEDFF'"
-                    onmouseout="this.style.background='white'"
-                  >
-                    {{ place.display_name }}
-                  </button>
-                </div>
-              </div>
+                Transit
+              </button>
+              <button @click="setRouteMode('walk')"
+                :style="routeMode === 'walk'
+                  ? 'background:#181e4b; color:white; border:none;'
+                  : 'background:white; color:#181e4b; border:1.5px solid #181e4b;'"
+                style="flex:1; border-radius:8px; padding:9px 8px; font-size:13px; font-weight:600; cursor:pointer; font-family:Inter,sans-serif; display:flex; align-items:center; justify-content:center; gap:6px;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+                  <circle cx="13" cy="4" r="2" fill="currentColor"/>
+                  <path d="M13 6L11 13M12 8L9 10M12 8L15 9M11 13L14 20M11 13L8 20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Walk
+              </button>
             </div>
 
-            <!-- Route summary -->
-            <div v-if="directionsInfo" style="background:white; border:1px solid #D8EDFF; border-radius:12px; padding:16px; margin-bottom:14px;">
+            <!-- Drive: route summary -->
+            <div v-if="routeMode === 'drive' && directionsInfo" style="background:white; border:1px solid #D8EDFF; border-radius:12px; padding:16px; margin-bottom:14px;">
               <p style="font-size:11px; font-weight:700; color:#888; text-transform:uppercase; letter-spacing:0.8px; margin-bottom:6px;">Directions to</p>
               <p style="font-size:15px; font-weight:700; color:#1a1a1a; margin-bottom:14px; line-height:1.3;">{{ directionsInfo.service }}</p>
               <div style="display:flex; gap:20px;">
@@ -237,40 +166,194 @@
                   </div>
                   <div>
                     <p style="font-size:17px; font-weight:800; color:#0298C5; margin:0; line-height:1;">{{ directionsInfo.duration }}</p>
-                    <p style="font-size:11px; color:#888; margin:0;">by public transport</p>
+                    <p style="font-size:11px; color:#888; margin:0;">by car</p>
                   </div>
                 </div>
               </div>
             </div>
+
+            <!-- Transit: route summary -->
+            <div v-if="routeMode === 'transit' && transitInfo" style="background:white; border:1px solid #D8EDFF; border-radius:12px; padding:16px; margin-bottom:14px;">
+              <p style="font-size:11px; font-weight:700; color:#888; text-transform:uppercase; letter-spacing:0.8px; margin-bottom:6px;">Public transport to</p>
+              <p style="font-size:15px; font-weight:700; color:#1a1a1a; margin-bottom:14px; line-height:1.3;">{{ transitInfo.service }}</p>
+              <div style="display:flex; gap:20px;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <div style="width:32px; height:32px; background:#D8EDFF; border-radius:8px; display:flex; align-items:center; justify-content:center;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                      <circle cx="12" cy="12" r="10" stroke="#0298C5" stroke-width="2"/>
+                      <path d="M12 7v5l3 3" stroke="#0298C5" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <p style="font-size:17px; font-weight:800; color:#0298C5; margin:0; line-height:1;">{{ transitInfo.duration }}</p>
+                    <p style="font-size:11px; color:#888; margin:0;">by public transport</p>
+                  </div>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <div style="width:32px; height:32px; background:#D8EDFF; border-radius:8px; display:flex; align-items:center; justify-content:center;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                      <path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z" stroke="#0298C5" stroke-width="2"/>
+                      <circle cx="12" cy="10" r="3" stroke="#0298C5" stroke-width="2"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <p style="font-size:17px; font-weight:800; color:#0298C5; margin:0; line-height:1;">{{ transitInfo.distance }}</p>
+                    <p style="font-size:11px; color:#888; margin:0;">distance</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Walk: route summary -->
+            <div v-if="routeMode === 'walk' && walkInfo" style="background:white; border:1px solid #e8f0eb; border-radius:12px; padding:16px; margin-bottom:14px;">
+              <p style="font-size:11px; font-weight:700; color:#888; text-transform:uppercase; letter-spacing:0.8px; margin-bottom:6px;">Walking route to</p>
+              <p style="font-size:15px; font-weight:700; color:#1a1a1a; margin-bottom:14px; line-height:1.3;">{{ walkInfo.service }}</p>
+              <div style="display:flex; gap:20px;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <div style="width:32px; height:32px; background:#eaf3ec; border-radius:8px; display:flex; align-items:center; justify-content:center;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                      <circle cx="12" cy="12" r="10" stroke="#2e7d32" stroke-width="2"/>
+                      <path d="M12 7v5l3 3" stroke="#2e7d32" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <p style="font-size:17px; font-weight:800; color:#2e7d32; margin:0; line-height:1;">{{ walkInfo.duration }}</p>
+                    <p style="font-size:11px; color:#888; margin:0;">on foot</p>
+                  </div>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <div style="width:32px; height:32px; background:#eaf3ec; border-radius:8px; display:flex; align-items:center; justify-content:center;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                      <path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z" stroke="#2e7d32" stroke-width="2"/>
+                      <circle cx="12" cy="10" r="3" stroke="#2e7d32" stroke-width="2"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <p style="font-size:17px; font-weight:800; color:#2e7d32; margin:0; line-height:1;">{{ walkInfo.distance }}</p>
+                    <p style="font-size:11px; color:#888; margin:0;">distance</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <p style="font-size:11px; font-weight:700; color:#aaa; text-transform:uppercase; letter-spacing:0.8px; margin-bottom:8px;">Step-by-step</p>
           </div>
 
-          <!-- Step list (rendered from OSRM) -->
-          <div
-            style="
-              flex:1;
-              min-height:0;
-              overflow-y:auto;
-              padding:0 16px 24px;
-            "
-          >
+          <!-- Step list -->
+          <div class="cards-scroll" style="padding:0 16px 24px;">
             <div v-if="directionsLoading" style="padding:20px 0; text-align:center; color:#aaa; font-size:14px;">
               Calculating route…
             </div>
             <div v-else>
-              <div v-for="(step, i) in directionsSteps" :key="i"
-                style="display:flex; align-items:flex-start; gap:10px; padding:10px 0; border-bottom:1px solid #e8f0fb;">
-                <!-- Maneuver icon -->
-                <div style="width:28px; height:28px; background:#D8EDFF; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:1px;">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                    <path :d="step.iconPath" stroke="#0298C5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <!-- Drive steps -->
+              <template v-if="routeMode === 'drive'">
+                <div v-for="(step, i) in directionsSteps" :key="i"
+                  style="display:flex; align-items:flex-start; gap:10px; padding:10px 0; border-bottom:1px solid #e8f0fb;">
+                  <div style="width:28px; height:28px; background:#D8EDFF; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:1px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                      <path :d="step.iconPath" stroke="#0298C5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </div>
+                  <div style="flex:1;">
+                    <p style="font-size:13px; color:#333; margin:0 0 2px; line-height:1.4;">{{ step.instruction }}</p>
+                    <p style="font-size:12px; color:#aaa; margin:0;">{{ step.distance }}</p>
+                  </div>
+                </div>
+              </template>
+
+              <!-- Transit steps -->
+              <template v-if="routeMode === 'transit'">
+                <div v-if="transitLegs.length === 0 && !directionsLoading"
+                  style="padding:20px 0; text-align:center; color:#aaa; font-size:14px;">
+                  No public transport route found.
+                </div>
+                <div v-for="(leg, i) in transitLegs" :key="i"
+                  style="display:flex; align-items:flex-start; gap:10px; padding:12px 0; border-bottom:1px solid #e8f0fb;">
+                  <!-- Mode icon -->
+                  <div :style="`width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:1px; background:${transitLegBg(leg.mode)};`">
+                    <svg v-if="leg.mode === 'walk'" width="15" height="15" viewBox="0 0 24 24" fill="none">
+                      <path d="M13 4a1 1 0 1 0 2 0 1 1 0 0 0-2 0M6 20l4-8 2 3 2-2 4 7" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <svg v-else-if="leg.mode === 'train'" width="15" height="15" viewBox="0 0 24 24" fill="none">
+                      <rect x="3" y="2" width="18" height="14" rx="3" stroke="#0298C5" stroke-width="2"/>
+                      <path d="M3 9h18M7 16v3M17 16v3" stroke="#0298C5" stroke-width="2" stroke-linecap="round"/>
+                      <circle cx="7.5" cy="12.5" r="1" fill="#0298C5"/>
+                      <circle cx="16.5" cy="12.5" r="1" fill="#0298C5"/>
+                    </svg>
+                    <svg v-else-if="leg.mode === 'tram'" width="15" height="15" viewBox="0 0 24 24" fill="none">
+                      <path d="M8 2h8M12 2v2" stroke="#2e7d32" stroke-width="2" stroke-linecap="round"/>
+                      <rect x="4" y="4" width="16" height="13" rx="2" stroke="#2e7d32" stroke-width="2"/>
+                      <path d="M4 11h16M8 17v3M16 17v3" stroke="#2e7d32" stroke-width="2" stroke-linecap="round"/>
+                      <circle cx="8.5" cy="14.5" r="1" fill="#2e7d32"/>
+                      <circle cx="15.5" cy="14.5" r="1" fill="#2e7d32"/>
+                    </svg>
+                    <svg v-else width="15" height="15" viewBox="0 0 24 24" fill="none">
+                      <path d="M2 17h2m16 0h2M1 11l2-6h18l2 6v4a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1v-4z" stroke="#e65100" stroke-width="2" stroke-linecap="round"/>
+                      <circle cx="6" cy="17" r="2" stroke="#e65100" stroke-width="2"/>
+                      <circle cx="18" cy="17" r="2" stroke="#e65100" stroke-width="2"/>
+                    </svg>
+                  </div>
+
+                  <!-- Leg details -->
+                  <div style="flex:1;">
+                    <template v-if="leg.mode === 'walk'">
+                      <p style="font-size:11px; font-weight:700; color:#4a5568; text-transform:uppercase; letter-spacing:0.7px; margin:0 0 3px;">Walk</p>
+                      <p style="font-size:13px; color:#333; margin:0 0 3px; line-height:1.4;">{{ leg.instructions }}</p>
+                      <p style="font-size:12px; color:#555; margin:0; font-weight:500;">{{ leg.distance }} · {{ leg.duration }}</p>
+                    </template>
+                    <template v-else>
+                      <p v-if="leg.route_name" style="font-size:13px; font-weight:600; margin:0 0 3px; line-height:1.3;"
+                        :style="`color:${transitLegColor(leg.mode)}`">
+                        {{ leg.route_name }}
+                      </p>
+                      <p v-if="leg.from_name || leg.to_name" style="font-size:12px; color:#333; margin:0 0 2px; line-height:1.4;">
+                        <span v-if="leg.from_name" style="color:#555; font-weight:500;">{{ leg.from_name }}</span>
+                        <span v-if="leg.from_name && leg.to_name" style="color:#aaa;"> → </span>
+                        <span v-if="leg.to_name" style="color:#555; font-weight:500;">{{ leg.to_name }}</span>
+                      </p>
+                      <p style="font-size:12px; color:#888; margin:0;">
+                        <span v-if="leg.depart">Depart {{ leg.depart }} · </span>
+                        <span v-if="leg.num_stops != null">{{ leg.num_stops }} stop{{ leg.num_stops !== 1 ? 's' : '' }} · </span>
+                        <span v-if="leg.duration">{{ leg.duration }}</span>
+                        <span v-if="leg.instructions && !leg.from_name">{{ leg.instructions }}</span>
+                      </p>
+                    </template>
+                  </div>
+                </div>
+
+                <!-- Live vehicles notice -->
+                <div v-if="transitLegs.length > 0" style="margin-top:12px; padding:10px 12px; background:#f0f8ff; border-radius:8px; border:1px solid #D8EDFF; display:flex; align-items:center; gap:8px;">
+                  <span style="width:8px; height:8px; border-radius:50%; background:#0298C5; flex-shrink:0; animation:pulse 1.5s infinite;"></span>
+                  <p style="font-size:12px; color:#555; margin:0; line-height:1.4;">Live vehicle positions updating every 30 seconds</p>
+                </div>
+              </template>
+
+              <!-- Walk steps -->
+              <template v-if="routeMode === 'walk'">
+                <div v-if="walkLegs.length === 0 && !directionsLoading"
+                  style="padding:20px 0; text-align:center; color:#aaa; font-size:14px;">
+                  No walking route found.
+                </div>
+                <div v-for="(step, i) in walkLegs" :key="i"
+                  style="display:flex; align-items:flex-start; gap:10px; padding:12px 0; border-bottom:1px solid #e8f0fb;">
+                  <div style="width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:1px; background:#eaf3ec;">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+                      <path :d="step.iconPath" stroke="#2e7d32" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </div>
+                  <div style="flex:1;">
+                    <p style="font-size:13px; color:#333; margin:0 0 3px; line-height:1.4;">{{ step.instruction }}</p>
+                    <p style="font-size:12px; color:#555; margin:0; font-weight:500;">{{ step.distance }}</p>
+                  </div>
+                </div>
+                <div v-if="walkLegs.length > 0" style="margin-top:12px; padding:10px 12px; background:#f1f8f2; border-radius:8px; border:1px solid #c8e6c9; display:flex; align-items:center; gap:8px;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
+                    <path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z" stroke="#2e7d32" stroke-width="2"/>
+                    <circle cx="12" cy="10" r="3" stroke="#2e7d32" stroke-width="2"/>
                   </svg>
+                  <p style="font-size:12px; color:#2e7d32; margin:0; line-height:1.4; font-weight:500;">Safe walking route via Google Maps</p>
                 </div>
-                <div style="flex:1;">
-                  <p style="font-size:13px; color:#333; margin:0 0 2px; line-height:1.4;">{{ step.instruction }}</p>
-                  <p style="font-size:12px; color:#aaa; margin:0;">{{ step.distance }}</p>
-                </div>
-              </div>
+              </template>
             </div>
           </div>
         </div>
@@ -279,53 +362,11 @@
         <div v-show="!showingDirections" class="cards-scroll">
 
           <!-- Result count -->
-          <div
-            v-if="!loading"
-            style="margin-bottom:14px; padding:0 2px;"
-          >
-            <p
-              style="font-size:13px; color:#888; margin:0 0 4px;"
-            >
-              <strong style="color:#555;">
-                {{ filteredServices.length }}
-              </strong>
-
-              {{
-                filteredServices.length === 1
-                  ? 'service'
-                  : 'services'
-              }}
-
-              found
-
-              <span v-if="locationLabel">
-                near
-                <strong style="color:#555;">
-                  {{ locationLabel }}
-                </strong>
-              </span>
-
-              <span v-else>
-                across Victoria
-              </span>
-            </p>
-
-            <p
-              v-if="userAddress"
-              style="
-                font-size:12px;
-                color:#666;
-                line-height:1.45;
-                margin:0;
-              "
-            >
-              <strong style="color:#555;">
-                Location:
-              </strong>
-
-              {{ userAddress }}
-            </p>
-          </div>
+          <p v-if="!loading" style="font-size:13px; color:#888; margin-bottom:12px; padding:0 2px;">
+            <strong style="color:#555;">{{ filteredServices.length }}</strong> {{ filteredServices.length === 1 ? 'service' : 'services' }} found
+            <span v-if="locationLabel"> · near <strong style="color:#555;">{{ locationLabel }}</strong></span>
+            <span v-else> across Victoria</span>
+          </p>
 
           <!-- Loading skeletons -->
           <div v-if="loading">
@@ -346,105 +387,126 @@
           <!-- Service Cards -->
           <div v-else>
             <div v-for="service in visibleServices" :key="service.id"
-              style="background:white; border-radius:12px; padding:18px; margin-bottom:12px; cursor:pointer; transition:box-shadow 0.2s, border-color 0.2s;"
+              style="background:white; border-radius:12px; margin-bottom:10px; overflow:hidden; transition:box-shadow 0.2s, border-color 0.2s;"
               :style="{
                 border: selectedService?.id === service.id ? '2px solid #0298C5' : '1px solid #e0edf8',
                 boxShadow: selectedService?.id === service.id ? '0 2px 14px rgba(2,152,197,0.13)' : '0 1px 3px rgba(0,0,0,0.04)',
-              }"
-              @click="selectService(service)">
+              }">
 
-              <!-- Status badge -->
-              <div style="margin-bottom:10px;">
-                <span v-if="getStatusLabel(service)" :style="getStatusBadgeStyle(service)">
-                  {{ getStatusLabel(service) }}
-                </span>
-              </div>
-
-              <!-- Name -->
-              <h3 style="font-size:16px; font-weight:700; color:#1a1a1a; line-height:1.3; margin:0 0 10px;">{{ service.name }}</h3>
-
-              <!-- Description -->
-              <p v-if="service.description || service.target_audience"
-                style="font-size:13px; color:#555; line-height:1.6; margin-bottom:12px; overflow:hidden; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical;">
-                {{ service.description || service.target_audience }}
-              </p>
-
-              <!-- Info list -->
-              <div style="display:flex; flex-direction:column; gap:7px; margin-bottom:14px;">
-                <!-- Target audience (only when description is also present, to avoid repetition) -->
-                <div v-if="service.target_audience && service.description" style="display:flex; align-items:center; gap:8px; font-size:13px; color:#525252;">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="#0298C5" stroke-width="2" stroke-linecap="round"/>
-                    <circle cx="12" cy="7" r="4" stroke="#0298C5" stroke-width="2"/>
+              <!-- Collapsed row (always visible) -->
+              <div style="padding:14px 16px; cursor:pointer;"
+                @click="expandedServiceId = expandedServiceId === service.id ? null : service.id; selectService(service)">
+                <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:8px;">
+                  <div style="flex:1; min-width:0;">
+                    <!-- Status + Name -->
+                    <div style="display:flex; align-items:center; gap:6px; margin-bottom:5px; flex-wrap:wrap;">
+                      <span v-if="getStatusLabel(service)" :style="getStatusBadgeStyle(service)" style="flex-shrink:0;">
+                        {{ getStatusLabel(service) }}
+                      </span>
+                    </div>
+                    <h3 style="font-size:15px; font-weight:700; color:#1a1a1a; line-height:1.3; margin:0 0 7px;">{{ service.name }}</h3>
+                    <!-- Address -->
+                    <div v-if="hasValue(service.address)" style="display:flex; align-items:flex-start; gap:7px; font-size:12px; color:#555; margin-bottom:4px;">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" style="flex-shrink:0; margin-top:1px;">
+                        <path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z" stroke="#0298C5" stroke-width="2"/>
+                        <circle cx="12" cy="10" r="3" stroke="#0298C5" stroke-width="2"/>
+                      </svg>
+                      <span>{{ service.address }}</span>
+                    </div>
+                    <!-- Phone or website -->
+                    <div v-if="hasValue(service.primary_phone)" style="display:flex; align-items:center; gap:7px; font-size:12px; color:#555;">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.99 12 19.79 19.79 0 0 1 1.92 3.4 2 2 0 0 1 3.9 1.22h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9a16 16 0 0 0 6.29 6.29l1.06-1.06a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" stroke="#0298C5" stroke-width="2" stroke-linecap="round"/>
+                      </svg>
+                      <span>{{ service.primary_phone }}</span>
+                    </div>
+                    <div v-else-if="hasValue(service.website)" style="display:flex; align-items:center; gap:7px; font-size:12px;">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
+                        <circle cx="12" cy="12" r="10" stroke="#0298C5" stroke-width="2"/>
+                        <line x1="2" y1="12" x2="22" y2="12" stroke="#0298C5" stroke-width="2"/>
+                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" stroke="#0298C5" stroke-width="2"/>
+                      </svg>
+                      <a :href="service.website" target="_blank" rel="noopener"
+                        style="color:#0298C5; text-decoration:none; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:180px;"
+                        @click.stop>{{ service.website.replace(/^https?:\/\//, '') }}</a>
+                    </div>
+                  </div>
+                  <!-- Chevron -->
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="flex-shrink:0; margin-top:2px; transition:transform 0.2s;"
+                    :style="expandedServiceId === service.id ? 'transform:rotate(180deg)' : ''">
+                    <path d="M6 9l6 6 6-6" stroke="#aaa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                   </svg>
-                  {{ service.target_audience }}
-                </div>
-                <!-- Address -->
-                <div v-if="service.address" style="display:flex; align-items:flex-start; gap:8px; font-size:13px; color:#525252;">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="flex-shrink:0; margin-top:1px;">
-                    <path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z" stroke="#0298C5" stroke-width="2"/>
-                    <circle cx="12" cy="10" r="3" stroke="#0298C5" stroke-width="2"/>
-                  </svg>
-                  {{ service.address }}
-                </div>
-                <!-- Phone -->
-                <div v-if="service.primary_phone" style="display:flex; align-items:center; gap:8px; font-size:13px; color:#525252;">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
-                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.99 12 19.79 19.79 0 0 1 1.92 3.4 2 2 0 0 1 3.9 1.22h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9a16 16 0 0 0 6.29 6.29l1.06-1.06a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" stroke="#0298C5" stroke-width="2" stroke-linecap="round"/>
-                  </svg>
-                  {{ service.primary_phone }}
-                </div>
-                <!-- Website -->
-                <div v-if="service.website" style="display:flex; align-items:center; gap:8px; font-size:13px; color:#525252;">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
-                    <circle cx="12" cy="12" r="10" stroke="#0298C5" stroke-width="2"/>
-                    <line x1="2" y1="12" x2="22" y2="12" stroke="#0298C5" stroke-width="2"/>
-                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" stroke="#0298C5" stroke-width="2"/>
-                  </svg>
-                  <a :href="service.website" target="_blank" rel="noopener"
-                    style="color:#0298C5; text-decoration:none; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:220px;"
-                    @click.stop>{{ service.website.replace(/^https?:\/\//, '') }}</a>
-                </div>
-                <!-- Hours -->
-                <div v-if="getHoursDisplay(service)" style="display:flex; align-items:center; gap:8px; font-size:13px; color:#525252;">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
-                    <circle cx="12" cy="12" r="10" stroke="#0298C5" stroke-width="2"/>
-                    <path d="M12 7v5l3 3" stroke="#0298C5" stroke-width="2" stroke-linecap="round"/>
-                  </svg>
-                  Open: {{ getHoursDisplay(service) }}
-                </div>
-                <!-- Nearest station -->
-                <div v-if="service.nearest_train_station" style="display:flex; align-items:center; gap:8px; font-size:13px; color:#525252;">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
-                    <rect x="6" y="2" width="12" height="15" rx="2" stroke="#0298C5" stroke-width="2"/>
-                    <path d="M6 9h12M9 19l-2 3M15 19l2 3" stroke="#0298C5" stroke-width="2" stroke-linecap="round"/>
-                    <circle cx="9" cy="14" r="1" fill="#0298C5"/>
-                    <circle cx="15" cy="14" r="1" fill="#0298C5"/>
-                  </svg>
-                  {{ service.nearest_train_station }}
                 </div>
               </div>
 
-              <!-- Get Directions button -->
-              <button
-                @click.stop="getDirections(service)"
-                style="width:100%; display:flex; align-items:center; justify-content:center; gap:8px; padding:12px; border-radius:10px; font-size:14px; font-weight:600; cursor:pointer; font-family:Inter,sans-serif; border:none; transition:opacity 0.15s; background:#0298C5; color:white;"
-                title="Choose a starting location"
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                  <path d="M3 11l19-9-9 19-2-8-8-2z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
-                </svg>
-                Get Directions
+              <!-- Expanded detail panel -->
+              <div v-if="expandedServiceId === service.id"
+                style="padding:0 16px 14px; border-top:1px solid #f0f4fb;">
+                <div style="display:flex; flex-direction:column; gap:7px; margin-top:12px; margin-bottom:14px;">
+                  <!-- Description / target audience -->
+                  <p v-if="hasValue(service.description) || hasValue(service.target_audience)"
+                    style="font-size:13px; color:#555; line-height:1.6; margin:0 0 4px;">
+                    {{ hasValue(service.description) ? service.description : service.target_audience }}
+                  </p>
+                  <div v-if="hasValue(service.target_audience) && hasValue(service.description)" style="display:flex; align-items:center; gap:8px; font-size:13px; color:#525252;">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="#0298C5" stroke-width="2" stroke-linecap="round"/>
+                      <circle cx="12" cy="7" r="4" stroke="#0298C5" stroke-width="2"/>
+                    </svg>
+                    {{ service.target_audience }}
+                  </div>
+                  <!-- Phone (if not shown above, show here) -->
+                  <div v-if="hasValue(service.primary_phone) && hasValue(service.website)" style="display:flex; align-items:center; gap:8px; font-size:13px; color:#525252;">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
+                      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.99 12 19.79 19.79 0 0 1 1.92 3.4 2 2 0 0 1 3.9 1.22h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9a16 16 0 0 0 6.29 6.29l1.06-1.06a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" stroke="#0298C5" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    {{ service.primary_phone }}
+                  </div>
+                  <!-- Website (if not shown above) -->
+                  <div v-if="hasValue(service.website) && hasValue(service.primary_phone)" style="display:flex; align-items:center; gap:8px; font-size:13px;">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
+                      <circle cx="12" cy="12" r="10" stroke="#0298C5" stroke-width="2"/>
+                      <line x1="2" y1="12" x2="22" y2="12" stroke="#0298C5" stroke-width="2"/>
+                      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" stroke="#0298C5" stroke-width="2"/>
+                    </svg>
+                    <a :href="service.website" target="_blank" rel="noopener"
+                      style="color:#0298C5; text-decoration:none; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:200px;"
+                      @click.stop>{{ service.website.replace(/^https?:\/\//, '') }}</a>
+                  </div>
+                  <!-- Hours -->
+                  <div v-if="getHoursDisplay(service)" style="display:flex; align-items:center; gap:8px; font-size:13px; color:#525252;">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
+                      <circle cx="12" cy="12" r="10" stroke="#0298C5" stroke-width="2"/>
+                      <path d="M12 7v5l3 3" stroke="#0298C5" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    Open: {{ getHoursDisplay(service) }}
+                  </div>
+                </div>
+
+                <!-- Get Directions button -->
+                <button @click.stop="getDirections(service)" :disabled="!userLocation"
+                  style="width:100%; display:flex; align-items:center; justify-content:center; gap:8px; padding:11px; border-radius:10px; font-size:14px; font-weight:600; cursor:pointer; font-family:Inter,sans-serif; border:none; transition:opacity 0.15s;"
+                  :style="userLocation
+                    ? 'background:#0298C5; color:white;'
+                    : 'background:#e8f0fb; color:#aaa; cursor:not-allowed;'"
+                  :title="userLocation ? 'Show route on map' : 'Enter your location first'">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                    <path d="M3 11l19-9-9 19-2-8-8-2z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+                  </svg>
+                  Get Directions
+                </button>
+              </div>
+            </div>
+
+            <!-- Show more -->
+            <div v-if="visibleCount < filteredServices.length"
+              style="text-align:center; padding:4px 0 8px;">
+              <button @click="visibleCount += 10"
+                style="background:white; border:1.5px solid #0298C5; color:#0298C5; border-radius:10px; padding:10px 28px; font-size:13px; font-weight:600; cursor:pointer; font-family:Inter,sans-serif; width:100%;">
+                Show more ({{ filteredServices.length - visibleCount }} remaining)
               </button>
             </div>
           </div>
-          <button
-            v-if="visibleCount < filteredServices.length"
-            @click="visibleCount += 5"
-            style="width:100%; padding:12px; border-radius:10px; border:none; background:#181e4b; color:white; font-weight:600; cursor:pointer;"
-          >
-            Show More
-          </button>
         </div>
       </div>
 
@@ -466,7 +528,7 @@
           </div>
           <div style="border-left:1px solid #e8f0fb; padding-left:14px;">
             <p style="font-size:15px; font-weight:700; color:#0298C5; margin:0;">{{ directionsInfo.distance }}</p>
-            <p style="font-size:12px; color:#888; margin:0;">{{ directionsInfo.duration }} transit</p>
+            <p style="font-size:12px; color:#888; margin:0;">{{ directionsInfo.duration }} drive</p>
           </div>
           <button @click="clearDirections"
             style="width:30px; height:30px; border-radius:50%; border:1.5px solid #ddd; background:white; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#666;">
@@ -483,7 +545,6 @@
 
 <script setup>
 import TopNavigation from '../components/TopNavigation.vue'
-import polyline from '@mapbox/polyline'
 
 definePageMeta({ ssr: false })
 
@@ -553,63 +614,56 @@ const loading = ref(false)
 const locating = ref(false)
 const services = ref([])
 const selectedService = ref(null)
+const expandedServiceId = ref(null)
+const visibleCount = ref(10)
 const userLocation = ref(null)
 const locationLabel = ref('')
-const userAddress = ref('')
 const mainHeight = ref('600px')
 const directionsInfo = ref(null)
 const directionsSteps = ref([])
 const directionsLoading = ref(false)
 const showingDirections = ref(false)
-const visibleCount = ref(5)
-const radiusKm = ref(null)
-const searchAreaText = ref('')
-const searchSuggestions = ref([])
-const selectedSearchArea = ref(null)
-const startLocationText = ref('')
-const startAddressSuggestions = ref([])
-const selectedStartLocation = ref(null)
-const useCurrentLocationAsStart = ref(true)
+
+// Transit routing state
+const routeMode = ref('drive')
+const transitLegs = ref([])
+const transitInfo = ref(null)
+const walkLegs = ref([])
+const walkInfo = ref(null)
+
+// Address autocomplete state
+const addressSuggestions = ref([])
+const showSuggestions = ref(false)
+let acTimer = null
 
 let mapInstance = null
 let markersMap = {}
 let userMarker = null
-let routeLayer = null
 let destinationMarker = null
-let transitMarkers = []
-let routeLayers = []
+let routeLayer = null
+let transitRouteLayers = []
+let vehicleMarkers = {}
+let vehiclePollTimer = null
+let highlightedTripIds = new Set()
+
+// Google Maps service handles
+let autocompleteService = null
+let placesService = null
+let directionsService = null
 
 const config = useRuntimeConfig()
 const API_BASE = config.public.apiBase
 
 // ── Computed ───────────────────────────────────────────────────────────────
-const radiusOptions = [
-  { label: 'Within 500m', value: 0.5 },
-  { label: 'Within 1km', value: 1 },
-  { label: 'Within 2km', value: 2 },
-  { label: 'Show All', value: null },
-]
-
-const visibleServices = computed(() => {
-  return filteredServices.value.slice(0, visibleCount.value)
-})
-
 const filteredServices = computed(() => {
   let result = services.value
-
   if (activeFilter.value === 'food') result = result.filter(isFood)
   else if (activeFilter.value === 'housing') result = result.filter(isHousing)
-
   if (openNowFilter.value) result = result.filter(s => s.is_open_now === true)
-
-  if (userLocation.value && radiusKm.value !== null) {
-    result = result.filter(s =>
-      s.distance_km == null ? false : s.distance_km <= radiusKm.value
-    )
-  }
-
   return result
 })
+
+const visibleServices = computed(() => filteredServices.value.slice(0, visibleCount.value))
 
 // ── Category helpers ───────────────────────────────────────────────────────
 function isFood(s) {
@@ -671,38 +725,6 @@ async function fetchAllServices() {
   }
 }
 
-async function updateSearchSuggestions() {
-  if (searchAreaText.value.trim().length < 2) {
-    searchSuggestions.value = []
-    return
-  }
-
-  searchSuggestions.value = await $fetch(
-    `${config.public.apiBase}/services/search-locations?q=${encodeURIComponent(searchAreaText.value)}`
-  )
-}
-
-
-async function updateStartAddressSuggestions() {
-  const q = startLocationText.value.trim()
-
-  if (q.length < 3) {
-    startAddressSuggestions.value = []
-    return
-  }
-
-  try {
-    const data = await $fetch(
-      `${API_BASE}/search-address?q=${encodeURIComponent(q)}`
-    )
-
-    startAddressSuggestions.value = data
-  } catch (err) {
-    console.error('Failed to fetch start address suggestions:', err)
-    startAddressSuggestions.value = []
-  }
-}
-
 // ── Distance ───────────────────────────────────────────────────────────────
 function haversine(lat1, lon1, lat2, lon2) {
   const R = 6371
@@ -723,276 +745,86 @@ function sortByDistance(lat, lon) {
 }
 
 // ── Geolocation ────────────────────────────────────────────────────────────
-async function getAddressFromCoords(lat, lon) {
-  try {
-    const url =
-      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&addressdetails=1`
-
-    const res = await fetch(url, {
-      headers: {
-        'User-Agent': 'ChereBowl/1.0 (Monash University Project)',
-      },
-    })
-
-    const data = await res.json()
-
-    return (
-      data.display_name ||
-      `${lat.toFixed(5)}, ${lon.toFixed(5)}`
-    )
-  } catch {
-    return `${lat.toFixed(5)}, ${lon.toFixed(5)}`
-  }
-}
-
 function locateMe() {
-  if (!navigator.geolocation) {
-    alert('Geolocation not supported.')
-    return
-  }
-
+  if (!navigator.geolocation) { alert('Geolocation not supported.'); return }
   locating.value = true
-
   navigator.geolocation.getCurrentPosition(
-    async ({ coords: { latitude: lat, longitude: lon } }) => {
+    ({ coords: { latitude: lat, longitude: lon } }) => {
       locating.value = false
-
       userLocation.value = { lat, lon }
-
       locationLabel.value = 'your location'
-      radiusKm.value = 0.5
-
-      userAddress.value = await getAddressFromCoords(
-        lat,
-        lon
-      )
-
       mapInstance?.setView([lat, lon], 13)
-
       placeUserMarker(lat, lon)
-
       sortByDistance(lat, lon)
-
-      visibleCount.value = 5
-
       updateMapMarkers()
     },
-    () => {
-      locating.value = false
-    },
-    {
-      timeout: 10000,
-    }
+    () => { locating.value = false },
+    { timeout: 10000 }
   )
 }
 
 // ── Geocoding via Nominatim (free, no key) ─────────────────────────────────
 async function searchByAddress() {
   const q = searchQuery.value.trim()
-
   if (!q) return
-
   clearDirections()
-
   loading.value = true
-
   try {
-    const url =
-      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
-        q + ', Victoria, Australia'
-      )}&format=json&limit=1&countrycodes=au`
-
-    const res = await fetch(url, {
-      headers: {
-        'User-Agent':
-          'OpenDoorVictoria/1.0 (university project)',
-      },
-    })
-
+    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q + ', Victoria, Australia')}&format=json&limit=1&countrycodes=au`
+    const res = await fetch(url, { headers: { 'User-Agent': 'OpenDoorVictoria/1.0 (university project)' } })
     const data = await res.json()
-
-    if (!data.length) {
-      throw new Error('No results')
-    }
-
+    if (!data.length) throw new Error('No results')
     const lat = parseFloat(data[0].lat)
     const lon = parseFloat(data[0].lon)
-
-    const label =
-      data[0].display_name.split(',')[0]
-
+    const label = data[0].display_name.split(',')[0]
     userLocation.value = { lat, lon }
-
     locationLabel.value = label
-    radiusKm.value = 0.5
-
-    userAddress.value =
-      data[0].display_name ||
-      `${lat.toFixed(5)}, ${lon.toFixed(5)}`
-
     mapInstance?.setView([lat, lon], 13)
-
     placeUserMarker(lat, lon)
-
     sortByDistance(lat, lon)
-
-    visibleCount.value = 5
-
     updateMapMarkers()
   } catch {
-    // Geocode failed
+    // Geocode failed — list stays sorted as-is
   } finally {
     loading.value = false
   }
 }
 
-function setRadius(value) {
-  radiusKm.value = value
-  visibleCount.value = 5
-
-  if (userLocation.value) {
-    sortByDistance(userLocation.value.lat, userLocation.value.lon)
-  }
-
-  updateMapMarkers()
-}
-
-function selectSearchArea(location) {
-  selectedSearchArea.value = location
-  searchAreaText.value = location.label
-  searchSuggestions.value = []
-
-  userLocation.value = {
-    lat: location.latitude,
-    lon: location.longitude,
-  }
-
-  locationLabel.value = location.label
-  userAddress.value = location.label
-  radiusKm.value = 0.5
-
-  sortByDistance(location.latitude, location.longitude)
-  visibleCount.value = 5
-
-  mapInstance?.setView([location.latitude, location.longitude], 13)
-
-  placeUserMarker(location.latitude, location.longitude)
-
-  updateMapMarkers()
-}
-
-function selectStartLocation(location) {
-  selectedStartLocation.value = location
-  startLocationText.value = location.label
-  startSuggestions.value = []
-  useCurrentLocationAsStart.value = false
-
-  userLocation.value = {
-    lat: location.latitude,
-    lon: location.longitude,
-  }
-
-  userAddress.value = location.label
-
-  placeUserMarker(location.latitude, location.longitude)
-}
-
-async function searchStartLocationForDirections() {
-  if (!startLocationText.value.trim() || !selectedService.value) return
-
-  const q = startLocationText.value.trim()
-
-  const data = await $fetch(
-    `${API_BASE}/search-address?q=${encodeURIComponent(q)}`
-  )
-
-  if (!data.length) {
-    alert('Could not find that starting location.')
-    return
-  }
-
-  const lat = parseFloat(data[0].lat)
-  const lon = parseFloat(data[0].lon)
-
-  userLocation.value = { lat, lon }
-  userAddress.value = data[0].display_name
-
-  placeUserMarker(lat, lon)
-
-  await calculateRoute(selectedService.value)
-}
-
-function locateMeForDirections() {
-  if (!navigator.geolocation) {
-    alert('Geolocation not supported.')
-    return
-  }
-
-  directionsLoading.value = true
-
-  navigator.geolocation.getCurrentPosition(
-    async ({ coords: { latitude: lat, longitude: lon } }) => {
-      userLocation.value = { lat, lon }
-      userAddress.value = 'Your current location'
-
-      startLocationText.value = ''
-      startAddressSuggestions.value = []
-
-      placeUserMarker(lat, lon)
-
-      if (selectedService.value) {
-        await calculateRoute(selectedService.value)
-      }
-
-      directionsLoading.value = false
-    },
-    () => {
-      directionsLoading.value = false
-      alert('Could not get your location.')
-    },
-    { timeout: 10000 }
-  )
-}
-
-async function selectStartAddress(place) {
-  const details = await $fetch(
-    `${API_BASE}/place-details?place_id=${encodeURIComponent(place.place_id)}`
-  )
-
-  const lat = parseFloat(details.lat)
-  const lon = parseFloat(details.lon)
-
-  startLocationText.value = details.display_name || place.display_name
-  startAddressSuggestions.value = []
-
-  userLocation.value = { lat, lon }
-  userAddress.value = details.display_name || place.display_name
-
-  placeUserMarker(lat, lon)
-
-  if (selectedService.value) {
-    await calculateRoute(selectedService.value)
-  }
-}
-
 // ── Map helpers ────────────────────────────────────────────────────────────
-function createStartIcon() {
-  return L.divIcon({
-    className: 'start-dot',
-    html: `<div class="start-dot-inner"></div>`,
-    iconSize: [18, 18],
-    iconAnchor: [9, 9],
-  })
-}
-
 function placeUserMarker(lat, lon) {
   if (!mapInstance) return
-
   userMarker?.remove()
+  const icon = L.divIcon({
+    className: '',
+    html: `<div style="position:relative;width:22px;height:22px;">
+      <div style="position:absolute;inset:0;border-radius:50%;background:#0298C5;opacity:0.25;animation:userPulse 2s ease-out infinite;"></div>
+      <div style="position:absolute;inset:4px;border-radius:50%;background:#0298C5;border:2.5px solid white;box-shadow:0 1px 6px rgba(0,0,0,0.35);"></div>
+    </div>`,
+    iconSize: [22, 22],
+    iconAnchor: [11, 11],
+  })
+  userMarker = L.marker([lat, lon], { icon, zIndexOffset: 1000 })
+    .addTo(mapInstance)
+    .bindPopup('<strong style="font-family:Inter,sans-serif;">Your location</strong>')
+}
 
-  userMarker = L.marker([lat, lon], {
-    icon: createStartIcon(),
-  }).addTo(mapInstance).bindPopup('<strong>Your location</strong>')
+function placeDestinationMarker(lat, lon, name) {
+  if (!mapInstance) return
+  destinationMarker?.remove()
+  const icon = L.divIcon({
+    className: '',
+    html: `<div style="position:relative;width:28px;height:36px;">
+      <svg viewBox="0 0 28 36" width="28" height="36" xmlns="http://www.w3.org/2000/svg">
+        <path d="M14 0C6.27 0 0 6.27 0 14c0 9.33 14 22 14 22s14-12.67 14-22C28 6.27 21.73 0 14 0z" fill="#181e4b"/>
+        <circle cx="14" cy="14" r="6" fill="white"/>
+      </svg>
+    </div>`,
+    iconSize: [28, 36],
+    iconAnchor: [14, 36],
+  })
+  destinationMarker = L.marker([lat, lon], { icon, zIndexOffset: 900 })
+    .addTo(mapInstance)
+    .bindPopup(`<strong style="font-family:Inter,sans-serif;">${name}</strong>`)
 }
 
 function selectService(service) {
@@ -1011,20 +843,6 @@ function buildPopupHTML(s) {
       ${s.website ? `<a href="${s.website}" target="_blank" rel="noopener" style="font-size:12px;color:#0298C5;">Visit website ↗</a>` : ''}
     </div>
   `
-}
-
-function createDestinationIcon() {
-  return L.divIcon({
-    className: 'destination-pin',
-    html: `
-      <div class="pin-shape">
-        <div class="pin-hole"></div>
-      </div>
-    `,
-    iconSize: [34, 46],
-    iconAnchor: [17, 46],
-    popupAnchor: [0, -42],
-  })
 }
 
 function updateMapMarkers() {
@@ -1056,295 +874,467 @@ function fitMapToMarkers() {
   if (coords.length) mapInstance.fitBounds(L.latLngBounds(coords), { padding: [40, 40] })
 }
 
-function createTransitStopIcon(label) {
-  return L.divIcon({
-    className: 'transit-stop-marker',
-    html: `<div class="transit-stop-dot">${label}</div>`,
-    iconSize: [26, 26],
-    iconAnchor: [13, 13],
-  })
-}
-
 // Re-draw on filter change
 watch(filteredServices, () => {
-  if (!showingDirections.value) {
-    updateMapMarkers()
-    clearDirections()
-  }
+  updateMapMarkers()
+  clearDirections()
+  visibleCount.value = 10
+  expandedServiceId.value = null
 })
 
-// ── Directions via Google Transit Route ─────────────────────────────────────
-async function getDirections(service) {
-  selectedService.value = service
-  showingDirections.value = true
-  directionsInfo.value = {
-    service: service.name,
-    distance: '—',
-    duration: '—',
-  }
-
-  if (!userLocation.value) {
-    directionsSteps.value = [
-      {
-        instruction: 'Choose a starting location to calculate directions.',
-        distance: '',
-        iconPath: 'M12 9v4M12 17h.01',
-      },
-    ]
-    return
-  }
-
-  await calculateRoute(service)
+// ── Autocomplete ───────────────────────────────────────────────────────────
+function hideSuggestionsDelayed() {
+  setTimeout(() => { showSuggestions.value = false }, 150)
 }
 
-async function calculateRoute(service) {
-  directionsLoading.value = true
-  directionsSteps.value = []
-
-  // Clear previous route
-  routeLayer?.remove()
-  routeLayer = null
-
-  routeLayers.forEach(layer => layer.remove())
-  routeLayers = []
-
-  transitMarkers.forEach(marker => marker.remove())
-  transitMarkers = []
-
-  destinationMarker?.remove()
-
-  destinationMarker = L.marker(
-    [service.latitude, service.longitude],
-    {
-      icon: createDestinationIcon(),
-    }
-  )
-    .addTo(mapInstance)
-    .bindPopup(buildPopupHTML(service))
-
-  try {
-    const res = await $fetch(
-      `${API_BASE}/google/transit-route`,
-      {
-        method: 'POST',
-        body: {
-          origin: {
-            lat: userLocation.value.lat,
-            lng: userLocation.value.lon,
-          },
-          destination: {
-            lat: service.latitude,
-            lng: service.longitude,
-          },
-        },
+function onSearchInput() {
+  clearTimeout(acTimer)
+  const q = searchQuery.value.trim()
+  if (!q || !autocompleteService) { addressSuggestions.value = []; showSuggestions.value = false; return }
+  acTimer = setTimeout(() => {
+    autocompleteService.getPlacePredictions(
+      { input: q, componentRestrictions: { country: 'au' }, types: ['geocode'] },
+      (preds, status) => {
+        console.log('[GM] autocomplete status:', status, 'predictions:', preds?.length ?? 0)
+        if (status === 'OK' && preds?.length) {
+          addressSuggestions.value = preds.slice(0, 5).map(p => ({ description: p.description, place_id: p.place_id }))
+          showSuggestions.value = true
+        } else {
+          addressSuggestions.value = []
+          showSuggestions.value = false
+        }
       }
     )
+  }, 300)
+}
 
-    const route = res.routes?.[0]
-
-    if (!route) {
-      throw new Error('No transit route found')
-    }
-
-    const durationSeconds = route.duration
-      ? parseInt(route.duration.replace('s', ''))
-      : null
-
-    let durationText = '—'
-
-    if (durationSeconds) {
-      const totalMinutes = Math.round(durationSeconds / 60)
-
-      if (totalMinutes >= 60) {
-        const hours = Math.floor(totalMinutes / 60)
-        const minutes = totalMinutes % 60
-
-        durationText = minutes > 0
-          ? `${hours}h ${minutes} min`
-          : `${hours}h`
-      } else {
-        durationText = `${totalMinutes} min`
+async function selectSuggestion(s) {
+  searchQuery.value = s.description
+  showSuggestions.value = false
+  addressSuggestions.value = []
+  clearDirections()
+  loading.value = true
+  try {
+    const place = new window.google.maps.places.Place({ id: s.place_id })
+    await place.fetchFields({ fields: ['location'] })
+    const lat = place.location.lat()
+    const lon = place.location.lng()
+    userLocation.value = { lat, lon }
+    locationLabel.value = s.description.split(',')[0]
+    mapInstance?.setView([lat, lon], 13)
+    placeUserMarker(lat, lon)
+    sortByDistance(lat, lon)
+    updateMapMarkers()
+  } catch {
+    // Fallback to Nominatim geocoding
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(s.description)}&format=json&limit=1`, { headers: { 'User-Agent': 'ChereBowl/1.0' } })
+      const data = await res.json()
+      if (data.length) {
+        const lat = parseFloat(data[0].lat)
+        const lon = parseFloat(data[0].lon)
+        userLocation.value = { lat, lon }
+        locationLabel.value = s.description.split(',')[0]
+        mapInstance?.setView([lat, lon], 13)
+        placeUserMarker(lat, lon)
+        sortByDistance(lat, lon)
+        updateMapMarkers()
       }
-    }
-    const distanceText = route.distanceMeters
-      ? `${(route.distanceMeters / 1000).toFixed(1)} km`
-      : '—'
+    } catch { /* silent */ }
+  } finally {
+    loading.value = false
+  }
+}
+
+// ── Route mode toggle ──────────────────────────────────────────────────────
+function setRouteMode(mode) {
+  routeMode.value = mode
+  if (mode === 'drive') {
+    clearTransitLayers()
+    stopVehiclePolling()
+    directionsInfo.value = null; directionsSteps.value = []
+    walkInfo.value = null; walkLegs.value = []
+    if (selectedService.value) getDriveDirections(selectedService.value)
+  } else if (mode === 'transit') {
+    routeLayer?.remove(); routeLayer = null
+    directionsInfo.value = null; directionsSteps.value = []
+    walkInfo.value = null; walkLegs.value = []
+    if (selectedService.value) getTransitDirections(selectedService.value)
+  } else if (mode === 'walk') {
+    routeLayer?.remove(); routeLayer = null
+    clearTransitLayers(); stopVehiclePolling()
+    directionsInfo.value = null; directionsSteps.value = []
+    transitInfo.value = null; transitLegs.value = []
+    if (selectedService.value) getWalkingDirections(selectedService.value)
+  }
+}
+
+// ── Driving directions via OSRM (free, no key) ─────────────────────────────
+async function getDriveDirections(service) {
+  if (!userLocation.value || !mapInstance) return
+  selectedService.value = service
+  showingDirections.value = true
+  directionsLoading.value = true
+  directionsSteps.value = []
+  directionsInfo.value = null
+
+  routeLayer?.remove()
+  routeLayer = null
+  placeDestinationMarker(service.latitude, service.longitude, service.name)
+
+  try {
+    const { lat, lon } = userLocation.value
+    const url = `https://router.project-osrm.org/route/v1/driving/${lon},${lat};${service.longitude},${service.latitude}?overview=full&geometries=geojson&steps=true`
+    const res = await fetch(url)
+    const data = await res.json()
+    if (data.code !== 'Ok' || !data.routes.length) throw new Error('No route')
+
+    const route = data.routes[0]
+    const distKm = (route.distance / 1000).toFixed(1)
+    const durMin = Math.round(route.duration / 60)
 
     directionsInfo.value = {
       service: service.name,
-      distance: distanceText,
-      duration: durationText,
+      distance: `${distKm} km`,
+      duration: durMin >= 60 ? `${Math.floor(durMin/60)}h ${durMin%60}m` : `${durMin} min`,
     }
 
-    // STEP LIST
-    directionsSteps.value =
-      route.legs?.[0]?.steps?.map(step => {
-        const transit = step.transitDetails
+    routeLayer = L.geoJSON(route.geometry, {
+      style: { color: '#0298C5', weight: 5, opacity: 0.85 },
+    }).addTo(mapInstance)
+    mapInstance.fitBounds(routeLayer.getBounds(), { padding: [60, 60] })
 
-        let instruction = 'Continue'
-
-        if (step.travelMode === 'WALK') {
-          instruction =
-            step.navigationInstruction?.instructions ||
-            'Walk'
-        }
-
-        if (step.travelMode === 'TRANSIT') {
-          const line =
-            transit?.transitLine?.nameShort ||
-            transit?.transitLine?.name ||
-            'Public Transport'
-
-          const headsign =
-            transit?.headsign
-              ? ` towards ${transit.headsign}`
-              : ''
-
-          instruction = `Take ${line}${headsign}`
-        }
-
-        return {
-          instruction,
-          distance:
-            step.localizedValues?.distance?.text || '',
-          iconPath:
-            step.travelMode === 'TRANSIT'
-              ? 'M6 2h12v15H6zM9 19l-2 3M15 19l2 3M6 9h12'
-              : 'M12 19V5M5 12l7-7 7 7',
-        }
-      }) || []
-
-    // DRAW STEP POLYLINES
-    const allBounds = []
-
-    const steps = route.legs?.[0]?.steps || []
-
-    steps.forEach(step => {
-      if (!step.polyline?.encodedPolyline) return
-
-      const decoded = polyline.decode(
-        step.polyline.encodedPolyline
-      )
-
-      const latlngs = decoded.map(([lat, lng]) => [
-        lat,
-        lng,
-      ])
-
-      const isTransit =
-        step.travelMode === 'TRANSIT'
-
-      const layer = L.polyline(latlngs, {
-        color: isTransit ? '#181e4b' : '#0f6d0d',
-        weight: isTransit ? 7 : 5,
-        opacity: isTransit ? 0.95 : 0.75,
-        dashArray: isTransit ? null : '8, 8',
-        lineCap: 'round',
-        lineJoin: 'round',
-      }).addTo(mapInstance)
-
-      routeLayers.push(layer)
-
-      allBounds.push(...latlngs)
-
-      // BOARDING / ALIGHTING MARKERS
-      const transit = step.transitDetails
-
-      if (
-        transit?.departureStop?.location?.latLng
-      ) {
-        const stop =
-          transit.departureStop.location.latLng
-
-        const marker = L.marker(
-          [stop.latitude, stop.longitude],
-          {
-            icon: createTransitStopIcon('ON'),
-          }
-        )
-          .addTo(mapInstance)
-          .bindPopup(`
-            <strong>Board here</strong><br/>
-            ${transit.departureStop.name || ''}
-          `)
-
-        transitMarkers.push(marker)
-      }
-
-      if (
-        transit?.arrivalStop?.location?.latLng
-      ) {
-        const stop =
-          transit.arrivalStop.location.latLng
-
-        const marker = L.marker(
-          [stop.latitude, stop.longitude],
-          {
-            icon: createTransitStopIcon('OFF'),
-          }
-        )
-          .addTo(mapInstance)
-          .bindPopup(`
-            <strong>Get off here</strong><br/>
-            ${transit.arrivalStop.name || ''}
-          `)
-
-        transitMarkers.push(marker)
-      }
-    })
-
-    // FIT MAP
-    if (allBounds.length) {
-      mapInstance.fitBounds(
-        L.latLngBounds(allBounds),
-        {
-          padding: [60, 60],
-        }
-      )
-    } else {
-      mapInstance.setView(
-        [service.latitude, service.longitude],
-        15
-      )
-    }
-  } catch (err) {
-    console.error(err)
-
-    directionsInfo.value = {
-      service: service.name,
-      distance: '—',
-      duration: '—',
-    }
-
-    directionsSteps.value = [
-      {
-        instruction:
-          'Could not calculate public transport route.',
-        distance: '',
-        iconPath: 'M12 9v4M12 17h.01',
-      },
-    ]
+    const steps = route.legs.flatMap(leg => leg.steps)
+    directionsSteps.value = steps.map(step => ({
+      instruction: formatManeuver(step),
+      distance: formatMeters(step.distance),
+      iconPath: maneuverIcon(step.maneuver),
+    }))
+  } catch {
+    directionsInfo.value = directionsInfo.value || { service: service.name, distance: '—', duration: '—' }
+    directionsSteps.value = [{ instruction: 'Could not calculate route. Check your connection.', distance: '', iconPath: 'M12 9v4M12 17h.01' }]
   } finally {
     directionsLoading.value = false
   }
 }
 
+// Keep old name as alias so existing "Get Directions" button call still works
+function getDirections(service) {
+  routeMode.value = 'drive'
+  getDriveDirections(service)
+}
+
+// ── Transit directions via Google Maps ─────────────────────────────────────
+function getTransitDirections(service) {
+  if (!userLocation.value || !directionsService) {
+    transitLegs.value = [{ mode: 'error', instructions: 'Transit directions require the Google Maps API key to be configured.' }]
+    return
+  }
+
+  selectedService.value = service
+  showingDirections.value = true
+  directionsLoading.value = true
+  placeDestinationMarker(service.latitude, service.longitude, service.name)
+  transitLegs.value = []
+  transitInfo.value = null
+  clearTransitLayers()
+  stopVehiclePolling()
+
+  const request = {
+    origin: new window.google.maps.LatLng(userLocation.value.lat, userLocation.value.lon),
+    destination: new window.google.maps.LatLng(service.latitude, service.longitude),
+    travelMode: window.google.maps.TravelMode.TRANSIT,
+    transitOptions: { modes: ['BUS', 'RAIL', 'TRAM'] },
+  }
+
+  directionsService.route(request, (result, status) => {
+    directionsLoading.value = false
+    console.log('[Transit] status:', status, 'result:', result)
+
+    if (status !== 'OK') {
+      transitLegs.value = [{ mode: 'error', instructions: `No public transport route found (${status}). Ensure Directions API is enabled.` }]
+      return
+    }
+
+    const leg = result.routes[0].legs[0]
+    const allCoords = []
+    highlightedTripIds = new Set()
+    const modeColors = { walk: '#4a5568', train: '#0298C5', tram: '#2e7d32', bus: '#e65100' }
+
+    transitLegs.value = leg.steps.map(step => {
+      const isTransit = step.travel_mode === 'TRANSIT'
+      const td = step.transit
+
+      const decoded = window.google.maps.geometry.encoding
+        .decodePath(step.polyline.points)
+        .map(p => [p.lat(), p.lng()])
+      allCoords.push(...decoded)
+
+      let mode = 'walk'
+      if (isTransit) {
+        const vtype = td.line.vehicle.type
+        mode = ['SUBWAY', 'HEAVY_RAIL', 'COMMUTER_TRAIN', 'RAIL'].includes(vtype) ? 'train'
+             : vtype === 'TRAM' ? 'tram'
+             : 'bus'
+      }
+
+      const layer = L.polyline(decoded, {
+        color: modeColors[mode],
+        weight: mode === 'walk' ? 4 : 6,
+        dashArray: mode === 'walk' ? '3,7' : null,
+        opacity: mode === 'walk' ? 0.75 : 0.9,
+      }).addTo(mapInstance)
+      transitRouteLayers.push(layer)
+
+      const tripId = isTransit ? (td.trip?.trip_id ?? null) : null
+      if (tripId) highlightedTripIds.add(tripId)
+
+      return {
+        mode,
+        instructions: step.html_instructions?.replace(/<[^>]+>/g, '') ?? '',
+        distance: step.distance?.text ?? null,
+        duration: step.duration?.text ?? null,
+        from_name: isTransit ? td.departure_stop.name : null,
+        to_name: isTransit ? td.arrival_stop.name : null,
+        depart: isTransit ? td.departure_time.text : null,
+        arrive: isTransit ? td.arrival_time.text : null,
+        num_stops: isTransit ? td.num_stops : null,
+        route_name: isTransit ? (td.line.short_name || td.line.name) : null,
+        route_id: isTransit ? (td.line.gtfs_id ?? td.line.short_name ?? null) : null,
+        trip_id: tripId,
+      }
+    })
+
+    if (allCoords.length) {
+      mapInstance.fitBounds(L.latLngBounds(allCoords), { padding: [60, 60] })
+    }
+
+    transitInfo.value = {
+      service: service.name,
+      duration: leg.duration.text,
+      distance: leg.distance.text,
+    }
+
+    startVehiclePolling()
+  })
+}
+
+// ── GTFSR vehicle polling ─────────────────────────────────────────────────
+const VEHICLE_MODE_COLORS = { train: '#0298C5', tram: '#2e7d32', bus: '#e65100' }
+
+async function pollVehicles() {
+  try {
+    const routeIds = transitLegs.value
+      .filter(l => l.route_id).map(l => l.route_id).join(',')
+    const params = routeIds ? `?route_ids=${encodeURIComponent(routeIds)}` : ''
+    const res = await fetch(`${API_BASE}/gtfsr/vehicles${params}`)
+    if (!res.ok) return
+    const vehicles = await res.json()
+
+    const seen = new Set()
+    for (const v of vehicles) {
+      if (!v.lat || !v.lon) continue
+      seen.add(v.id)
+      const isHighlighted = highlightedTripIds.has(v.trip_id)
+      const color = VEHICLE_MODE_COLORS[vehicleMode(v.route_id)] || '#0298C5'
+
+      if (vehicleMarkers[v.id]) {
+        vehicleMarkers[v.id].setLatLng([v.lat, v.lon])
+      } else {
+        const icon = L.divIcon({
+          className: '',
+          html: buildVehicleIconHtml(color, v.bearing, isHighlighted),
+          iconSize: [28, 28],
+          iconAnchor: [14, 14],
+        })
+        vehicleMarkers[v.id] = L.marker([v.lat, v.lon], { icon, zIndexOffset: 500 })
+          .bindPopup(buildVehiclePopup(v))
+          .addTo(mapInstance)
+      }
+    }
+
+    for (const id of Object.keys(vehicleMarkers)) {
+      if (!seen.has(id)) { vehicleMarkers[id].remove(); delete vehicleMarkers[id] }
+    }
+  } catch { /* real-time is best-effort */ }
+}
+
+function vehicleMode(routeId) {
+  if (!routeId) return 'train'
+  const id = String(routeId).toLowerCase()
+  if (id.includes('tram')) return 'tram'
+  if (id.includes('bus')) return 'bus'
+  return 'train'
+}
+
+function buildVehicleIconHtml(color, bearing, highlighted) {
+  const rotation = bearing != null ? bearing : 0
+  const border = highlighted ? `border:2.5px solid #181e4b;` : `border:1.5px solid rgba(255,255,255,0.8);`
+  const pulse = highlighted ? `box-shadow:0 0 0 4px ${color}44;` : ''
+  return `<div style="width:24px;height:24px;border-radius:50%;background:${color};${border}${pulse}
+    display:flex;align-items:center;justify-content:center;transform:rotate(${rotation}deg);">
+    <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+      <path d="M5 1L8 8H5H2L5 1Z" fill="white" opacity="0.9"/>
+    </svg>
+  </div>`
+}
+
+function buildVehiclePopup(v) {
+  const ts = v.timestamp ? new Date(v.timestamp * 1000).toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' }) : 'unknown'
+  return `<div style="font-family:Inter,sans-serif;font-size:12px;min-width:120px;">
+    <p style="font-weight:700;margin:0 0 4px;color:#1a1a1a;">Route ${v.route_id || '—'}</p>
+    <p style="color:#888;margin:0;">Last updated ${ts}</p>
+  </div>`
+}
+
+// ── Walking directions via Google Maps (WALKING travel mode) ──────────────
+function getWalkingDirections(service) {
+  if (!userLocation.value || !directionsService) {
+    walkLegs.value = [{ instruction: 'Walking directions require the Google Maps API key to be configured.', distance: '', iconPath: 'M12 9v4M12 17h.01' }]
+    return
+  }
+
+  selectedService.value = service
+  showingDirections.value = true
+  directionsLoading.value = true
+  placeDestinationMarker(service.latitude, service.longitude, service.name)
+  walkLegs.value = []
+  walkInfo.value = null
+
+  const request = {
+    origin: new window.google.maps.LatLng(userLocation.value.lat, userLocation.value.lon),
+    destination: new window.google.maps.LatLng(service.latitude, service.longitude),
+    travelMode: window.google.maps.TravelMode.WALKING,
+  }
+
+  directionsService.route(request, (result, status) => {
+    directionsLoading.value = false
+
+    if (status !== 'OK') {
+      walkLegs.value = [{ instruction: `No walking route found (${status}).`, distance: '', iconPath: 'M12 9v4M12 17h.01' }]
+      return
+    }
+
+    const leg = result.routes[0].legs[0]
+    const allCoords = []
+
+    walkLegs.value = leg.steps.map(step => {
+      const decoded = window.google.maps.geometry.encoding
+        .decodePath(step.polyline.points)
+        .map(p => [p.lat(), p.lng()])
+      allCoords.push(...decoded)
+
+      const layer = L.polyline(decoded, {
+        color: '#2e7d32',
+        weight: 4,
+        dashArray: '3,7',
+        opacity: 0.85,
+      }).addTo(mapInstance)
+      transitRouteLayers.push(layer)
+
+      const instr = step.html_instructions?.replace(/<[^>]+>/g, '') ?? ''
+      return {
+        instruction: instr,
+        distance: step.distance?.text ?? '',
+        iconPath: walkStepIcon(step.html_instructions ?? ''),
+      }
+    })
+
+    if (allCoords.length) mapInstance.fitBounds(L.latLngBounds(allCoords), { padding: [60, 60] })
+
+    walkInfo.value = {
+      service: service.name,
+      duration: leg.duration.text,
+      distance: leg.distance.text,
+    }
+  })
+}
+
+function walkStepIcon(html) {
+  const h = html.toLowerCase()
+  if (h.includes('left'))  return 'M9 19l-7-7 7-7M2 12h20'
+  if (h.includes('right')) return 'M15 19l7-7-7-7M22 12H2'
+  if (h.includes('slight left') || h.includes('keep left'))  return 'M5 19l7-7M12 12H2'
+  if (h.includes('slight right') || h.includes('keep right')) return 'M19 19l-7-7M12 12h10'
+  if (h.includes('arrive') || h.includes('destination')) return 'M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8zM12 10m-3 0a3 3 0 1 0 6 0 3 3 0 0 0-6 0'
+  return 'M12 19V5M5 12l7-7 7 7'
+}
+
+function startVehiclePolling() {
+  pollVehicles()
+  vehiclePollTimer = setInterval(pollVehicles, 30_000)
+}
+
+function stopVehiclePolling() {
+  clearInterval(vehiclePollTimer)
+  vehiclePollTimer = null
+  Object.values(vehicleMarkers).forEach(m => m.remove())
+  vehicleMarkers = {}
+}
+
+function clearTransitLayers() {
+  transitRouteLayers.forEach(l => l.remove())
+  transitRouteLayers = []
+}
+
 function clearDirections() {
   routeLayer?.remove()
   routeLayer = null
-
-  routeLayers.forEach(layer => layer.remove())
-  routeLayers = []
-
-  transitMarkers.forEach(marker => marker.remove())
-  transitMarkers = []
-
   destinationMarker?.remove()
   destinationMarker = null
-
+  clearTransitLayers()
+  stopVehiclePolling()
   directionsInfo.value = null
   directionsSteps.value = []
+  transitInfo.value = null
+  transitLegs.value = []
+  walkInfo.value = null
+  walkLegs.value = []
   showingDirections.value = false
+  routeMode.value = 'drive'
+}
+
+// ── Transit leg colour helpers ─────────────────────────────────────────────
+function hasValue(v) {
+  return v != null && v !== '' && String(v) !== 'NaN'
+}
+
+function transitLegColor(mode) {
+  return { train: '#0298C5', tram: '#2e7d32', bus: '#e65100', walk: '#888888' }[mode] || '#333'
+}
+function transitLegBg(mode) {
+  return { train: '#D8EDFF', tram: '#e8f5e9', bus: '#fbe9e7', walk: '#f5f5f5' }[mode] || '#f5f5f5'
+}
+
+// ── OSRM step formatting ───────────────────────────────────────────────────
+function formatManeuver(step) {
+  const t = step.maneuver?.type || ''
+  const mod = step.maneuver?.modifier || ''
+  const name = step.name ? ` onto ${step.name}` : ''
+  if (t === 'depart') return `Head ${mod || 'forward'}${name}`
+  if (t === 'arrive') return 'Arrive at your destination'
+  if (t === 'turn') return `Turn ${mod}${name}`
+  if (t === 'fork') return `Keep ${mod}${name}`
+  if (t === 'merge') return `Merge ${mod}${name}`
+  if (t === 'roundabout' || t === 'rotary') return `Enter roundabout${name}`
+  if (t === 'exit roundabout' || t === 'exit rotary') return `Exit roundabout${name}`
+  if (t === 'new name') return `Continue${name}`
+  return `Continue${name}`
+}
+
+function formatMeters(m) {
+  if (!m) return ''
+  return m < 1000 ? `${Math.round(m)} m` : `${(m/1000).toFixed(1)} km`
+}
+
+function maneuverIcon(maneuver) {
+  const mod = maneuver?.modifier || ''
+  const type = maneuver?.type || ''
+  if (type === 'arrive') return 'M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8zM12 10a2 2 0 1 0 0-4 2 2 0 0 0 0 4z'
+  if (type === 'depart') return 'M12 19V5M5 12l7-7 7 7'
+  if (mod.includes('left')) return 'M10 19l-7-7 7-7M3 12h18'
+  if (mod.includes('right')) return 'M14 5l7 7-7 7M21 12H3'
+  return 'M12 19V5M5 12l7-7 7 7' // straight
 }
 
 // ── Init ───────────────────────────────────────────────────────────────────
@@ -1364,14 +1354,28 @@ onMounted(async () => {
     zoomControl: true,
   })
 
-  L.tileLayer(
-    'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-    {
-      attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
-      subdomains: 'abcd',
-      maxZoom: 20,
-    }
-  ).addTo(mapInstance)
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/">CARTO</a>',
+    subdomains: 'abcd',
+    maxZoom: 19,
+  }).addTo(mapInstance)
+
+  // Load Google Maps JS API (Places autocomplete + DirectionsService)
+  const gmKey = config.public.googleMapsApiKey
+  console.log('[GM] key resolved to:', gmKey ? gmKey.slice(0,12) + '...' : 'EMPTY — check NUXT_PUBLIC_GOOGLE_MAPS_API_KEY in .env.local')
+  if (gmKey && !window.__gmLoaded) {
+    await new Promise(resolve => {
+      window.__gmReady = () => { window.__gmLoaded = true; resolve() }
+      const s = document.createElement('script')
+      s.src = `https://maps.googleapis.com/maps/api/js?key=${gmKey}&libraries=places,geometry&callback=__gmReady`
+      s.onerror = () => { console.error('[ChereBowl] Google Maps failed to load — check API key and enabled APIs (Maps JavaScript API, Places API, Directions API)'); resolve() }
+      document.head.appendChild(s)
+    })
+  }
+  if (window.__gmLoaded && window.google) {
+    autocompleteService = new window.google.maps.places.AutocompleteService()
+    directionsService = new window.google.maps.DirectionsService()
+  }
 
   await fetchAllServices()
 })
@@ -1389,6 +1393,8 @@ function updateLayout() {
 
 onBeforeUnmount(() => {
   window.removeEventListener('resize', updateLayout)
+  stopVehiclePolling()
+  clearTimeout(acTimer)
   mapInstance?.remove()
 })
 </script>
@@ -1420,36 +1426,6 @@ onBeforeUnmount(() => {
   gap: 10px;
   max-width: 860px;
   margin: 0 auto 14px;
-}
-
-.radius-row {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  max-width: 860px;
-  margin: 12px auto 0;
-  padding: 4px;
-  background: rgba(24, 30, 75, 0.10);
-  border-radius: 12px;
-  gap: 0;
-}
-
-.radius-button {
-  height: 44px;
-  border: none;
-  border-radius: 9px;
-  background: transparent;
-  color: #181e4b;
-  font-size: 14px;
-  font-weight: 700;
-  font-family: Inter, sans-serif;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.radius-button.active {
-  background: white;
-  color: #181e4b;
-  box-shadow: 0 2px 8px rgba(24, 30, 75, 0.12);
 }
 
 /* ── Main panel (cards + map side by side) ──────────── */
@@ -1497,6 +1473,17 @@ onBeforeUnmount(() => {
 }
 :deep(.leaflet-popup-tip) { background: white; }
 :deep(.leaflet-control-attribution) { font-size: 10px; }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.4); }
+}
+
+@keyframes userPulse {
+  0% { transform: scale(0.8); opacity: 0.6; }
+  70% { transform: scale(2.2); opacity: 0; }
+  100% { transform: scale(0.8); opacity: 0; }
+}
 
 /* ── Mobile (≤ 767px) ────────────────────────────────── */
 @media (max-width: 767px) {
@@ -1570,65 +1557,4 @@ onBeforeUnmount(() => {
 .filters-dropdown:hover .filters-panel {
   display: block;
 }
-
-:deep(.start-dot) {
-  background: transparent;
-  border: none;
-}
-
-:deep(.start-dot-inner) {
-  width: 16px;
-  height: 16px;
-  background: #e60000;
-  border: 3px solid white;
-  border-radius: 50%;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-}
-
-:deep(.destination-pin) {
-  background: transparent;
-  border: none;
-}
-
-:deep(.pin-shape) {
-  width: 34px;
-  height: 34px;
-  background: #e60000;
-  border-radius: 50% 50% 50% 0;
-  transform: rotate(-45deg);
-  position: relative;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
-}
-
-:deep(.pin-hole) {
-  width: 12px;
-  height: 12px;
-  background: black;
-  border-radius: 50%;
-  position: absolute;
-  top: 11px;
-  left: 11px;
-}
-
-:deep(.transit-stop-marker) {
-  background: transparent;
-  border: none;
-}
-
-:deep(.transit-stop-dot) {
-  min-width: 26px;
-  height: 26px;
-  padding: 0 6px;
-  border-radius: 999px;
-  background: #181e4b;
-  color: white;
-  border: 2px solid white;
-  font-size: 9px;
-  font-weight: 800;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
-}
-
 </style>

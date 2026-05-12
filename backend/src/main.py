@@ -4,7 +4,6 @@ import json
 from typing import List, Optional
 import math
 from datetime import datetime
-import os
 
 from fastapi import Depends, FastAPI, HTTPException, Query
 from pydantic import BaseModel
@@ -17,16 +16,12 @@ from src.models import LgaPopulation, FoodInsecurity, VicLgaBoundary, SupportSer
 from src.schemas import NearbyServiceOut, FoodInsecurityRegion, LgaStatsOut, DietIndicatorOut, HealthOutcomeOut, LowCostDietOut, LowCostDietHealthOutcomeOut, RecommendedMacronutrientsIntakeOut, IngredientSubstitutesOut
 from src.services.ingredient_substitution import engine as substitution_engine, SubstituteResult
 from src.services.nearby_search import DEFAULT_KEYWORDS, find_nearby_support_services, search_support_service_suburbs
+from src.services.gtfsr import fetch_vehicle_positions, fetch_trip_updates
 from src.utils.opening_hours import is_open_now, _now_in_tz
 
 from sqlalchemy import func, Integer, case, distinct, Numeric
 from sqlalchemy.orm import Session
 from geoalchemy2.functions import ST_AsGeoJSON
-import os
-import requests
-from dotenv import load_dotenv
-
-load_dotenv()
 
 app = FastAPI(title="Aegis Support Services API", version="0.1.0")
 
@@ -67,80 +62,6 @@ class _LoginRequest(BaseModel):
     password: str
 
 _DEMO_PASSWORD = "password123"
-
-class LatLng(BaseModel):
-    lat: float
-    lng: float
-
-class TransitRouteRequest(BaseModel):
-    origin: LatLng
-    destination: LatLng
-
-@app.post("/google/transit-route")
-def get_google_transit_route(body: TransitRouteRequest):
-    api_key = os.getenv("GOOGLE_ROUTES_API_KEY")
-
-    if not api_key:
-        raise HTTPException(status_code=500, detail="GOOGLE_ROUTES_API_KEY is missing")
-
-    url = "https://routes.googleapis.com/directions/v2:computeRoutes"
-
-    payload = {
-        "origin": {
-            "location": {
-                "latLng": {
-                    "latitude": body.origin.lat,
-                    "longitude": body.origin.lng,
-                }
-            }
-        },
-        "destination": {
-            "location": {
-                "latLng": {
-                    "latitude": body.destination.lat,
-                    "longitude": body.destination.lng,
-                }
-            }
-        },
-        "travelMode": "TRANSIT",
-        "computeAlternativeRoutes": False,
-        "languageCode": "en-AU",
-        "units": "METRIC",
-    }
-
-    headers = {
-        "Content-Type": "application/json",
-        "X-Goog-Api-Key": api_key,
-        "X-Goog-FieldMask": (
-            "routes.duration,"
-            "routes.distanceMeters,"
-            "routes.legs.steps.polyline.encodedPolyline,"
-            "routes.legs.steps.travelMode,"
-            "routes.legs.steps.navigationInstruction,"
-            "routes.legs.steps.localizedValues,"
-            "routes.legs.steps.transitDetails"
-        ),
-    }
-
-    try:
-        google_response = requests.post(url, json=payload, headers=headers, timeout=15)
-
-        print("GOOGLE ROUTES STATUS:", google_response.status_code)
-        print("GOOGLE ROUTES RESPONSE:", google_response.text)
-
-        if google_response.status_code != 200:
-            raise HTTPException(
-                status_code=google_response.status_code,
-                detail=google_response.json(),
-            )
-
-        return google_response.json()
-
-    except HTTPException:
-        raise
-    except Exception as exc:
-        logger.exception("Failed to fetch Google transit route: %s", exc)
-        raise HTTPException(status_code=500, detail="Failed to fetch Google transit route")
 
 @app.post("/auth/login")
 def auth_login(body: _LoginRequest):
@@ -262,17 +183,10 @@ def get_all_services(
 ):
     """Return all support services. Used for full-map browse mode."""
     try:
-        rows = [
-            row for row in db.query(SupportService).all()
-            if (
-                row.latitude is not None
-                and row.longitude is not None
-                and isinstance(row.latitude, (int, float))
-                and isinstance(row.longitude, (int, float))
-                and math.isfinite(row.latitude)
-                and math.isfinite(row.longitude)
-            )
-        ]
+        rows = db.query(SupportService).filter(
+            SupportService.latitude.isnot(None),
+            SupportService.longitude.isnot(None),
+        ).all()
 
         results = []
         now_local = _now_in_tz(tz)
@@ -311,27 +225,6 @@ def get_all_services(
     except Exception as exc:
         logger.exception("Failed to fetch all services: %s", exc)
         raise HTTPException(status_code=500, detail="Internal error fetching services")
-
-@app.get("/services/search-locations")
-def search_locations(
-    q: str = Query("", description="Search suburb"),
-    limit: int = Query(8, ge=1, le=20),
-    db: Session = Depends(get_db),
-):
-    try:
-        return search_support_service_suburbs(
-            db=db,
-            q=q,
-            limit=limit,
-        )
-
-    except Exception as exc:
-        logger.exception("Failed to search locations: %s", exc)
-
-        raise HTTPException(
-            status_code=500,
-            detail="Internal error searching locations",
-        )
 
 @app.get("/nearby", response_model=List[NearbyServiceOut])
 def get_nearby_services(
@@ -590,118 +483,35 @@ def get_ingredient_substitutes(
             status_code=500,
             detail="Internal error generating ingredient substitutes",
         )
-    
-@app.get("/search-address")
-def search_address(q: str = Query(..., min_length=3)):
-    api_key = os.getenv("GOOGLE_ROUTES_API_KEY")
 
-    if not api_key:
-        raise HTTPException(status_code=500, detail="Google Maps API key is missing")
 
+# ---------------------------------------------------------------------------
+# GTFSR — real-time vehicle positions + trip updates (proxied from backend
+# so the API key never reaches the browser)
+# ---------------------------------------------------------------------------
+
+@app.get("/gtfsr/vehicles")
+async def gtfsr_vehicles(route_ids: Optional[str] = None):
+    """Return live vehicle positions, optionally filtered by comma-separated route IDs."""
     try:
-        url = "https://places.googleapis.com/v1/places:autocomplete"
-
-        payload = {
-            "input": q,
-            "locationRestriction": {
-                "rectangle": {
-                    "low": {
-                        "latitude": -39.2,
-                        "longitude": 140.9,
-                    },
-                    "high": {
-                        "latitude": -33.9,
-                        "longitude": 150.1,
-                    },
-                }
-            },
-            "languageCode": "en-AU",
-            "regionCode": "AU",
-        }
-
-        headers = {
-            "Content-Type": "application/json",
-            "X-Goog-Api-Key": api_key,
-        }
-
-        response = requests.post(url, json=payload, headers=headers, timeout=10)
-
-        print("GOOGLE PLACES STATUS:", response.status_code)
-        print("GOOGLE PLACES RESPONSE:", response.text[:500])
-
-        if response.status_code != 200:
-            raise HTTPException(
-                status_code=response.status_code,
-                detail=response.json(),
-            )
-
-        data = response.json()
-
-        suggestions = []
-
-        for item in data.get("suggestions", []):
-            prediction = item.get("placePrediction")
-            if not prediction:
-                continue
-
-            place_id = prediction.get("placeId")
-            label = prediction.get("text", {}).get("text")
-
-            if place_id and label:
-                suggestions.append(
-                    {
-                        "place_id": place_id,
-                        "display_name": label,
-                    }
-                )
-
-        return suggestions
-
-    except HTTPException:
-        raise
+        vehicles = await fetch_vehicle_positions()
+        if route_ids:
+            ids = set(route_ids.split(","))
+            vehicles = [v for v in vehicles if v.get("route_id") in ids]
+        return vehicles
     except Exception as exc:
-        logger.exception("Failed to search address: %s", exc)
-        raise HTTPException(status_code=500, detail="Failed to search address")
-    
-@app.get("/place-details")
-def place_details(place_id: str = Query(...)):
-    api_key = os.getenv("GOOGLE_ROUTES_API_KEY")
+        logger.exception("GTFSR vehicle positions error: %s", exc)
+        raise HTTPException(status_code=502, detail="Could not fetch vehicle positions from GTFSR feed")
 
-    if not api_key:
-        raise HTTPException(status_code=500, detail="Google Maps API key is missing")
 
+@app.get("/gtfsr/trip-update")
+async def gtfsr_trip_update(trip_id: str, mode: str = "train"):
+    """Return real-time stop_time_updates for a specific trip.
+    mode: train | tram | bus | vline
+    """
     try:
-        url = f"https://places.googleapis.com/v1/places/{place_id}"
-
-        headers = {
-            "X-Goog-Api-Key": api_key,
-            "X-Goog-FieldMask": "id,displayName,formattedAddress,location",
-        }
-
-        response = requests.get(url, headers=headers, timeout=10)
-
-        print("GOOGLE PLACE DETAILS STATUS:", response.status_code)
-        print("GOOGLE PLACE DETAILS RESPONSE:", response.text[:500])
-
-        if response.status_code != 200:
-            raise HTTPException(
-                status_code=response.status_code,
-                detail=response.json(),
-            )
-
-        data = response.json()
-        location = data.get("location", {})
-
-        return {
-            "place_id": data.get("id"),
-            "display_name": data.get("formattedAddress")
-            or data.get("displayName", {}).get("text"),
-            "lat": location.get("latitude"),
-            "lon": location.get("longitude"),
-        }
-
-    except HTTPException:
-        raise
+        updates = await fetch_trip_updates(trip_id, mode=mode)
+        return updates
     except Exception as exc:
-        logger.exception("Failed to fetch place details: %s", exc)
-        raise HTTPException(status_code=500, detail="Failed to fetch place details")
+        logger.exception("GTFSR trip update error for trip %s: %s", trip_id, exc)
+        raise HTTPException(status_code=502, detail="Could not fetch trip updates from GTFSR feed")
