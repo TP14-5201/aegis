@@ -6,8 +6,7 @@ from unittest.mock import patch, MagicMock, call
 from src.services.data_seeding import (
     seed_database,
     download_dataset,
-    load_dataset,
-    seed_substitution_index,
+    load_dataset
 )
 from src.core.config import settings
 
@@ -55,9 +54,7 @@ HEALTH_OUTCOME_DF     = pd.DataFrame({"lga_name": ["Melbourne"], "outcome": ["di
 LOW_COST_DIET_DF      = pd.DataFrame({"lga_name": ["Melbourne"], "weekly_cost": [120.0]})
 LOW_COST_DIET_HO_DF   = pd.DataFrame({"lga_name": ["Melbourne"], "linked_outcome": ["obesity"]})
 MACRONUTRIENT_DF      = pd.DataFrame({"lga_name": ["Melbourne"], "recommended_macronutrients_intake": [120.0]})
-RECIPE_DF             = pd.DataFrame({"recipe_id": [1], "name": ["Pasta"]})
 INGREDIENT_DF         = pd.DataFrame({"ingredient_id": [1], "name": ["Tomato"]})
-NUTRITION_DF          = pd.DataFrame({"ingredient_id": [1], "calories": [18.0]})
 
 
 @pytest.fixture
@@ -82,9 +79,7 @@ def mock_model():
 def _all_loader_patches(overrides: dict = None):
     """
     Returns a dict of patch kwargs for the 10 named loaders with their default
-    return values.  load_master_ingredients_dataset is excluded because it is
-    called twice with different ``mode`` arguments and must be handled
-    separately via a side_effect.
+    return values.
 
     Pass ``overrides`` to swap individual loaders, e.g.::
 
@@ -100,16 +95,11 @@ def _all_loader_patches(overrides: dict = None):
         "load_low_cost_diet_dataset":                     LOW_COST_DIET_DF,
         "load_low_cost_diet_health_outcome_dataset":      LOW_COST_DIET_HO_DF,
         "load_recommended_macronutrients_intake_dataset": MACRONUTRIENT_DF,
-        "load_recipe_dataset":                            RECIPE_DF,
+        "load_ingredient_dataset":                        INGREDIENT_DF,
     }
     if overrides:
         defaults.update(overrides)
     return defaults
-
-
-def _master_ingredients_side_effect(mode: str) -> pd.DataFrame:
-    """Returns the correct fixture DF based on the ``mode`` argument."""
-    return INGREDIENT_DF if mode == "general" else NUTRITION_DF
 
 
 # ---------------------------------------------------------------------------
@@ -223,13 +213,13 @@ class TestSeedDatabase:
 
 class TestDownloadDataset:
     """
-    download_dataset() checks whether all 13 raw files exist:
+    download_dataset() checks whether all 12 raw files exist:
         MELBOURNE_RAW_PATH, DATAGOV_RAW_PATH, FOOD_INSECURITY_RAW_PATH,
         VICLGA_BOUNDARY_RAW_PATH, LGA_POPULATION_RAW_PATH,
         DIET_INDICATOR_RAW_PATH, HEALTH_OUTCOME_RAW_PATH,
         LOW_COST_DIET_RAW_PATH, LOW_COST_DIET_HEALTH_OUTCOME_RAW_PATH,
         RECOMMENDED_MACRONUTRIENTS_INTAKE_RAW_PATH,
-        RECIPE_RAW_PATH, GROCERY_PRICES_RAW_PATH, FOOD_FACTS_RAW_PATH
+        GROCERY_PRICES_RAW_PATH, FOOD_FACTS_RAW_PATH
     and calls save_local_copy() only when at least one is missing.
     """
 
@@ -327,14 +317,6 @@ class TestDownloadDataset:
             download_dataset()
         mock_save.assert_called_once()
 
-    def test_downloads_when_only_recipe_file_missing(self):
-        """Tests that save_local_copy is called when only the recipe raw file is absent."""
-        with patch("src.services.data_seeding.os.path.exists",
-                   side_effect=lambda p: p != settings.RECIPE_RAW_PATH), \
-             patch("src.services.data_seeding.save_local_copy") as mock_save:
-            download_dataset()
-        mock_save.assert_called_once()
-
     def test_downloads_when_only_grocery_prices_file_missing(self):
         """Tests that save_local_copy is called when only the grocery prices raw file is absent."""
         with patch("src.services.data_seeding.os.path.exists",
@@ -351,8 +333,8 @@ class TestDownloadDataset:
             download_dataset()
         mock_save.assert_called_once()
 
-    def test_checks_all_thirteen_configured_paths(self):
-        """Tests that os.path.exists is called for every one of the 13 configured raw file paths."""
+    def test_checks_all_twelve_configured_paths(self):
+        """Tests that os.path.exists is called for every one of the 12 configured raw file paths."""
         with patch("src.services.data_seeding.os.path.exists", return_value=True) as mock_exists, \
              patch("src.services.data_seeding.save_local_copy"):
             download_dataset()
@@ -367,7 +349,6 @@ class TestDownloadDataset:
         assert settings.LOW_COST_DIET_RAW_PATH                      in checked
         assert settings.LOW_COST_DIET_HEALTH_OUTCOME_RAW_PATH       in checked
         assert settings.RECOMMENDED_MACRONUTRIENTS_INTAKE_RAW_PATH  in checked
-        assert settings.RECIPE_RAW_PATH                             in checked
         assert settings.GROCERY_PRICES_RAW_PATH                     in checked
         assert settings.FOOD_FACTS_RAW_PATH                         in checked
 
@@ -408,7 +389,7 @@ class TestDownloadDataset:
 
 class TestLoadDataset:
     """
-    load_dataset() calls 12 loaders and returns a list of 12 (df, model) tuples
+    load_dataset() calls 10 loaders and returns a list of 10 (df, model) tuples
     in the following order:
         (emergency_services_df, SupportService),
         (food_insecurity_df,    FoodInsecurity),
@@ -419,9 +400,11 @@ class TestLoadDataset:
         (low_cost_diet_df,      LowCostDiet),
         (low_cost_diet_ho_df,   LowCostDietHealthOutcome),
         (macronutrient_df,      RecommendedMacronutrientsIntake),
-        (recipe_df,             Recipe),
-        (ingredient_df,         Ingredient),   # load_master_ingredients_dataset(mode="general")
-        (nutrition_df,          Nutrition),    # load_master_ingredients_dataset(mode="nutrition")
+        (ingredient_df,         Ingredient),
+
+    Note: IngredientNutrition is seeded separately in __main__ via
+    load_ingredient_nutrition_dataset() and is NOT part of load_dataset()'s
+    return value.
 
     Correct patch targets (functions imported into data_seeding):
         src.services.data_seeding.load_emergency_services_dataset
@@ -433,17 +416,14 @@ class TestLoadDataset:
         src.services.data_seeding.load_low_cost_diet_dataset
         src.services.data_seeding.load_low_cost_diet_health_outcome_dataset
         src.services.data_seeding.load_recommended_macronutrients_intake_dataset
-        src.services.data_seeding.load_recipe_dataset
-        src.services.data_seeding.load_master_ingredients_dataset  (called twice, mode-dispatched)
+        src.services.data_seeding.load_ingredient_dataset
     """
 
     BASE = "src.services.data_seeding"
 
     def _run_with_all_patches(self, overrides=None):
         """
-        Starts patches for every named loader plus load_master_ingredients_dataset
-        (which is called twice with different ``mode`` arguments and therefore
-        requires a side_effect rather than a simple return_value).
+        Starts patches for all 10 named loaders and returns (result, started_mocks).
         """
         patches_cfg = _all_loader_patches()
         patch_objs = []
@@ -455,20 +435,6 @@ class TestLoadDataset:
             else:
                 p = patch(target, return_value=df)
             patch_objs.append(p)
-
-        # load_master_ingredients_dataset is wrapped in two lambdas with
-        # mode="general" and mode="nutrition", so we dispatch via side_effect.
-        if overrides and "load_master_ingredients_dataset" in overrides:
-            master_patch = patch(
-                f"{self.BASE}.load_master_ingredients_dataset",
-                **overrides["load_master_ingredients_dataset"],
-            )
-        else:
-            master_patch = patch(
-                f"{self.BASE}.load_master_ingredients_dataset",
-                side_effect=_master_ingredients_side_effect,
-            )
-        patch_objs.append(master_patch)
 
         started = [p.start() for p in patch_objs]
         try:
@@ -486,9 +452,9 @@ class TestLoadDataset:
         assert isinstance(result, list)
 
     def test_returns_correct_num_items(self):
-        """Tests that load_dataset returns exactly 12 (df, model) pairs."""
+        """Tests that load_dataset returns exactly 10 (df, model) pairs."""
         result, _ = self._run_with_all_patches()
-        assert len(result) == 12
+        assert len(result) == 10
 
     def test_each_item_is_two_tuple(self):
         """Tests that every item in the result is a 2-tuple of (DataFrame, model class)."""
@@ -558,28 +524,16 @@ class TestLoadDataset:
         df, _ = result[8]
         assert df is MACRONUTRIENT_DF
 
-    def test_tenth_pair_is_recipe(self):
-        """Tests that the tenth pair contains the recipe DataFrame."""
+    def test_tenth_pair_is_ingredient(self):
+        """Tests that the tenth pair contains the ingredient DataFrame."""
         result, _ = self._run_with_all_patches()
         df, _ = result[9]
-        assert df is RECIPE_DF
-
-    def test_eleventh_pair_is_ingredient_general(self):
-        """Tests that the eleventh pair contains the general ingredient DataFrame."""
-        result, _ = self._run_with_all_patches()
-        df, _ = result[10]
         assert df is INGREDIENT_DF
-
-    def test_twelfth_pair_is_nutrition(self):
-        """Tests that the twelfth pair contains the nutrition DataFrame."""
-        result, _ = self._run_with_all_patches()
-        df, _ = result[11]
-        assert df is NUTRITION_DF
 
     # -- all loaders called --
 
     def test_all_loaders_are_called(self):
-        """Tests that every named loader and load_master_ingredients_dataset are invoked."""
+        """Tests that every named loader is invoked exactly once."""
         loader_names = list(_all_loader_patches().keys())
         patch_objs = []
         mocks = []
@@ -590,14 +544,6 @@ class TestLoadDataset:
             patch_objs.append(p)
             mocks.append(p.start())
 
-        # load_master_ingredients_dataset is called twice (general + nutrition)
-        master_p = patch(
-            f"{self.BASE}.load_master_ingredients_dataset",
-            side_effect=_master_ingredients_side_effect,
-        )
-        patch_objs.append(master_p)
-        master_mock = master_p.start()
-
         try:
             load_dataset()
         finally:
@@ -606,10 +552,6 @@ class TestLoadDataset:
 
         for m in mocks:
             m.assert_called_once()
-
-        assert master_mock.call_count == 2
-        master_mock.assert_any_call(mode="general")
-        master_mock.assert_any_call(mode="nutrition")
 
     # -- exception propagation --
 
@@ -654,94 +596,6 @@ class TestLoadDataset:
         """Tests that a failure in load_recommended_macronutrients_intake_dataset propagates up."""
         self._assert_propagates("load_recommended_macronutrients_intake_dataset")
 
-    def test_propagates_exception_from_recipe_loader(self):
-        """Tests that a failure in load_recipe_dataset propagates up."""
-        self._assert_propagates("load_recipe_dataset")
-
-    def test_propagates_exception_from_master_ingredients_loader(self):
-        """Tests that a failure in load_master_ingredients_dataset propagates up."""
-        self._assert_propagates("load_master_ingredients_dataset")
-
-
-# ---------------------------------------------------------------------------
-# seed_substitution_index
-# ---------------------------------------------------------------------------
-
-class TestSeedSubstitutionIndex:
-    """
-    seed_substitution_index(db) lazily imports the substitution engine and
-    calls build_index(db).  The heavy ML dependencies (sentence-transformers,
-    faiss) must NOT be imported at module level; they are only pulled in when
-    the function is invoked.
-    """
-
-    def _run(self, mock_db, engine_mock=None):
-        """
-        Patches the substitution engine module and calls seed_substitution_index.
-        Returns the mock engine object used during the call.
-        """
-        mock_engine = engine_mock or MagicMock()
-        with patch.dict(
-            "sys.modules",
-            {"src.services.ingredient_substitution": MagicMock(engine=mock_engine)},
-        ):
-            seed_substitution_index(mock_db)
-        return mock_engine
-
-    def test_calls_build_index_with_db(self, mock_db):
-        """Tests that engine.build_index is called with the db session."""
-        mock_engine = self._run(mock_db)
-        mock_engine.build_index.assert_called_once_with(mock_db)
-
-    def test_build_index_called_exactly_once(self, mock_db):
-        """Tests that build_index is called exactly once per invocation."""
-        mock_engine = self._run(mock_db)
-        assert mock_engine.build_index.call_count == 1
-
-    def test_logs_start_message(self, mock_db):
-        """Tests that a start message is logged before build_index is called."""
-        with patch("src.services.data_seeding.logger") as mock_logger:
-            self._run(mock_db)
-        mock_logger.info.assert_any_call(
-            "Building substitution index and seeding to database\u2026"
-        )
-
-    def test_logs_completion_message(self, mock_db):
-        """Tests that a completion message is logged after build_index succeeds."""
-        with patch("src.services.data_seeding.logger") as mock_logger:
-            self._run(mock_db)
-        mock_logger.info.assert_any_call("Substitution index seeding complete.")
-
-    def test_propagates_exception_from_build_index(self, mock_db):
-        """Tests that an exception raised by build_index propagates to the caller."""
-        mock_engine = MagicMock()
-        mock_engine.build_index.side_effect = RuntimeError("FAISS failure")
-        with pytest.raises(RuntimeError, match="FAISS failure"):
-            self._run(mock_db, engine_mock=mock_engine)
-
-    def test_returns_none(self, mock_db):
-        """Tests that seed_substitution_index returns None on success."""
-        mock_engine = MagicMock()
-        with patch.dict(
-            "sys.modules",
-            {"src.services.ingredient_substitution": MagicMock(engine=mock_engine)},
-        ):
-            result = seed_substitution_index(mock_db)
-        assert result is None
-
-    def test_start_log_precedes_completion_log(self, mock_db):
-        """Tests that the start log is emitted before the completion log."""
-        log_calls = []
-        with patch("src.services.data_seeding.logger") as mock_logger:
-            mock_logger.info.side_effect = lambda msg: log_calls.append(msg)
-            self._run(mock_db)
-
-        start_idx = next(
-            i for i, m in enumerate(log_calls)
-            if "Building substitution index" in m
-        )
-        complete_idx = next(
-            i for i, m in enumerate(log_calls)
-            if "Substitution index seeding complete" in m
-        )
-        assert start_idx < complete_idx
+    def test_propagates_exception_from_ingredient_loader(self):
+        """Tests that a failure in load_ingredient_dataset propagates up."""
+        self._assert_propagates("load_ingredient_dataset")
