@@ -210,17 +210,17 @@ pytest tests/ -v --cov=src --cov-report=term-missing
 
 ## Roadmap
 
-- [x] Interactive food bank map with real-time geolocation and directions
-- [x] Food insecurity data visualizations by Victorian LGA
+- [x] Landing page
+- [x] Interactive food bank map with locations (opening hours, contact info, etc.) and real-time directions
+- [x] Interactive body map, food guide, and wellness habits guide page 
+- [x] Food insecurity data visualisation by Victorian LGA
 - [x] Children nutrition guide with age-based macronutrient breakdowns
+- [x] Hidden costs of food insecurities visualisation 
 - [x] Backend REST API with SQLite (dev) and PostgreSQL (prod) support
 - [x] CI/CD pipeline with GitHub Actions (test on PR, deploy on merge)
 - [x] Automated deployment to Vercel (frontend) and Render (backend)
-- [ ] User accounts and saved locations
-- [ ] Push notifications for newly added services nearby
-- [ ] Mobile app (React Native / Expo)
-- [ ] Multi-language support (community languages spoken in Victoria)
-- [ ] Feedback and service rating system
+- [ ] Action list
+- [ ] Virtual baby for the user to keep track of what children ate
 
 ---
 
@@ -288,11 +288,11 @@ SOFTWARE.
 **Project:** Cherebowl — FIT5120 Industry Experience Project, Monash University
 
 - 🌐 **Live App:** [cherebowl.vercel.app](https://cherebowl.vercel.app)
-- 🐛 **Issues:** [GitHub Issues](https://github.com/<your-org>/<your-repo>/issues)
-- 📧 **Email:** *(add your team contact email here)*
+- 🐛 **Issues:** [GitHub Issues](https://github.com/TP14-5201/aegis/issues)
+- 📧 **Email:** ylii0721@student.monash.edu (Yanghao), dsus0006@student.monash.edu (Dominica), yche0814@student.monash.edu (Yuqing/Chloe), asut0032@student.monash.edu (Archel), rkup0001@student.monash.edu (Rukma),
 
 <div align="center">
 
-Made with ❤️ by the Cherebowl team · Monash University FIT5120
+Made with ❤️ by the Cherebowl team · Monash University FIT5120 · Copyright 2026
 
 </div>
