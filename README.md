@@ -8,13 +8,11 @@
 
 Cherebowl is a web platform that helps Victorians experiencing food insecurity find nearby food banks, emergency food relief outlets, housing support services, and access nutrition guidance — all in one place.
 
----
-
 [![Python](https://img.shields.io/badge/python-3.11-3776AB?style=flat&logo=python&logoColor=white)](https://www.python.org/)
-[![npm](https://img.shields.io/badge/nuxt-4.x-00DC82?style=flat&logo=nuxt.js&logoColor=white)](https://nuxt.com/)
+[![Nuxt](https://img.shields.io/badge/nuxt-4.x-00DC82?style=flat&logo=nuxt.js&logoColor=white)](https://nuxt.com/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green?style=flat)](LICENSE)
-[![CI/CD](https://github.com/TP14-5201/aegis/actions/workflows/backend_tests.yml/badge.svg)](https://github.com/TP14-5201/aegis/actions/workflows/backend_tests.yml)
-[![Coverage](https://img.shields.io/badge/coverage-check%20CI-blue?style=flat)](https://github.com/TP14-5201/aegis/actions/workflows/backend_tests.yml)
+[![Tests Status](https://img.shields.io/github/actions/workflow/status/TP14-5201/aegis/backend_tests.yml?branch=main&label=Backend%20CI&logo=github-actions&logoColor=white&style=flat)](https://github.com/TP14-5201/aegis/actions/workflows/backend_tests.yml)
+[![codecov](https://codecov.io/gh/TP14-5201/aegis/graph/badge.svg?token=JC4L80XQVA)](https://codecov.io/gh/TP14-5201/aegis)
 
 ---
 
@@ -36,15 +34,12 @@ Cherebowl is a web platform that helps Victorians experiencing food insecurity f
 [![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-D71F00?style=for-the-badge&logo=sqlalchemy&logoColor=white)](https://www.sqlalchemy.org/)
 [![Pandas](https://img.shields.io/badge/Pandas-150458?style=for-the-badge&logo=pandas&logoColor=white)](https://pandas.pydata.org/)
 
-**Database**
+**Infrastructure & Deployment**
 
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
-
-**Deployment**
-
-[![Vercel](https://img.shields.io/badge/Vercel_(frontend)-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://vercel.com/)
-[![Render](https://img.shields.io/badge/Render_(backend)-46E3B7?style=for-the-badge&logo=render&logoColor=black)](https://render.com/)
-[![Supabase](https://img.shields.io/badge/Supabase_(database)-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
+[![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
+[![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://vercel.com/)
+[![Render](https://img.shields.io/badge/Render-46E3B7?style=for-the-badge&logo=render&logoColor=black)](https://render.com/)
 
 </div>
 
@@ -62,7 +57,6 @@ Cherebowl is a web platform that helps Victorians experiencing food insecurity f
       - [Frontend Setup](#frontend-setup)
   - [Usage](#usage)
     - [Running Backend Tests](#running-backend-tests)
-    - [Checking the Database](#checking-the-database)
   - [Roadmap](#roadmap)
   - [Contributing](#contributing)
   - [License](#license)
@@ -125,9 +119,7 @@ Copy the example `.env` and fill in the required values:
 
 ```bash
 # backend/.env
-DATABASE_URL=sqlite:///./app.db     # SQLite for local dev
-KAGGLE_USERNAME=your_kaggle_username
-KAGGLE_KEY=your_kaggle_api_key
+DATABASE_URL=postgresql://[YOUR_USERNAME]:[YOUR_PASSWORD]@localhost:5432/postgres
 ```
 
 **Seed the database:**
@@ -135,6 +127,25 @@ KAGGLE_KEY=your_kaggle_api_key
 ```bash
 # From the backend/ directory
 python -m src.services.data_seeding
+```
+
+**Checking the Database**
+
+**Visual way (recommended):**
+- Install [Postgres](https://www.postgresql.org/download/) locally.
+- Install [PostgreSQL pgAdmin](https://www.pgadmin.org/download/) locally.
+- Open pgAdmin and connect to your local Postgres instance.
+- Open a new query tool and run the following SQL:
+    ```sql
+    SELECT * FROM support_services LIMIT 10;
+    ```
+
+**Command line:**
+
+```bash
+cd backend
+psql -U <username> -d <database_name> -h <hostname> -p <port>
+SELECT * FROM support_services LIMIT 10;
 ```
 
 **Start the backend server:**
@@ -160,7 +171,6 @@ npm install
 # frontend/.env
 NUXT_PUBLIC_API_BASE=http://localhost:8000
 NUXT_PUBLIC_MAPBOX_TOKEN=your_mapbox_token
-NUXT_PUBLIC_GOOGLE_MAPS_KEY=your_google_maps_key   # optional
 ```
 
 **Start the development server:**
@@ -185,6 +195,8 @@ Once both servers are running, open your browser and navigate to `http://localho
 | **Nutrition Guide** | `/nutrition-guide` | Age-based macronutrient guidance for children and families, with visual portion-size guides.                                                                                         |
 | **Get Food**        | `/get-food`        | Curated resources and links for accessing food assistance.                                                                                                                           |
 
+See the full list of available APIs through the [API contract](https://docs.google.com/document/d/157Gx2cOxRReVCb1s5IcyLXWBRx5GuAZPmbPKo-Zvv8U/edit?usp=sharing)
+
 ### Running Backend Tests
 
 After any changes to the backend, run the test suite to verify nothing is broken:
@@ -192,20 +204,6 @@ After any changes to the backend, run the test suite to verify nothing is broken
 ```bash
 cd backend
 pytest tests/ -v --cov=src --cov-report=term-missing
-```
-
-### Checking the Database
-
-**Visual way (recommended):**
-- Web: Upload `backend/app.db` to [SQLite Viewer](https://sqliteviewer.com/)
-- Desktop: Open with [DB Browser for SQLite](https://sqlitebrowser.org/)
-
-**Command line:**
-
-```bash
-cd backend
-sqlite3 app.db
-sqlite> SELECT * FROM support_services LIMIT 10;
 ```
 
 ---
