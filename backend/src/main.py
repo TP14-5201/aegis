@@ -13,14 +13,15 @@ from fastapi.middleware.cors import CORSMiddleware
 from src.core.logging import logger
 from src.database import Base, engine, get_db
 from src.models import LgaPopulation, FoodInsecurity, VicLgaBoundary, SupportService, DietIndicator, HealthOutcome, LowCostDiet, LowCostDietHealthOutcome, RecommendedMacronutrientsIntake
-from src.schemas import NearbyServiceOut, FoodInsecurityRegion, LgaStatsOut, DietIndicatorOut, HealthOutcomeOut, LowCostDietOut, LowCostDietHealthOutcomeOut, RecommendedMacronutrientsIntakeOut
-from src.services.nearby_search import DEFAULT_KEYWORDS, find_nearby_support_services
+from src.schemas import NearbyServiceOut, FoodInsecurityRegion, LgaStatsOut, DietIndicatorOut, HealthOutcomeOut, LowCostDietOut, LowCostDietHealthOutcomeOut, RecommendedMacronutrientsIntakeOut, IngredientSubstitutesOut
+from src.services.ingredient_substitution import engine as substitution_engine, SubstituteResult
+from src.services.nearby_search import DEFAULT_KEYWORDS, find_nearby_support_services, search_support_service_suburbs
+from src.services.gtfsr import fetch_vehicle_positions, fetch_trip_updates
 from src.utils.opening_hours import is_open_now, _now_in_tz
 
 from sqlalchemy import func, Integer, case, distinct, Numeric
 from sqlalchemy.orm import Session
 from geoalchemy2.functions import ST_AsGeoJSON
-
 
 app = FastAPI(title="Aegis Support Services API", version="0.1.0")
 
@@ -33,8 +34,8 @@ ALLOWED_ORIGINS = [
     "https://cherebowl-underdevelopment.vercel.app",
     "https://cherebowl-dev.vercel.app",
     # Archived version
-    "https://cherebowl-v1.vercel.app"
-    "https://cherebowl-v2.vercel.app"
+    "https://cherebowl-v1.vercel.app",
+    "https://cherebowl-v2.vercel.app",
 ]
 
 app.add_middleware(
@@ -224,7 +225,6 @@ def get_all_services(
     except Exception as exc:
         logger.exception("Failed to fetch all services: %s", exc)
         raise HTTPException(status_code=500, detail="Internal error fetching services")
-
 
 @app.get("/nearby", response_model=List[NearbyServiceOut])
 def get_nearby_services(
@@ -417,3 +417,101 @@ def get_all_macronutrient_goals(db: Session = Depends(get_db)):
             status_code=500,
             detail="Internal error fetching recommended macronutrients"
         )
+
+
+# ---------------------------------------------------------------------------
+# Ingredient Substitution
+# ---------------------------------------------------------------------------
+
+def _result_to_dict(result: SubstituteResult) -> dict:
+    """Serialise a SubstituteResult dataclass into a JSON-serialisable dict."""
+
+    def _slot(s):
+        if s is None:
+            return None
+        return {
+            "ingredient_code": s.ingredient_code,
+            "product_name": s.product_name,
+            "sub_category": s.sub_category,
+            "health_benefits": s.health_benefits,
+            "retail_price": s.retail_price,
+            "nutrition_grade": s.nutrition_grade,
+            "proteins_100g": s.proteins_100g,
+            "fat_100g": s.fat_100g,
+            "carbohydrates_100g": s.carbohydrates_100g,
+            "energy_100g": s.energy_100g,
+            "similarity_score": s.similarity_score,
+            "objective_score": s.objective_score,
+        }
+
+    return {
+        "query_code": result.query_code,
+        "query_name": result.query_name,
+        "budget": _slot(result.budget),
+        "nutrition": _slot(result.nutrition),
+        "balanced": _slot(result.balanced),
+        "error": result.error,
+    }
+
+
+@app.get(
+    "/ingredients/{ingredient_code}/substitutes",
+    response_model=IngredientSubstitutesOut,
+    summary="Smart Ingredient Switch",
+    description=(
+        "Return three curated substitutes for a given ingredient: "
+        "Budget (cheapest), Nutrition (highest Nutri-Score / protein), "
+        "and Balanced (best price-to-nutrition ratio)."
+    ),
+    tags=["ingredients"],
+)
+def get_ingredient_substitutes(
+    ingredient_code: str,
+    db: Session = Depends(get_db),
+) -> dict:
+    """
+    Two-stage retrieval-ranking:
+    1. FAISS ANN (K=50) filtered by functional food role.
+    2. Three deterministic scorers for Budget / Nutrition / Balanced.
+    """
+    try:
+        result = substitution_engine.get_substitutes(ingredient_code, db)
+        return _result_to_dict(result)
+    except Exception as exc:
+        logger.exception("Substitution engine error for '%s': %s", ingredient_code, exc)
+        raise HTTPException(
+            status_code=500,
+            detail="Internal error generating ingredient substitutes",
+        )
+
+
+# ---------------------------------------------------------------------------
+# GTFSR — real-time vehicle positions + trip updates (proxied from backend
+# so the API key never reaches the browser)
+# ---------------------------------------------------------------------------
+
+@app.get("/gtfsr/vehicles")
+async def gtfsr_vehicles(route_ids: Optional[str] = None):
+    """Return live vehicle positions, optionally filtered by comma-separated route IDs."""
+    try:
+        vehicles = await fetch_vehicle_positions()
+        if route_ids:
+            ids = set(route_ids.split(","))
+            vehicles = [v for v in vehicles if v.get("route_id") in ids]
+        return vehicles
+    except Exception as exc:
+        logger.exception("GTFSR vehicle positions error: %s", exc)
+        raise HTTPException(status_code=502, detail="Could not fetch vehicle positions from GTFSR feed")
+
+
+@app.get("/gtfsr/trip-update")
+async def gtfsr_trip_update(trip_id: str, mode: str = "train"):
+    """Return real-time stop_time_updates for a specific trip.
+    mode: train | tram | bus | vline
+    """
+    try:
+        updates = await fetch_trip_updates(trip_id, mode=mode)
+        return updates
+    except Exception as exc:
+        logger.exception("GTFSR trip update error for trip %s: %s", trip_id, exc)
+        raise HTTPException(status_code=502, detail="Could not fetch trip updates from GTFSR feed")

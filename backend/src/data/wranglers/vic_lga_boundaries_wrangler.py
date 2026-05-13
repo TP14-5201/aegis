@@ -26,7 +26,7 @@ def clean_lga_names(df: pd.DataFrame) -> pd.DataFrame:
 def add_lga_pid_from_lga_population_data(df: pd.DataFrame, df_population: pd.DataFrame) -> pd.DataFrame:
     """Add LGA PID to the DataFrame."""
     df_population = df_population[["lga_pid", "lga_name"]]
-    df = pd.merge(df, df_population, on="lga_name", how="left")
+    df = pd.merge(df, df_population, on="lga_name", how="inner")
     df = df[df["lga_pid"].notna()] # Remove rows where LGA PID is NaN (unincorporated areas)
     return df
 

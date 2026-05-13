@@ -1,6 +1,7 @@
 from typing import List, Optional, Any
+import math
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
 
 
 class NearbyServiceOut(BaseModel):
@@ -118,3 +119,63 @@ class RecommendedMacronutrientsIntakeOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class SubstituteSlotOut(BaseModel):
+    """A single ingredient substitution candidate."""
+
+    ingredient_code: str
+    product_name: str
+    brands: Optional[str] = None
+    sub_category: Optional[str] = None
+    health_benefits: Optional[List[str]] = None
+    dietary_tags: Optional[List[str]] = None
+    retail_price: Optional[float] = None
+    nutrition_grade: Optional[str] = None
+    proteins_100g: Optional[float] = None
+    fat_100g: Optional[float] = None
+    carbohydrates_100g: Optional[float] = None
+    energy_100g: Optional[float] = None
+    similarity_score: float = Field(
+        ...,
+        description="Cosine-similarity-based ANN distance to the query ingredient",
+    )
+    objective_score: float = Field(
+        ...,
+        description="Score on the objective that selected this candidate (0–1)",
+    )
+
+    @validator("sub_category", "brands", pre=True)
+    def handle_nan(cls, v: Any) -> Optional[str]:
+        # If the value is a float and is NaN, return None
+        if isinstance(v, float) and math.isnan(v):
+            return None
+        return v
+
+
+class IngredientSubstitutesOut(BaseModel):
+    """
+    Response envelope for GET /ingredients/{ingredient_code}/substitutes.
+
+    Contains three curated alternatives, one per optimisation goal.
+    Any slot may be null if there are insufficient culinary-valid candidates.
+    """
+
+    query_code: str
+    query_name: str
+    budget: Optional[SubstituteSlotOut] = Field(
+        None,
+        description="Cheapest culinary-valid alternative",
+    )
+    nutrition: Optional[SubstituteSlotOut] = Field(
+        None,
+        description="Highest-nutrition (Nutri-Score + protein) alternative",
+    )
+    balanced: Optional[SubstituteSlotOut] = Field(
+        None,
+        description="Best price-to-nutrition trade-off alternative",
+    )
+    error: Optional[str] = Field(
+        None,
+        description="Set when the engine cannot produce results",
+    )

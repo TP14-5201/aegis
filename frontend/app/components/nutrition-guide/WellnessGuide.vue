@@ -1,44 +1,61 @@
 <template>
   <section id="wellness-guide" class="wellness-section">
     <div class="wellness-header">
-      <p class="eyebrow">DAILY TIPS</p>
-      <h2>Wellness Guide</h2>
-      <p class="subtitle">Bite-sized, actionable advice - orbiting around your child.</p>
+      <h2>Wellness Habits Guide</h2>
+      <p>
+        Bite-sized, actionable advice for your family’s health and daily
+        well-being to integrate seamlessly into your routine.
+      </p>
     </div>
 
-    <div class="bubble-layout">
-        <div class="orbit-card">
-        <div class="orbit-ring"></div>
-        <div class="centre-bubble">DO’S</div>
-
-        <button
-            v-for="item in dosItems"
-            :key="item.label"
-            class="orbit-bubble"
-            :class="item.position"
-            :style="{ backgroundColor: item.color }"
-        >
-            <span v-html="item.label"></span>
-        </button>
+    <div class="wellness-layout">
+      <!-- LEFT ORBIT CARD -->
+      <article class="orbit-panel">
+        <div class="orbit-heading">
+          <h3 class="dos-title">DO’s</h3>
+          <h3 class="donts-title">DON’Ts</h3>
         </div>
 
-        <div class="orbit-card">
-        <div class="orbit-ring"></div>
-        <div class="centre-bubble">AVOID</div>
+        <div class="orbit-map">
+          <div class="orbit-ring" />
+          <div class="centre-bubble">Orbit</div>
 
-        <button
-            v-for="item in avoidItems"
+          <button
+            v-for="item in orbitItems"
             :key="item.label"
-            class="orbit-bubble"
-            :class="item.position"
-            :style="{ backgroundColor: item.color }"
+            class="orbit-item"
+            :class="[item.side, item.position]"
             @click="openPopup(item)"
-        >
-            <span v-html="item.label"></span>
-        </button>
+          >
+            <span class="orbit-label">{{ item.label }}</span>
+
+            <span class="orbit-icon" :class="item.side">
+              <img :src="item.iconSrc" :alt="item.label" />
+            </span>
+          </button>
         </div>
+      </article>
+
+      <!-- RIGHT QUICK TIPS -->
+      <aside class="tips-panel">
+        <h3>Quick Tips</h3>
+
+        <div class="tips-list">
+          <article v-for="tip in quickTips" :key="tip.title" class="tip-card">
+            <div class="tip-icon">
+              <img :src="tip.iconSrc" :alt="tip.title" />
+            </div>
+
+            <div>
+              <h4>{{ tip.title }}</h4>
+              <p>{{ tip.text }}</p>
+            </div>
+          </article>
+        </div>
+      </aside>
     </div>
 
+    <!-- POPUP -->
     <div v-if="activePopup" class="popup-overlay" @click.self="closePopup">
       <div class="popup-card">
         <button class="popup-close" @click="closePopup">×</button>
@@ -59,7 +76,7 @@
         </div>
 
         <div class="popup-right">
-          <h4>▶ What foods contain saturated fats?</h4>
+          <h4>What foods contain saturated fats?</h4>
           <p><em>Saturated fats are found in:</em></p>
           <ul>
             <li>butter and cream</li>
@@ -86,206 +103,357 @@
 </template>
 
 <script setup>
-import { ref, defineComponent } from 'vue'
+import { ref } from "vue";
 
-const BubbleOrbit = defineComponent({
-  props: {
-    title: String,
-    items: Array
-  },
-  emits: ['bubble-click'],
-  template: `
-    <div class="orbit-card">
-      <div class="orbit-ring"></div>
+const activePopup = ref(null);
 
-      <div class="centre-bubble">
-        {{ title }}
-      </div>
+const orbitItems = [
+  { label: "Hydrate", iconSrc: "/images/wellness/do-1.png", side: "do", position: "do-hydrate" },
+  { label: "Sleep", iconSrc: "/images/wellness/do-2.png", side: "do", position: "do-sleep" },
+  { label: "Veggies", iconSrc: "/images/wellness/do-3.png", side: "do", position: "do-veggies" },
+  { label: "Fruits", iconSrc: "/images/wellness/do-4.png", side: "do", position: "do-fruits" },
+  { label: "Food Variety", iconSrc: "/images/wellness/do-5.png", side: "do", position: "do-variety" },
+  { label: "Stay Active", iconSrc: "/images/wellness/do-6.png", side: "do", position: "do-active" },
+  { label: "Lean Protein", iconSrc: "/images/wellness/do-7.png", side: "do", position: "do-protein" },
 
-      <button
-        v-for="item in items"
-        :key="item.label"
-        class="orbit-bubble"
-        :class="item.position"
-        :style="{ backgroundColor: item.color }"
-        @click="$emit('bubble-click', item)"
-      >
-        <span v-html="item.label"></span>
-      </button>
-    </div>
-  `
-})
-
-const activePopup = ref(null)
-
-const dosItems = [
-  { label: 'Hydrate', position: 'top', color: '#FFD6A8B2' },
-  { label: 'Sleep', position: 'rightTop', color: '#B8E6FEB2' },
-  { label: 'Fruits<br>&<br>Veggies', position: 'rightBottom', color: '#A4F4CFB2' },
-  { label: 'Food<br>Variety', position: 'bottom', color: '#FFF085B2' },
-  { label: 'Lean<br>Protein', position: 'leftBottom', color: '#D8F999B2' },
-  { label: 'Stay Active', position: 'leftTop', color: '#C6D2FFB2' }
-]
-
-const avoidItems = [
-  { label: 'Sugary<br>drinks', position: 'top', color: '#FFD6A8B2' },
   {
-    label: 'Saturated<br>fats',
-    position: 'rightTop',
-    color: '#B8E6FEB2',
+    label: "Saturated fats",
+    iconSrc: "/images/wellness/dt-1.png",
+    side: "dont",
+    position: "dont-fat",
     popup: true,
-    category: 'AVOID',
-    title: 'Saturated Fats',
-    foundIn: 'Butter, fatty meats, fried foods, coconut oil, palm oil.',
-    why: 'Raises bad cholesterol; harms heart health over time.',
-    swaps: 'Remove visible fat from meat; cook with a small amount of vegetable oil; bake instead of fry.',
-    rule: 'Less red meat, more beans and lentils — cheaper and healthier.',
-    tip: 'Replace butter or oil with a little vegetable broth or water when cooking — it is free, cuts saturated fat, and still tastes great.'
+    category: "DON’T",
+    title: "Saturated Fats",
+    foundIn: "Butter, fatty meats, fried foods, coconut oil, palm oil.",
+    why: "Raises bad cholesterol; harms heart health over time.",
+    swaps: "Remove visible fat from meat; cook with a small amount of vegetable oil; bake instead of fry.",
+    rule: "Less red meat, more beans and lentils — cheaper and healthier.",
+    tip: "Replace butter or oil with a little vegetable broth or water when cooking — it cuts saturated fat and still tastes great.",
   },
-  { label: 'Screen<br>Time', position: 'rightBottom', color: '#A4F4CFB2' },
-  { label: 'Hidden<br>Salt', position: 'bottom', color: '#FFF085B2' },
-  { label: 'Fast food', position: 'leftBottom', color: '#D8F999B2' },
-  { label: 'Added<br>sugar', position: 'leftTop', color: '#C6D2FFB2' }
-]
+  { label: "Added sugar", iconSrc: "/images/wellness/dt-2.png", side: "dont", position: "dont-sugar" },
+  { label: "Sugary drinks", iconSrc: "/images/wellness/dt-3.png", side: "dont", position: "dont-drinks" },
+  { label: "Fast food", iconSrc: "/images/wellness/dt-4.png", side: "dont", position: "dont-fast" },
+  { label: "Screen Time", iconSrc: "/images/wellness/dt-5.png", side: "dont", position: "dont-screen" },
+  { label: "Hidden Salt", iconSrc: "/images/wellness/dt-6.png", side: "dont", position: "dont-salt" },
+  { label: "Late snacking", iconSrc: "/images/wellness/dt-7.png", side: "dont", position: "dont-snack" },
+];
+
+const quickTips = [
+  {
+    title: "Mindful Portions",
+    text: "Use smaller plates to help manage portion sizes naturally during meals.",
+    iconSrc: "/images/wellness/tips-1.png",
+  },
+  {
+    title: "Freeze your greens",
+    text: "Extend the life of fresh produce by freezing them before they wilt.",
+    iconSrc: "/images/wellness/tips-2.png",
+  },
+  {
+    title: "Meal planning",
+    text: "Plan meals ahead to avoid relying on fast food during busy days.",
+    iconSrc: "/images/wellness/tips-3.png",
+  },
+  {
+    title: "Keep water close",
+    text: "A visible water bottle encourages constant hydration throughout the day.",
+    iconSrc: "/images/wellness/tips-4.png",
+  },
+];
 
 function openPopup(item) {
-  if (item.popup) activePopup.value = item
+  if (item.popup) activePopup.value = item;
 }
 
 function closePopup() {
-  activePopup.value = null
+  activePopup.value = null;
 }
 </script>
 
 <style scoped>
 .wellness-section {
   width: 100%;
-  background: #ffffff;
-  padding: 64px 5% 80px;
+  background: #eaf1ff;
+  padding: 64px 40px 72px;
 }
 
 .wellness-header {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.eyebrow {
-  margin: 0 0 12px;
-  color: #ea580c;
-  font-family: Roboto, sans-serif;
-  font-size: 16px;
-  font-weight: 700;
+  max-width: 780px;
+  margin: 0 auto 56px;
+  text-align: center;
 }
 
 .wellness-header h2 {
   margin: 0;
-  color: #181e4b;
-  font-family: Volkhov, serif;
-  font-size: 34px;
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: clamp(40px, 4vw, 56px);
   font-weight: 700;
-}
-
-.subtitle {
-  margin-top: 18px;
+  line-height: 1.1;
   color: #000;
-  font-family: Roboto, sans-serif;
-  font-size: 18px;
 }
 
-.bubble-layout {
-  max-width: 1100px;
-  margin: 72px auto 0;
+.wellness-header p {
+  margin: 18px auto 0;
+  max-width: 760px;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 18px;
+  line-height: 1.55;
+  color: #45464d;
+}
+
+.wellness-layout {
+  width: min(1120px, 100%);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.35fr 0.95fr;
+  gap: 28px;
+  align-items: end;
+}
+
+/* LEFT PANEL */
+.orbit-panel {
+  position: relative;
+  overflow: hidden;
+  height: 544px;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid #d5e3fc;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  padding: 32px;
+}
+
+.orbit-panel::before {
+  content: "";
+  position: absolute;
+  inset: -60px;
+  border-radius: 9999px;
+  background: linear-gradient(
+    154deg,
+    rgba(190, 233, 255, 0.18) 0%,
+    rgba(190, 233, 255, 0) 100%
+  );
+  filter: blur(32px);
+  pointer-events: none;
+}
+
+.orbit-heading {
+  position: relative;
+  z-index: 2;
   display: flex;
   justify-content: space-between;
-  gap: 96px;
+  align-items: center;
 }
 
-.orbit-card {
+.orbit-heading h3 {
+  margin: 0;
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.dos-title {
+  color: #396477;
+}
+
+.donts-title {
+  color: #ba1a1a;
+}
+
+/* ORBIT */
+.orbit-map {
   position: relative;
-  width: 382px;
-  height: 409px;
+  z-index: 2;
+  width: 520px;
+  height: 390px;
+  margin: 34px auto 0;
 }
 
 .orbit-ring {
   position: absolute;
-  left: 14px;
-  top: 23px;
-  width: 360px;
-  height: 360px;
-  border: 1.5px dashed rgba(24, 30, 75, 0.12);
-  border-radius: 999px;
+  left: 128px;
+  top: 64px;
+  width: 264px;
+  height: 264px;
+  border: 1px solid rgba(198, 198, 205, 0.55);
+  border-radius: 9999px;
 }
 
 .centre-bubble {
   position: absolute;
-  left: 130px;
-  top: 139px;
-  width: 128px;
-  height: 128px;
-  border-radius: 999px;
-  background: linear-gradient(117deg, #ffb86a 0%, #fda5d5 100%);
-  box-shadow: 0 8px 10px -6px #0000001a, 0 20px 25px -5px #0000001a;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #181e4b;
-  font-family: Volkhov, serif;
-  font-size: 24px;
-  font-weight: 700;
+  left: 205px;
+  top: 141px;
+  width: 110px;
+  height: 110px;
+  border-radius: 9999px;
+  border: 4px solid #f8f9ff;
+  background: #233144;
+  display: grid;
+  place-items: center;
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 22px;
+  font-weight: 600;
+  color: #eaf1ff;
 }
 
-.orbit-bubble {
+.orbit-item {
   position: absolute;
-  width: 96px;
-  height: 96px;
-  border-radius: 999px;
-  border: 0.75px solid rgba(255, 255, 255, 0.6);
-  box-shadow: 0 4px 6px -4px #0000001a, 0 10px 15px -3px #0000001a;
-  color: #181e4b;
-  font-family: Inter, Roboto, sans-serif;
+  width: 180px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+.orbit-item.do {
+  justify-content: flex-end;
+}
+
+.orbit-item.dont {
+  justify-content: flex-start;
+}
+
+.orbit-item.do .orbit-label {
+  text-align: right;
+}
+
+.orbit-item.dont .orbit-label {
+  text-align: left;
+}
+
+.orbit-item.dont .orbit-icon {
+  order: -1;
+}
+
+.orbit-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 9999px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+  box-shadow:
+    0 4px 6px -4px rgba(0, 0, 0, 0.08),
+    0 10px 15px -3px rgba(0, 0, 0, 0.08);
+}
+
+.orbit-icon.do {
+  background: #bae6fd;
+}
+
+.orbit-icon.dont {
+  background: #fecaca;
+}
+
+.orbit-icon img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.orbit-label {
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 18px;
+  color: #0d1c2e;
+  white-space: nowrap;
+}
+
+.orbit-item:hover .orbit-icon {
+  transform: translateY(-2px) scale(1.05);
+}
+
+/* DO positions */
+.do-hydrate { left: 56px; top: 51px; }
+.do-sleep { left: 8px; top: 82px; }
+.do-veggies { left: -23px; top: 130px; }
+.do-fruits { left: -31px; top: 175px; }
+.do-variety { left: -23px; top: 220px; }
+.do-active { left: 8px; top: 268px; }
+.do-protein { left: 45px; top: 295px; }
+
+/* DON'T positions */
+.dont-fat { left: 295px; top: 55px; }
+.dont-sugar { left: 332px; top: 82px; }
+.dont-drinks { left: 363px; top: 130px; }
+.dont-fast { left: 371px; top: 175px; }
+.dont-screen { left: 363px; top: 220px; }
+.dont-salt { left: 332px; top: 268px; }
+.dont-snack { left: 295px; top: 295px; }
+
+/* RIGHT SIDE */
+.tips-panel {
+  height: 544px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.tips-panel h3 {
+  margin: 0;
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: #000;
+}
+
+.tips-list {
+  display: grid;
+  gap: 16px;
+}
+
+.tip-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  min-height: 106px;
+  padding: 20px;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid #d5e3fc;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.tip-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 9999px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  background: #eaf1ff;
+}
+
+.tip-icon img {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+
+.tip-card h4 {
+  margin: 0;
+  font-family: "Plus Jakarta Sans", sans-serif;
   font-size: 14px;
   font-weight: 700;
-  line-height: 1.35;
-  text-align: center;
-  cursor: pointer;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  line-height: 20px;
+  color: #0d1c2e;
 }
 
-.orbit-bubble:hover {
-  transform: translateY(-8px) scale(1.08);
-  box-shadow: 0 14px 22px rgba(24, 30, 75, 0.18);
+.tip-card p {
+  margin: 6px 0 0;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+  color: #45464d;
 }
 
-.top {
-  left: 153px;
-  top: 0;
-}
-
-.rightTop {
-  left: 283px;
-  top: 83px;
-}
-
-.rightBottom {
-  left: 286px;
-  top: 230px;
-}
-
-.bottom {
-  left: 140px;
-  top: 313px;
-}
-
-.leftBottom {
-  left: 0;
-  top: 238px;
-}
-
-.leftTop {
-  left: 6px;
-  top: 80px;
-}
-
+/* POPUP */
 .popup-overlay {
   position: fixed;
   inset: 0;
@@ -300,7 +468,7 @@ function closePopup() {
 .popup-card {
   position: relative;
   width: min(1100px, 95vw);
-  background: #ffffff;
+  background: #fff;
   border-radius: 24px;
   padding: 48px;
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
@@ -313,114 +481,135 @@ function closePopup() {
   position: absolute;
   top: 24px;
   right: 24px;
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   border: 0;
-  border-radius: 999px;
-  background: #ef4444;
-  color: white;
+  border-radius: 9999px;
+  background: #ba1a1a;
+  color: #fff;
   font-size: 24px;
-  line-height: 1;
   cursor: pointer;
 }
 
 .popup-category {
-  color: #e26d5c;
+  margin: 0;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 14px;
   font-weight: 800;
-  font-family: Roboto, sans-serif;
+  color: #ba1a1a;
 }
 
 .popup-left h3 {
-  margin: 8px 0 24px;
-  color: #000;
-  font-family: Volkhov, serif;
+  margin: 10px 0 24px;
+  font-family: "Playfair Display", Georgia, serif;
   font-size: 34px;
+  color: #000;
 }
 
 .popup-left p {
-  font-family: Roboto, sans-serif;
-  font-size: 17px;
-  line-height: 1.35;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color: #45464d;
 }
 
 .quick-tip {
   margin-top: 22px;
   padding: 18px 22px;
-  border-radius: 22px;
-  background: #dcebe0;
-  font-family: Roboto, sans-serif;
+  border-radius: 18px;
+  background: #eaf1ff;
 }
 
 .quick-tip p {
-  margin: 4px 0 0;
+  margin-top: 6px;
 }
 
 .popup-right {
   position: relative;
-  min-height: 420px;
-  background: #6d6d6a;
-  color: #ffffff;
-  padding: 28px 32px;
   overflow: hidden;
+  min-height: 420px;
+  border-radius: 20px;
+  background: #233144;
+  color: #fff;
+  padding: 28px 32px;
 }
 
 .popup-right h4 {
   margin: 0 0 12px;
-  font-family: Roboto, sans-serif;
-  font-size: 20px;
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 24px;
 }
 
 .popup-right p,
 .popup-right li {
-  font-family: Roboto, sans-serif;
+  font-family: "Plus Jakarta Sans", sans-serif;
   font-size: 15px;
-  line-height: 1.35;
+  line-height: 1.45;
 }
 
 .popup-food-img {
   position: absolute;
-  right: -8px;
-  bottom: -18px;
+  right: -10px;
+  bottom: -20px;
   width: 290px;
   max-width: 45%;
 }
 
-@media (max-width: 900px) {
-  .bubble-layout {
-    flex-direction: column;
-    align-items: center;
-    gap: 56px;
+/* RESPONSIVE */
+@media (max-width: 1100px) {
+  .wellness-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .tips-panel {
+    height: auto;
+  }
+
+  .orbit-panel {
+    height: auto;
+  }
+}
+
+@media (max-width: 720px) {
+  .wellness-section {
+    padding: 48px 20px 56px;
+  }
+
+  .wellness-header {
+    margin-bottom: 40px;
+  }
+
+  .orbit-panel {
+    padding: 24px 18px;
+    overflow-x: auto;
+  }
+
+  .orbit-map {
+    transform: scale(0.78);
+    transform-origin: top center;
+    margin-left: 50%;
+    translate: -50% 0;
   }
 
   .popup-card {
     grid-template-columns: 1fr;
-    padding: 32px;
+    padding: 32px 24px;
     max-height: 90vh;
     overflow-y: auto;
   }
 }
 
 @media (max-width: 480px) {
-  .orbit-card {
-    transform: scale(0.82);
-    transform-origin: top center;
-    margin-bottom: -70px;
-  }
-
-  .wellness-section {
-    padding-inline: 20px;
+  .orbit-map {
+    transform: scale(0.64);
   }
 
   .wellness-header h2 {
-    font-size: 30px;
+    font-size: 34px;
   }
 
-  .subtitle {
+  .wellness-header p {
     font-size: 16px;
-  }
-
-  .popup-card {
-    padding: 28px 22px;
   }
 
   .popup-left h3 {
@@ -428,7 +617,7 @@ function closePopup() {
   }
 
   .popup-food-img {
-    opacity: 0.45;
+    opacity: 0.4;
   }
 }
 </style>

@@ -1,67 +1,173 @@
 <template>
-  <section class="relative w-full overflow-hidden bg-white">
-    <!-- GLOBAL BLOB BACKGROUND -->
-    <img src="/images/Decore.png" alt="" class="absolute z-0 -translate-x-1/2
-             left-1/2 top-0 w-[180%] max-w-[700px]
-             sm:max-w-[760px]
-             lg:left-[64%] lg:top-auto lg:bottom-0 lg:w-[120%] lg:max-w-[980px]" />
+  <section class="relative overflow-hidden bg-gradient-to-b from-[#f8f9ff] to-[#e6eeff]">
+    <!-- Marquee background, behind everything -->
+    <div class="marquee-wrap">
+      <div class="marquee-track">
+        <span class="marquee-text">NOURISH TOGETHER&nbsp;&nbsp;&nbsp;</span>
+        <span class="marquee-text">NOURISH TOGETHER&nbsp;&nbsp;&nbsp;</span>
+        <span class="marquee-text">NOURISH TOGETHER&nbsp;&nbsp;&nbsp;</span>
+      </div>
+    </div>
 
-    <div class="relative z-10 mx-auto grid max-w-8xl
-             grid-cols-1 gap-6 px-5 pt-10
-             min-h-[70vh]
-             lg:min-h-[80vh] lg:grid-cols-2 lg:gap-12 lg:px-12 lg:pt-0">
-      <!-- LEFT CONTENT -->
-      <div class="flex flex-col justify-center">
-        <p class="text-sm font-bold uppercase tracking-wider text-[#DF6951]">
-          Ending Hunger Together
-        </p>
-
-        <h1 class="mt-3 font-volkhov text-[42px] font-bold leading-[0.95]
-                 text-navy lg:text-[64px]">
-          Dignity through<br />
-          <span class="text-sky-active">Community</span><br />
-          Nourishment
+    <div
+      class="relative z-10 mx-auto grid min-h-[780px] max-w-[1200px] items-start gap-[40px] px-6 pb-[70px] pt-[78px] lg:grid-cols-[1.08fr_0.92fr] lg:px-10"
+    >
+      <!-- Text -->
+      <div class="max-w-[640px]">
+        <h1
+          class="font-playfair text-[56px] font-semibold leading-[1.08] tracking-[-2px] text-[#0d1c2e]"
+        >
+          Ending Hunger:<br />
+          Dignity in Every Bowl
         </h1>
 
-        <p class="mt-5 max-w-xl text-[18px] leading-tight text-black lg:text-[21px]">
-          The first step is always the hardest. We've mapped<br />
-          thousands of local food banks, ensuring that nutrition<br />
-          is never more than a mile away.
+        <p
+          class="mt-4 max-w-[560px] font-jakarta text-[15px] font-normal leading-[1.7] text-[#45464d]"
+        >
+          The first step is always the hardest. We've mapped thousands of local food banks,
+          ensuring that nutrition is never more than a mile away.
         </p>
 
-        <NuxtLink to="/food-banks" class="group mt-6 inline-flex items-center justify-center gap-3
-                rounded-[20px]
-                h-[64px] lg:h-[76px]
-                px-8 lg:px-12
-                bg-sky
-                font-roboto font-extrabold text-navy-deep
-                text-[18px] lg:text-[24px]
-                max-w-[400px]
-                w-full
-                shadow-[0_12px_28px_rgba(68,154,196,0.22)]
-                transition-transform duration-300 ease-out
-                hover:-translate-y-1
-                active:translate-y-0">
-          Find Nearby Food Banks
-          <span class="transition-transform duration-300 group-hover:translate-x-1">
-          </span>
-        </NuxtLink>
+        <div class="mt-8 flex flex-col gap-4 sm:flex-row">
+          <NuxtLink to="/food-banks" class="btn-primary">
+            Find Food Banks
+          </NuxtLink>
 
-        <p class="mt-4 text-sm text-gray-500">
-          Browse anonymously · Available 24/7
-        </p>
+          <NuxtLink to="/get-food" class="btn-outline">
+            Quick Access Plan
+          </NuxtLink>
+        </div>
       </div>
 
-      <!-- RIGHT IMAGE -->
-      <div class="relative flex min-h-[420px] items-end justify-center
-               self-end lg:min-h-[640px]">
-        <img src="/images/landing/landing-1.png" alt="Family" class="relative z-10 block w-[115%] max-w-[520px]
-                 sm:max-w-[620px]
-                 lg:w-[130%] lg:max-w-[950px]
-                 translate-y-[1px]" />
+      <!-- Image -->
+      <div class="relative mx-auto h-[340px] w-full max-w-[520px] lg:ml-auto">
+        <img
+          src="/images/landing/landing-1.png"
+          alt="Supportive parent and child"
+          class="absolute right-0 top-0 h-[319px] w-[428px] max-w-full object-contain"
+        />
       </div>
     </div>
   </section>
 </template>
 
-<script setup lang="ts"></script>
+<style scoped>
+.font-playfair {
+  font-family: 'Playfair Display', serif;
+}
+
+.font-jakarta {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.btn-primary {
+  display: inline-flex;
+  height: 56px;
+  width: 258px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: #000000;
+  padding: 16px 48px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  color: #ffffff;
+  transition: opacity 0.2s ease;
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+}
+
+.btn-outline {
+  display: inline-flex;
+  height: 56px;
+  width: 258px;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #000000;
+  border-radius: 8px;
+  padding: 16px 48px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  color: #000000;
+  transition: background 0.2s ease;
+}
+
+.btn-outline:hover {
+  background: #ffffff;
+}
+
+.marquee-wrap {
+  pointer-events: none;
+  position: absolute;
+  left: 0;
+  bottom: 0px;
+  z-index: 0;
+  width: 100%;
+  height: 180px;
+  overflow: hidden;
+  opacity: 0.035;
+}
+
+.marquee-track {
+  display: flex;
+  width: max-content;
+  white-space: nowrap;
+  animation: marquee-scroll 22s linear infinite;
+}
+
+.marquee-text {
+  flex-shrink: 0;
+  color: #0d1c2e;
+  font-family: 'Playfair Display', serif;
+  font-size: 240px;
+  font-weight: 600;
+  line-height: 160px;
+  letter-spacing: -2px;
+}
+
+@keyframes marquee-scroll {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-33.333%);
+  }
+}
+
+@media (max-width: 1200px) {
+  .marquee-wrap {
+    bottom: -26px;
+    height: 92px;
+  }
+
+  .marquee-text {
+    font-size: 180px;
+    line-height: 260px;
+  }
+}
+
+@media (max-width: 768px) {
+  .marquee-wrap {
+    bottom: -10px;
+    height: 52px;
+  }
+
+  .marquee-text {
+    font-size: 92px;
+    line-height: 130px;
+    letter-spacing: -1px;
+  }
+
+  .btn-primary,
+  .btn-outline {
+    width: 100%;
+  }
+}
+</style>

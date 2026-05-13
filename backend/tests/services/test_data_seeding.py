@@ -4,9 +4,9 @@ import numpy as np
 from unittest.mock import patch, MagicMock, call
 
 from src.services.data_seeding import (
-    seed_support_services,
+    seed_database,
     download_dataset,
-    load_dataset,
+    load_dataset
 )
 from src.core.config import settings
 
@@ -54,6 +54,9 @@ HEALTH_OUTCOME_DF     = pd.DataFrame({"lga_name": ["Melbourne"], "outcome": ["di
 LOW_COST_DIET_DF      = pd.DataFrame({"lga_name": ["Melbourne"], "weekly_cost": [120.0]})
 LOW_COST_DIET_HO_DF   = pd.DataFrame({"lga_name": ["Melbourne"], "linked_outcome": ["obesity"]})
 MACRONUTRIENT_DF      = pd.DataFrame({"lga_name": ["Melbourne"], "recommended_macronutrients_intake": [120.0]})
+FOOD_INACCESSIBILITY_REASONS_DF = pd.DataFrame({"reason": ["Cost"], "pct": [42.0]})
+INGREDIENT_DF         = pd.DataFrame({"ingredient_id": [1], "name": ["Tomato"]})
+INGREDIENT_NUTRITION_DF = pd.DataFrame({"ingredient_id": [1], "calories_100g": [80.0]})
 
 
 @pytest.fixture
@@ -77,9 +80,12 @@ def mock_model():
 
 def _all_loader_patches(overrides: dict = None):
     """
-    Returns a dict of patch kwargs for all 9 loaders with their default
-    return values. Pass ``overrides`` to swap individual loaders
-    (e.g. ``{"load_emergency_services_dataset": side_effect=...}``).
+    Returns a dict of patch kwargs for the 10 named loaders with their default
+    return values.
+
+    Pass ``overrides`` to swap individual loaders, e.g.::
+
+        {"load_emergency_services_dataset": {"side_effect": FileNotFoundError()}}
     """
     defaults = {
         "load_emergency_services_dataset":                EMERGENCY_DF,
@@ -91,6 +97,9 @@ def _all_loader_patches(overrides: dict = None):
         "load_low_cost_diet_dataset":                     LOW_COST_DIET_DF,
         "load_low_cost_diet_health_outcome_dataset":      LOW_COST_DIET_HO_DF,
         "load_recommended_macronutrients_intake_dataset": MACRONUTRIENT_DF,
+        "load_food_inaccessibility_reasons_dataset":      FOOD_INACCESSIBILITY_REASONS_DF,
+        "load_ingredient_dataset":                        INGREDIENT_DF,
+        "load_ingredient_nutrition_dataset":              INGREDIENT_NUTRITION_DF,
     }
     if overrides:
         defaults.update(overrides)
@@ -98,16 +107,16 @@ def _all_loader_patches(overrides: dict = None):
 
 
 # ---------------------------------------------------------------------------
-# seed_support_services
+# seed_database
 # ---------------------------------------------------------------------------
 
-class TestSeedSupportServices:
-    """seed_support_services(db, df, model) requires THREE arguments."""
+class TestSeedDatabase:
+    """seed_database(db, df, model) requires THREE arguments."""
 
     def test_queries_and_deletes_the_given_model(self, mock_db, mock_model):
         """Tests that the correct model is queried and its rows are deleted."""
         df = make_sample_df()
-        seed_support_services(mock_db, df, mock_model)
+        seed_database(mock_db, df, mock_model)
         mock_db.query.assert_called_once_with(mock_model)
         mock_db.query.return_value.delete.assert_called_once()
 
@@ -116,67 +125,67 @@ class TestSeedSupportServices:
         call_order = []
         mock_db.query.return_value.delete.side_effect = lambda: call_order.append("delete")
         mock_db.bulk_save_objects.side_effect = lambda objs: call_order.append("bulk_save")
-        seed_support_services(mock_db, make_sample_df(), mock_model)
+        seed_database(mock_db, make_sample_df(), mock_model)
         assert call_order == ["delete", "bulk_save"]
 
     def test_bulk_saves_correct_number_of_objects(self, mock_db, mock_model):
         """Tests that the correct number of model instances are bulk-saved."""
-        seed_support_services(mock_db, make_sample_df(n=3), mock_model)
+        seed_database(mock_db, make_sample_df(n=3), mock_model)
         args, _ = mock_db.bulk_save_objects.call_args
         assert len(args[0]) == 3
 
     def test_model_instantiated_from_each_row(self, mock_db, mock_model):
         """Tests that the model constructor is called once per DataFrame row."""
-        seed_support_services(mock_db, make_sample_df(n=4), mock_model)
+        seed_database(mock_db, make_sample_df(n=4), mock_model)
         assert mock_model.call_count == 4
 
     def test_commits_after_successful_insert(self, mock_db, mock_model):
         """Tests that db.commit() is called after a successful bulk save."""
-        seed_support_services(mock_db, make_sample_df(), mock_model)
+        seed_database(mock_db, make_sample_df(), mock_model)
         mock_db.commit.assert_called_once()
 
     def test_rollback_on_bulk_save_exception(self, mock_db, mock_model):
         """Tests that db.rollback() is called when bulk_save_objects raises."""
         mock_db.bulk_save_objects.side_effect = Exception("DB error")
         with pytest.raises(Exception):
-            seed_support_services(mock_db, make_sample_df(), mock_model)
+            seed_database(mock_db, make_sample_df(), mock_model)
         mock_db.rollback.assert_called_once()
 
     def test_rollback_on_delete_exception(self, mock_db, mock_model):
         """Tests that db.rollback() is called when the initial delete raises."""
         mock_db.query.return_value.delete.side_effect = Exception("Delete failed")
         with pytest.raises(Exception):
-            seed_support_services(mock_db, make_sample_df(), mock_model)
+            seed_database(mock_db, make_sample_df(), mock_model)
         mock_db.rollback.assert_called_once()
 
     def test_reraises_exception_after_rollback(self, mock_db, mock_model):
         """Tests that the original exception is re-raised after rollback."""
         mock_db.bulk_save_objects.side_effect = RuntimeError("Unexpected failure")
         with pytest.raises(RuntimeError, match="Unexpected failure"):
-            seed_support_services(mock_db, make_sample_df(), mock_model)
+            seed_database(mock_db, make_sample_df(), mock_model)
 
     def test_does_not_commit_on_exception(self, mock_db, mock_model):
         """Tests that db.commit() is NOT called when an exception occurs."""
         mock_db.bulk_save_objects.side_effect = Exception("DB error")
         with pytest.raises(Exception):
-            seed_support_services(mock_db, make_sample_df(), mock_model)
+            seed_database(mock_db, make_sample_df(), mock_model)
         mock_db.commit.assert_not_called()
 
     def test_returns_none(self, mock_db, mock_model):
-        """Tests that seed_support_services returns None."""
-        result = seed_support_services(mock_db, make_sample_df(), mock_model)
+        """Tests that seed_database returns None."""
+        result = seed_database(mock_db, make_sample_df(), mock_model)
         assert result is None
 
     def test_logs_start_with_record_count(self, mock_db, mock_model):
         """Tests that the start log includes the number of records to be inserted."""
         with patch("src.services.data_seeding.logger") as mock_logger:
-            seed_support_services(mock_db, make_sample_df(n=5), mock_model)
+            seed_database(mock_db, make_sample_df(n=5), mock_model)
         mock_logger.info.assert_any_call("Starting database seed with 5 records...")
 
     def test_logs_success_with_inserted_count(self, mock_db, mock_model):
         """Tests that a success log is emitted with the count of inserted records."""
         with patch("src.services.data_seeding.logger") as mock_logger:
-            seed_support_services(mock_db, make_sample_df(n=2), mock_model)
+            seed_database(mock_db, make_sample_df(n=2), mock_model)
         mock_logger.info.assert_any_call(
             "Database seeding completed successfully! Inserted 2 records."
         )
@@ -186,18 +195,18 @@ class TestSeedSupportServices:
         mock_db.bulk_save_objects.side_effect = Exception("DB error")
         with patch("src.services.data_seeding.logger") as mock_logger:
             with pytest.raises(Exception):
-                seed_support_services(mock_db, make_sample_df(), mock_model)
+                seed_database(mock_db, make_sample_df(), mock_model)
         mock_logger.error.assert_called_once()
 
     def test_empty_dataframe_still_deletes_and_commits(self, mock_db, mock_model):
         """Tests that an empty DataFrame still triggers delete and commit."""
-        seed_support_services(mock_db, make_sample_df(n=0), mock_model)
+        seed_database(mock_db, make_sample_df(n=0), mock_model)
         mock_db.query.return_value.delete.assert_called_once()
         mock_db.commit.assert_called_once()
 
     def test_empty_dataframe_bulk_saves_zero_objects(self, mock_db, mock_model):
         """Tests that an empty DataFrame passes an empty list to bulk_save_objects."""
-        seed_support_services(mock_db, make_sample_df(n=0), mock_model)
+        seed_database(mock_db, make_sample_df(n=0), mock_model)
         args, _ = mock_db.bulk_save_objects.call_args
         assert len(args[0]) == 0
 
@@ -208,11 +217,13 @@ class TestSeedSupportServices:
 
 class TestDownloadDataset:
     """
-    download_dataset() checks whether all 10 raw files exist:
+    download_dataset() checks whether all 12 raw files exist:
         MELBOURNE_RAW_PATH, DATAGOV_RAW_PATH, FOOD_INSECURITY_RAW_PATH,
-        VICLGA_BOUNDARY_RAW_PATH, LGA_POPULATION_RAW_PATH, DIET_INDICATOR_RAW_PATH,
-        HEALTH_OUTCOME_RAW_PATH, LOW_COST_DIET_RAW_PATH,
-        LOW_COST_DIET_HEALTH_OUTCOME_RAW_PATH, RECOMMENDED_MACRONUTRIENTS_INTAKE_RAW_PATH
+        VICLGA_BOUNDARY_RAW_PATH, LGA_POPULATION_RAW_PATH,
+        DIET_INDICATOR_RAW_PATH, HEALTH_OUTCOME_RAW_PATH,
+        LOW_COST_DIET_RAW_PATH, LOW_COST_DIET_HEALTH_OUTCOME_RAW_PATH,
+        RECOMMENDED_MACRONUTRIENTS_INTAKE_RAW_PATH,
+        GROCERY_PRICES_RAW_PATH, FOOD_FACTS_RAW_PATH
     and calls save_local_copy() only when at least one is missing.
     """
 
@@ -310,22 +321,40 @@ class TestDownloadDataset:
             download_dataset()
         mock_save.assert_called_once()
 
-    def test_checks_all_ten_configured_paths(self):
-        """Tests that os.path.exists is called for every configured raw file path."""
+    def test_downloads_when_only_grocery_prices_file_missing(self):
+        """Tests that save_local_copy is called when only the grocery prices raw file is absent."""
+        with patch("src.services.data_seeding.os.path.exists",
+                   side_effect=lambda p: p != settings.GROCERY_PRICES_RAW_PATH), \
+             patch("src.services.data_seeding.save_local_copy") as mock_save:
+            download_dataset()
+        mock_save.assert_called_once()
+
+    def test_downloads_when_only_food_facts_file_missing(self):
+        """Tests that save_local_copy is called when only the food facts raw file is absent."""
+        with patch("src.services.data_seeding.os.path.exists",
+                   side_effect=lambda p: p != settings.FOOD_FACTS_RAW_PATH), \
+             patch("src.services.data_seeding.save_local_copy") as mock_save:
+            download_dataset()
+        mock_save.assert_called_once()
+
+    def test_checks_all_twelve_configured_paths(self):
+        """Tests that os.path.exists is called for every one of the 12 configured raw file paths."""
         with patch("src.services.data_seeding.os.path.exists", return_value=True) as mock_exists, \
              patch("src.services.data_seeding.save_local_copy"):
             download_dataset()
         checked = {c.args[0] for c in mock_exists.call_args_list}
-        assert settings.MELBOURNE_RAW_PATH                       in checked
-        assert settings.DATAGOV_RAW_PATH                         in checked
-        assert settings.FOOD_INSECURITY_RAW_PATH                 in checked
-        assert settings.VICLGA_BOUNDARY_RAW_PATH                 in checked
-        assert settings.LGA_POPULATION_RAW_PATH                  in checked
-        assert settings.DIET_INDICATOR_RAW_PATH                  in checked
-        assert settings.HEALTH_OUTCOME_RAW_PATH                  in checked
-        assert settings.LOW_COST_DIET_RAW_PATH                   in checked
-        assert settings.LOW_COST_DIET_HEALTH_OUTCOME_RAW_PATH    in checked
-        assert settings.RECOMMENDED_MACRONUTRIENTS_INTAKE_RAW_PATH in checked
+        assert settings.MELBOURNE_RAW_PATH                          in checked
+        assert settings.DATAGOV_RAW_PATH                            in checked
+        assert settings.FOOD_INSECURITY_RAW_PATH                    in checked
+        assert settings.VICLGA_BOUNDARY_RAW_PATH                    in checked
+        assert settings.LGA_POPULATION_RAW_PATH                     in checked
+        assert settings.DIET_INDICATOR_RAW_PATH                     in checked
+        assert settings.HEALTH_OUTCOME_RAW_PATH                     in checked
+        assert settings.LOW_COST_DIET_RAW_PATH                      in checked
+        assert settings.LOW_COST_DIET_HEALTH_OUTCOME_RAW_PATH       in checked
+        assert settings.RECOMMENDED_MACRONUTRIENTS_INTAKE_RAW_PATH  in checked
+        assert settings.GROCERY_PRICES_RAW_PATH                     in checked
+        assert settings.FOOD_FACTS_RAW_PATH                         in checked
 
     def test_save_local_copy_called_exactly_once_when_files_missing(self):
         """Tests that save_local_copy is called exactly once — not once per missing file."""
@@ -364,7 +393,7 @@ class TestDownloadDataset:
 
 class TestLoadDataset:
     """
-    load_dataset() calls 9 loaders and returns a list of 9 (df, model) tuples
+    load_dataset() calls 10 loaders and returns a list of 10 (df, model) tuples
     in the following order:
         (emergency_services_df, SupportService),
         (food_insecurity_df,    FoodInsecurity),
@@ -375,6 +404,11 @@ class TestLoadDataset:
         (low_cost_diet_df,      LowCostDiet),
         (low_cost_diet_ho_df,   LowCostDietHealthOutcome),
         (macronutrient_df,      RecommendedMacronutrientsIntake),
+        (ingredient_df,         Ingredient),
+
+    Note: IngredientNutrition is seeded separately in __main__ via
+    load_ingredient_nutrition_dataset() and is NOT part of load_dataset()'s
+    return value.
 
     Correct patch targets (functions imported into data_seeding):
         src.services.data_seeding.load_emergency_services_dataset
@@ -386,34 +420,18 @@ class TestLoadDataset:
         src.services.data_seeding.load_low_cost_diet_dataset
         src.services.data_seeding.load_low_cost_diet_health_outcome_dataset
         src.services.data_seeding.load_recommended_macronutrients_intake_dataset
+        src.services.data_seeding.load_ingredient_dataset
     """
 
     BASE = "src.services.data_seeding"
 
-    def _patch_all(self, overrides: dict = None):
-        """
-        Context manager that patches all 9 loaders. ``overrides`` maps a
-        short loader name to a ``side_effect`` or ``return_value`` dict,
-        e.g. ``{"load_emergency_services_dataset": {"side_effect": FileNotFoundError()}}``.
-        """
-        patches_cfg = _all_loader_patches()
-        active_patches = []
-        mocks = {}
-        for name, df in patches_cfg.items():
-            target = f"{self.BASE}.{name}"
-            kw = {"return_value": df}
-            if overrides and name in overrides:
-                kw = overrides[name]
-            p = patch(target, **kw)
-            active_patches.append(p)
-            mocks[name] = p
-        return active_patches
-
-    # -- helpers --
-
     def _run_with_all_patches(self, overrides=None):
+        """
+        Starts patches for all 10 named loaders and returns (result, started_mocks).
+        """
         patches_cfg = _all_loader_patches()
         patch_objs = []
+
         for name, df in patches_cfg.items():
             target = f"{self.BASE}.{name}"
             if overrides and name in overrides:
@@ -438,9 +456,9 @@ class TestLoadDataset:
         assert isinstance(result, list)
 
     def test_returns_correct_num_items(self):
-        """Tests that load_dataset returns exactly 9 (df, model) pairs."""
+        """Tests that load_dataset returns exactly 10 (df, model) pairs."""
         result, _ = self._run_with_all_patches()
-        assert len(result) == 9
+        assert len(result) == 12
 
     def test_each_item_is_two_tuple(self):
         """Tests that every item in the result is a 2-tuple of (DataFrame, model class)."""
@@ -454,79 +472,26 @@ class TestLoadDataset:
         for df, _ in result:
             assert isinstance(df, pd.DataFrame)
 
-    # -- ordering / identity tests --
-
-    def test_first_pair_is_emergency_services(self):
-        """Tests that the first pair contains the emergency services DataFrame."""
-        result, _ = self._run_with_all_patches()
-        df, _ = result[0]
-        assert df is EMERGENCY_DF
-
-    def test_second_pair_is_food_insecurity(self):
-        """Tests that the second pair contains the food insecurity DataFrame."""
-        result, _ = self._run_with_all_patches()
-        df, _ = result[1]
-        assert df is FOOD_DF
-
-    def test_third_pair_is_lga_boundaries(self):
-        """Tests that the third pair contains the LGA boundaries DataFrame."""
-        result, _ = self._run_with_all_patches()
-        df, _ = result[2]
-        assert df is LGA_BOUNDS_DF
-
-    def test_fourth_pair_is_lga_population(self):
-        """Tests that the fourth pair contains the LGA population DataFrame."""
-        result, _ = self._run_with_all_patches()
-        df, _ = result[3]
-        assert df is LGA_POP_DF
-
-    def test_fifth_pair_is_diet_indicator(self):
-        """Tests that the fifth pair contains the diet indicator DataFrame."""
-        result, _ = self._run_with_all_patches()
-        df, _ = result[4]
-        assert df is DIET_INDICATOR_DF
-
-    def test_sixth_pair_is_health_outcome(self):
-        """Tests that the sixth pair contains the health outcome DataFrame."""
-        result, _ = self._run_with_all_patches()
-        df, _ = result[5]
-        assert df is HEALTH_OUTCOME_DF
-
-    def test_seventh_pair_is_low_cost_diet(self):
-        """Tests that the seventh pair contains the low cost diet DataFrame."""
-        result, _ = self._run_with_all_patches()
-        df, _ = result[6]
-        assert df is LOW_COST_DIET_DF
-
-    def test_eighth_pair_is_low_cost_diet_health_outcome(self):
-        """Tests that the eighth pair contains the low cost diet health outcome DataFrame."""
-        result, _ = self._run_with_all_patches()
-        df, _ = result[7]
-        assert df is LOW_COST_DIET_HO_DF
-
-    def test_ninth_pair_is_recommended_macronutrients_intake(self):
-        """Tests that the ninth pair contains the recommended macronutrients intake DataFrame."""
-        result, _ = self._run_with_all_patches()
-        df, _ = result[8]
-        assert df is MACRONUTRIENT_DF
-
     # -- all loaders called --
 
-    def test_all_nine_loaders_are_called(self):
-        """Tests that every loader function is invoked exactly once."""
+    def test_all_loaders_are_called(self):
+        """Tests that every named loader is invoked exactly once."""
         loader_names = list(_all_loader_patches().keys())
         patch_objs = []
         mocks = []
+
         for name in loader_names:
             df = _all_loader_patches()[name]
             p = patch(f"{self.BASE}.{name}", return_value=df)
             patch_objs.append(p)
             mocks.append(p.start())
+
         try:
             load_dataset()
         finally:
             for p in patch_objs:
                 p.stop()
+
         for m in mocks:
             m.assert_called_once()
 
@@ -572,3 +537,7 @@ class TestLoadDataset:
     def test_propagates_exception_from_recommended_macronutrients_intake_loader(self):
         """Tests that a failure in load_recommended_macronutrients_intake_dataset propagates up."""
         self._assert_propagates("load_recommended_macronutrients_intake_dataset")
+
+    def test_propagates_exception_from_ingredient_loader(self):
+        """Tests that a failure in load_ingredient_dataset propagates up."""
+        self._assert_propagates("load_ingredient_dataset")

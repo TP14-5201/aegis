@@ -26,7 +26,7 @@ def clean_whitespaces(df: pd.DataFrame) -> pd.DataFrame:
     # df.apply operates on columns (Series), so isinstance(col, str) is always
     # False — the previous implementation was a no-op.
     str_cols = df.select_dtypes(include="object").columns
-    df[str_cols] = df[str_cols].apply(lambda col: col.str.strip())
+    df[str_cols] = df[str_cols].apply(lambda col: col.astype("str").str.strip())
     return df
 
 
@@ -100,6 +100,9 @@ def determine_emergency_service_lga(df: pd.DataFrame, df_lga_boundaries: pd.Data
     df_lga_boundaries = gpd.GeoDataFrame(df_lga_boundaries, crs="EPSG:4326")
     df = gpd.sjoin(df, df_lga_boundaries, how="left", predicate="within")
     df = df.drop(columns=["lga_name", "geometry", "index_right"])
+
+    # Drop records that are not within any LGA boundary to avoid ForeignKeyViolation
+    df = df[df["lga_pid"].notna()]
 
     return df
 

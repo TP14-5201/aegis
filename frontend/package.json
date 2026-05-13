@@ -10,6 +10,7 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
+    "@mapbox/polyline": "^1.2.1",
     "@turf/boolean-point-in-polygon": "^7.1.0",
     "@turf/dissolve": "^7.1.0",
     "@turf/helpers": "^7.1.0",

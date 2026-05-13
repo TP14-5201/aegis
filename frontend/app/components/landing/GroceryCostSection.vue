@@ -1,99 +1,182 @@
 <template>
-  <section class="relative w-full bg-white overflow-hidden">
-    <!-- background blob -->
-    <div
-      class="hidden lg:block absolute right-0 top-0 w-[520px] h-[520px]
-             bg-blue-soft rounded-full -z-10"
-    />
+  <section class="bg-[#e6eeff] px-6 py-12 lg:px-10">
+    <div class="mx-auto max-w-[1200px]">
+      <h2 class="text-center font-playfair text-[40px] font-bold leading-[50px] tracking-[-0.96px] text-[#0d1c2e] lg:text-[48px] lg:leading-[56px]">
+        Shop Smarter, Eat Better
+      </h2>
 
-    <div class="max-w-8xl mx-auto px-5 lg:px-12">
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-end">
-        
-        <!-- LEFT -->
-        <div class="py-16 lg:py-24">
-          
-          <!-- TITLE WITH GRADIENT LINE -->
-          <div class="relative pl-6">
-            <div
-              class="absolute left-0 top-2 h-[80px] w-[6px]
-                     bg-gradient-to-b from-coral to-sky rounded-full"
-            />
+      <div class="mt-6 grid gap-4 xl:grid-cols-4 xl:grid-rows-[316px_206px]">
+        <article class="large-feature-card">
+          <div>
+            <h3 class="font-playfair text-[32px] font-bold leading-[40px] text-[#0d1c2e]">
+              Mastering the Weekly Grocery Shop
+            </h3>
 
-            <h2
-              class="font-volkhov font-bold text-navy
-                     text-[36px] sm:text-[48px] lg:text-[64px] leading-[1.1]"
-            >
-              Groceries costing too much?
-            </h2>
-          </div>
-
-          <!-- DESCRIPTION -->
-          <p class="mt-4 lg:mt-6 font-roboto text-[18px] lg:text-[22px] leading-relaxed text-black max-w-xl">
-            Master budget-friendly shopping with weekly meal plans,
-            smart swaps, and nutritional information.
-          </p>
-
-          <!-- NUMBERED FEATURES -->
-          <div class="mt-7 space-y-5">
-            
-            <!-- ITEM 1 -->
-            <div class="flex items-center gap-5">
-              <div
-                class="flex h-14 w-14 shrink-0 items-center justify-center
-                       bg-coral text-white font-roboto font-bold text-[22px]
-                       rounded-[6px]"
-              >
-                1
+            <div class="mt-4 flex flex-col gap-4">
+              <div v-for="tip in tips" :key="tip" class="flex gap-4">
+                <img src="/images/landing/icon-1.png" alt="" class="mt-1 h-5 w-5 shrink-0" />
+                <p class="font-jakarta text-[16px] leading-[24px] text-[#45464d]">
+                  {{ tip }}
+                </p>
               </div>
-
-              <p class="font-roboto font-extrabold text-[16px] text-navy">
-                Meal plans under budget
-              </p>
-            </div>
-
-            <!-- ITEM 2 -->
-            <div class="flex items-center gap-5">
-              <div
-                class="flex h-14 w-14 shrink-0 items-center justify-center
-                       bg-sky text-white font-roboto font-bold text-[22px]
-                       rounded-[6px]"
-              >
-                2
-              </div>
-
-              <p class="font-roboto font-extrabold text-[16px] text-navy">
-                Smart ingredient substitutions
-              </p>
             </div>
           </div>
 
-          <!-- CTA -->
-          <NuxtLink
-            to="/get-food"
-            class="group mt-8 lg:mt-10 inline-flex items-center justify-center gap-3
-                   rounded-[20px] bg-sky px-8 lg:px-12
-                   h-[64px] lg:h-[76px]
-                   font-roboto font-extrabold text-navy-deep
-                   text-[18px] lg:text-[24px]
-                   shadow-[0_12px_28px_rgba(68,154,196,0.22)]
-                   transition-transform duration-300 ease-out
-                   hover:-translate-y-1 active:translate-y-0"
-          >
-            Build My Grocery List
-          </NuxtLink>
-        </div>
-
-        <!-- RIGHT IMAGE -->
-        <div class="self-end flex justify-center lg:justify-end">
           <img
-            class="block w-full max-w-[680px] h-auto object-contain"
             src="/images/landing/landing-3.png"
-            alt="Fresh groceries on a kitchen table"
-            loading="lazy"
+            alt="Groceries on table"
+            class="mt-6 h-[216px] w-full rounded-lg object-cover"
           />
-        </div>
+        </article>
 
+        <article class="small-tip-card bg-[#396477]">
+          <img src="/images/landing/icon-2.png" alt="" class="h-[35px] w-[30px]" />
+          <h3 class="mt-2 font-playfair text-[24px] font-semibold leading-[32px] text-white">
+            Meal plan
+          </h3>
+          <p class="mt-2 font-jakarta text-[16px] leading-[24px] text-white/90">
+            Tell us your weekly budget and family size - we'll build you a full meal plan
+            using affordable, nutritious ingredients available near you.
+          </p>
+        </article>
+
+        <article class="small-tip-card bg-[#131b2e]">
+          <img src="/images/landing/icon-3.png" alt="" class="h-[33px] w-[33px]" />
+          <h3 class="mt-2 font-playfair text-[24px] font-semibold leading-[32px] text-white">
+            Substitutions
+          </h3>
+          <p class="mt-2 font-jakarta text-[16px] leading-[24px] text-white/90">
+            Can't find an ingredient or need to swap it out? We'll suggest affordable
+            alternatives that keep your meal just as nutritious.
+          </p>
+        </article>
+
+        <article class="horizontal-highlight">
+          <div>
+            <h3 class="font-playfair text-[32px] font-bold leading-[40px] text-[#0d1c2e]">
+              Groceries Costing Too Much?
+            </h3>
+            <p class="mt-3 font-jakarta text-[16px] leading-[24px] text-[#45464d]">
+              Master budget-friendly shopping with weekly meal plans, smart swaps,
+              and nutritional information.
+            </p>
+          </div>
+
+          <NuxtLink to="/get-food" class="grocery-button">
+            Build my Grocery List
+          </NuxtLink>
+        </article>
       </div>
     </div>
   </section>
 </template>
+
+<script setup lang="ts">
+const tips = [
+  'Focus on bulk grains: Rice, oats, and lentils provide the base of most nutritious meals for pennies.',
+  'Prioritize frozen vegetables: Often more nutritious and less waste than fresh produce.',
+  'Plan meals around “The Three Ps”: Proteins, Produce, and Pantry Staples.',
+]
+</script>
+
+<style scoped>
+.font-playfair {
+  font-family: 'Playfair Display', serif;
+}
+
+.font-jakarta {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.large-feature-card {
+  border: 1px solid #c6c6cd4c;
+  border-radius: 12px;
+  background: #ffffff;
+  padding: 24px;
+  box-shadow: 0 1px 2px #0000000d;
+}
+
+@media (min-width: 1280px) {
+  .large-feature-card {
+    grid-column: span 2 / span 2;
+    grid-row: span 2 / span 2;
+  }
+
+  .horizontal-highlight {
+    grid-column: span 2 / span 2;
+    margin-top: -42px;
+  }
+}
+
+.small-tip-card {
+  position: relative;
+  margin-bottom: 60px;
+  z-index: 1;
+  overflow: hidden;
+  min-height: 400px;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 1px 2px #0000000d;
+}
+
+.horizontal-highlight {
+  grid-column: span 2 / span 2;
+  position: relative;
+  z-index: 3;
+  min-height: 206px;
+  border: 1px solid #c6c6cd4c;
+  border-radius: 12px;
+  background: #ffffff;
+  padding: 24px;
+  box-shadow: 0 1px 2px #0000000d;
+}
+
+.horizontal-highlight h3 {
+  max-width: 480px;
+}
+
+.horizontal-highlight p {
+  max-width: 560px;
+}
+
+.grocery-button {
+  position: absolute;
+  right: 24px;
+  bottom: 24px;
+  display: inline-flex;
+  height: 56px;
+  width: 258px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: #131b2e;
+  padding: 16px 32px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 28px;
+  color: #ffffff;
+}
+@media (max-width: 1279px) {
+  .large-feature-card,
+  .horizontal-highlight {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  .horizontal-highlight {
+    padding-bottom: 96px;
+  }
+
+  .grocery-button {
+    left: 24px;
+    right: 24px;
+    bottom: 24px;
+    width: auto;
+  }
+
+  .small-tip-card {
+    min-height: auto;
+  }
+}
+</style>
