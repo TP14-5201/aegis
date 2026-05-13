@@ -101,6 +101,9 @@ def determine_emergency_service_lga(df: pd.DataFrame, df_lga_boundaries: pd.Data
     df = gpd.sjoin(df, df_lga_boundaries, how="left", predicate="within")
     df = df.drop(columns=["lga_name", "geometry", "index_right"])
 
+    # Drop records that are not within any LGA boundary to avoid ForeignKeyViolation
+    df = df[df["lga_pid"].notna()]
+
     return df
 
 

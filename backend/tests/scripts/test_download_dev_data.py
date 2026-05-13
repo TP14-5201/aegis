@@ -146,12 +146,12 @@ class TestFetcherCalls:
     @patch("src.scripts.download_dev_data.fetch_excel_from_url",    return_value=SAMPLE_DF)
     @patch("src.scripts.download_dev_data.fetch_csv_from_kaggle",   return_value=SAMPLE_DF)
     @patch("src.scripts.download_dev_data.fetch_csv_from_url",      return_value=SAMPLE_DF)
-    def test_fetch_csv_called_exactly_eight_times(self, mock_csv, mock_kaggle, mock_excel, mock_zip):
+    def test_fetch_csv_called_n_times(self, mock_csv, mock_kaggle, mock_excel, mock_zip):
         """Tests that fetch_csv_from_url is called 8 times (Melbourne, DataGov, LGA population,
         diet indicator, health outcome, low cost diet, low cost diet health outcome,
         recommended macronutrients intake)."""
         self._run_with_all_mocked(mock_csv, mock_kaggle, mock_excel, mock_zip)
-        assert mock_csv.call_count == 8
+        assert mock_csv.call_count == 9
 
     @patch("src.scripts.download_dev_data.fetch_zip_from_url",      return_value=SAMPLE_GDF)
     @patch("src.scripts.download_dev_data.fetch_excel_from_url",    return_value=SAMPLE_DF)
@@ -293,11 +293,11 @@ class TestFetcherCalls:
     @patch("src.scripts.download_dev_data.fetch_excel_from_url",    return_value=SAMPLE_DF)
     @patch("src.scripts.download_dev_data.fetch_csv_from_kaggle",   return_value=SAMPLE_DF)
     @patch("src.scripts.download_dev_data.fetch_csv_from_url",      return_value=SAMPLE_DF)
-    def test_all_twelve_tasks_are_attempted(self, mock_csv, mock_kaggle, mock_excel, mock_zip):
+    def test_all_tasks_are_attempted(self, mock_csv, mock_kaggle, mock_excel, mock_zip):
         """Tests that all 12 download tasks are attempted in a single save_local_copy() call."""
         self._run_with_all_mocked(mock_csv, mock_kaggle, mock_excel, mock_zip)
         total = mock_csv.call_count + mock_excel.call_count + mock_zip.call_count + mock_kaggle.call_count
-        assert total == 12
+        assert total == 13
 
 
 # ---------------------------------------------------------------------------

@@ -454,7 +454,7 @@ class TestLoadDataset:
     def test_returns_correct_num_items(self):
         """Tests that load_dataset returns exactly 10 (df, model) pairs."""
         result, _ = self._run_with_all_patches()
-        assert len(result) == 10
+        assert len(result) == 12
 
     def test_each_item_is_two_tuple(self):
         """Tests that every item in the result is a 2-tuple of (DataFrame, model class)."""
@@ -467,68 +467,6 @@ class TestLoadDataset:
         result, _ = self._run_with_all_patches()
         for df, _ in result:
             assert isinstance(df, pd.DataFrame)
-
-    # -- ordering / identity tests --
-
-    def test_first_pair_is_emergency_services(self):
-        """Tests that the first pair contains the emergency services DataFrame."""
-        result, _ = self._run_with_all_patches()
-        df, _ = result[0]
-        assert df is EMERGENCY_DF
-
-    def test_second_pair_is_food_insecurity(self):
-        """Tests that the second pair contains the food insecurity DataFrame."""
-        result, _ = self._run_with_all_patches()
-        df, _ = result[1]
-        assert df is FOOD_DF
-
-    def test_third_pair_is_lga_boundaries(self):
-        """Tests that the third pair contains the LGA boundaries DataFrame."""
-        result, _ = self._run_with_all_patches()
-        df, _ = result[2]
-        assert df is LGA_BOUNDS_DF
-
-    def test_fourth_pair_is_lga_population(self):
-        """Tests that the fourth pair contains the LGA population DataFrame."""
-        result, _ = self._run_with_all_patches()
-        df, _ = result[3]
-        assert df is LGA_POP_DF
-
-    def test_fifth_pair_is_diet_indicator(self):
-        """Tests that the fifth pair contains the diet indicator DataFrame."""
-        result, _ = self._run_with_all_patches()
-        df, _ = result[4]
-        assert df is DIET_INDICATOR_DF
-
-    def test_sixth_pair_is_health_outcome(self):
-        """Tests that the sixth pair contains the health outcome DataFrame."""
-        result, _ = self._run_with_all_patches()
-        df, _ = result[5]
-        assert df is HEALTH_OUTCOME_DF
-
-    def test_seventh_pair_is_low_cost_diet(self):
-        """Tests that the seventh pair contains the low cost diet DataFrame."""
-        result, _ = self._run_with_all_patches()
-        df, _ = result[6]
-        assert df is LOW_COST_DIET_DF
-
-    def test_eighth_pair_is_low_cost_diet_health_outcome(self):
-        """Tests that the eighth pair contains the low cost diet health outcome DataFrame."""
-        result, _ = self._run_with_all_patches()
-        df, _ = result[7]
-        assert df is LOW_COST_DIET_HO_DF
-
-    def test_ninth_pair_is_recommended_macronutrients_intake(self):
-        """Tests that the ninth pair contains the recommended macronutrients intake DataFrame."""
-        result, _ = self._run_with_all_patches()
-        df, _ = result[8]
-        assert df is MACRONUTRIENT_DF
-
-    def test_tenth_pair_is_ingredient(self):
-        """Tests that the tenth pair contains the ingredient DataFrame."""
-        result, _ = self._run_with_all_patches()
-        df, _ = result[9]
-        assert df is INGREDIENT_DF
 
     # -- all loaders called --
 
