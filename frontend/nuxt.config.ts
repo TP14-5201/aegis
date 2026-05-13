@@ -35,10 +35,8 @@ export default defineNuxtConfig({
           crossorigin: '',
         },
         {
-          // Loads both old (Volkhov 400/700, Roboto 300/400/500/700) and new
-          // (Roboto 800/900) weights so every component renders correctly.
           rel: 'stylesheet',
-          href: 'https://fonts.googleapis.com/css2?family=Volkhov:wght@400;700&family=Roboto:wght@300;400;500;700;800;900&display=swap',
+          href: 'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap',
         },
       ],
     }
