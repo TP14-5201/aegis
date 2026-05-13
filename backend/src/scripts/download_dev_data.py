@@ -29,7 +29,8 @@ def save_local_copy() -> None:
         (fetch_csv_from_url, settings.LOW_COST_DIET_HEALTH_OUTCOME_URL, settings.LOW_COST_DIET_HEALTH_OUTCOME_RAW_PATH, {"separator": settings.LOW_COST_DIET_HEALTH_OUTCOME_SEP}),
         (fetch_csv_from_url, settings.RECOMMENDED_MACRONUTRIENTS_INTAKE_URL, settings.RECOMMENDED_MACRONUTRIENTS_INTAKE_RAW_PATH, {"separator": settings.RECOMMENDED_MACRONUTRIENTS_INTAKE_SEP}),
         (fetch_csv_from_kaggle, settings.GROCERY_PRICES_DATASET, settings.GROCERY_PRICES_RAW_PATH, {"filename": settings.GROCERY_PRICES_DATASET_FILENAME, "output_dir": settings.RAW_DATA_DIR, "usecols": settings.GROCERY_PRICES_COLS, "separator": settings.GROCERY_PRICES_SEP}),
-        (fetch_excel_from_url, settings.FOOD_FACTS_DATASET_URL, settings.FOOD_FACTS_RAW_PATH, {"sheet_name": settings.FOOD_FACTS_SHEET_NAME})
+        (fetch_excel_from_url, settings.FOOD_FACTS_DATASET_URL, settings.FOOD_FACTS_RAW_PATH, {"sheet_name": settings.FOOD_FACTS_SHEET_NAME}),
+        (fetch_csv_from_url, settings.FOOD_INACCESSIBILITY_REASONS_URL, settings.FOOD_INACCESSIBILITY_REASONS_RAW_PATH, {"separator": settings.FOOD_INACCESSIBILITY_REASONS_SEP})
     ]
 
     # Download all necessary files

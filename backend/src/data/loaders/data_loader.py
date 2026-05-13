@@ -18,6 +18,7 @@ from src.data.wranglers.health_outcome_wrangler import wrangle_health_outcome
 from src.data.wranglers.low_cost_diet_wrangler import wrangle_low_cost_diet
 from src.data.wranglers.low_cost_diet_health_outcome_wrangler import wrangle_low_cost_diet_health_outcome
 from src.data.wranglers.recommended_macronutrients_intake_wrangler import wrangle_recommended_macronutrients_intake
+from src.data.wranglers.food_inaccessibility_reasons_wrangler import wrangle_food_inaccessibility_reasons
 
 from src.data.wranglers.ingredient_wrangler import wrangle_ingredient
 from src.data.wranglers.nutrition_wrangler import wrangle_ingredient_nutrition
@@ -114,20 +115,21 @@ def load_recommended_macronutrients_intake_dataset() -> pd.DataFrame:
     return _load_and_wrangle(settings.RECOMMENDED_MACRONUTRIENTS_INTAKE_RAW_PATH, wrangle_recommended_macronutrients_intake, "Recommended Macronutrients Intake")
 
 
-def load_recipe_dataset() -> pd.DataFrame:
-    return _load_and_wrangle(settings.RECIPE_RAW_PATH, wrangle_recipe, "Country Cuisine")
+def load_food_inaccessibility_reasons_dataset() -> pd.DataFrame:
+    """Load food inaccessibility reasons dataset (Table A1-30)."""
+    df_raw = pd.read_csv(settings.FOOD_INACCESSIBILITY_REASONS_RAW_PATH)
+    df_lga = load_lga_boundaries_dataset()
+    return wrangle_food_inaccessibility_reasons(df_raw, df_lga)
 
 
 def load_ingredient_dataset() -> pd.DataFrame:
+    """Load the ingredient dataset."""
     return _load_and_wrangle(settings.GROCERY_PRICES_RAW_PATH, wrangle_ingredient, "Ingredient")
 
 
 def load_ingredient_nutrition_dataset() -> pd.DataFrame:
-    load_dotenv()
-    DATABASE_URL = os.getenv("DATABASE_URL")
-    engine = create_engine(DATABASE_URL)
-
-    ingredient_df = pd.read_sql("SELECT * FROM ingredient", engine) 
+    """Load the ingredient nutrition dataset."""
     nutrition_df = pd.read_excel(settings.FOOD_FACTS_RAW_PATH)
+    ingredient_df = load_ingredient_dataset()
     ingredient_nutrition_df = wrangle_ingredient_nutrition(ingredient_df, nutrition_df)
     return ingredient_nutrition_df

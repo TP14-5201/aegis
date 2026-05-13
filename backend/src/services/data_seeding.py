@@ -7,7 +7,7 @@ from src.models import (
     Base, SupportService, FoodInsecurity, 
     VicLgaBoundary, LgaPopulation, 
     DietIndicator, HealthOutcome, LowCostDiet,
-    LowCostDietHealthOutcome, RecommendedMacronutrientsIntake,
+    LowCostDietHealthOutcome, RecommendedMacronutrientsIntake, FoodInaccessibilityReasons, 
     Ingredient, IngredientNutrition
 )
 
@@ -24,6 +24,7 @@ from src.data.loaders.data_loader import (
     load_low_cost_diet_dataset,
     load_low_cost_diet_health_outcome_dataset,
     load_recommended_macronutrients_intake_dataset,
+    load_food_inaccessibility_reasons_dataset,
     load_ingredient_dataset,
     load_ingredient_nutrition_dataset
 )
@@ -65,6 +66,7 @@ def download_dataset() -> pd.DataFrame:
         settings.LOW_COST_DIET_RAW_PATH,
         settings.LOW_COST_DIET_HEALTH_OUTCOME_RAW_PATH,
         settings.RECOMMENDED_MACRONUTRIENTS_INTAKE_RAW_PATH,
+        settings.FOOD_INACCESSIBILITY_REASONS_RAW_PATH,
         settings.GROCERY_PRICES_RAW_PATH,
         settings.FOOD_FACTS_RAW_PATH
     ]
@@ -78,16 +80,18 @@ def download_dataset() -> pd.DataFrame:
 def load_dataset() -> pd.DataFrame:
     """Load all datasets"""
     DATASET_REGISTRY = [
+        (load_lga_population_dataset, LgaPopulation),
+        (load_lga_boundaries_dataset, VicLgaBoundary),
         (load_emergency_services_dataset, SupportService),
         (load_food_insecurity_dataset, FoodInsecurity),
-        (load_lga_boundaries_dataset, VicLgaBoundary),
-        (load_lga_population_dataset, LgaPopulation),
         (load_diet_indicator_dataset, DietIndicator),
         (load_health_outcome_dataset, HealthOutcome),
         (load_low_cost_diet_dataset, LowCostDiet),
         (load_low_cost_diet_health_outcome_dataset, LowCostDietHealthOutcome),
         (load_recommended_macronutrients_intake_dataset, RecommendedMacronutrientsIntake),
-        (load_ingredient_dataset, Ingredient)
+        (load_food_inaccessibility_reasons_dataset, FoodInaccessibilityReasons),
+        (load_ingredient_dataset, Ingredient),
+        (load_ingredient_nutrition_dataset, IngredientNutrition)
     ]
     
     return [(loader(), model) for loader, model in DATASET_REGISTRY]
@@ -103,8 +107,5 @@ if __name__ == "__main__":
     try:
         for df, model in datasets:
             seed_database(db, df, model)
-
-        # Seed AFTER ingredients are inserted to the db
-        seed_database(db, load_ingredient_nutrition_dataset(), IngredientNutrition)
     finally:
         db.close()
