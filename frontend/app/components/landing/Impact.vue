@@ -1,14 +1,14 @@
 <template>
-  <section class="impact-section">
-    <div class="impact-inner">
+  <section class="impact-section bg-chere-dark">
+    <div class="section-inner impact-inner">
       <!-- Left text -->
       <div class="impact-copy">
-        <h2>
+        <h2 class="heading-lg text-white">
           The Impact of<br />
           Food Insecurity
         </h2>
 
-        <NuxtLink to="/learn-more" class="impact-button">
+        <NuxtLink to="/learn-more" class="btn-light impact-button-spacing">
           Get to know more
         </NuxtLink>
       </div>
@@ -50,76 +50,59 @@ const stats = [
 .impact-section {
   position: relative;
   overflow: hidden;
-  min-height: 600px;
-  background: linear-gradient(163deg, #131b2e 0%, #396477 100%);
+  min-height: theme('minHeight.section-xl');
 }
 
 .impact-inner {
   position: relative;
-  max-width: 1200px;
-  min-height: 600px;
-  margin: 0 auto;
-  padding: 48px 40px 0;
-  display: grid;
-  grid-template-columns: 430px 1fr 380px;
-  gap: 28px;
-  align-items: start;
+  min-height: theme('minHeight.section-xl');
+  padding: clamp(56px, 8vh, 86px) 40px 0;
 }
 
-/* Left text aligns with ChèreBowl / Ending */
+/* Left text */
 .impact-copy {
-  padding-top: 38px;
-}
-
-.impact-copy h2 {
-  color: #ffffff;
-  font-family: 'Playfair Display', serif;
-  font-size: 48px;
-  font-weight: 700;
-  line-height: 60px;
-  letter-spacing: -0.96px;
+  position: absolute;
+  left: 40px;
+  top: clamp(72px, 14vh, 120px);
+  z-index: 3;
+  width: 360px;
 }
 
 .impact-button {
   margin-top: 42px;
-  display: inline-flex;
-  width: 258px;
-  height: 56px;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
-  background: #f8f9ff;
-  padding: 16px 48px;
-  color: #000000;
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 18px;
-  font-weight: 700;
-  line-height: 28px;
 }
 
-/* Image sticks to bottom and is bigger */
+/* Bottom image */
 .impact-image-wrap {
-  position: relative;
-  height: 560px;
+  pointer-events: none;
+  position: absolute;
+  left: 43%;
+  bottom: 0;
+  z-index: 1;
+  width: clamp(500px, 42vw, 620px);
+  height: clamp(500px, 60vh, 640px);
+  transform: translateX(-50%);
 }
 
 .impact-image {
   position: absolute;
-  left: 30%;
-  bottom: -8px;
-  width: 530px;
+  left: 50%;
+  bottom: -6px;
+  width: clamp(500px, 42vw, 620px);
   max-width: none;
   transform: translateX(-50%);
   object-fit: contain;
 }
 
-/* Wider stat cards */
+/* Right stats */
 .stats-wrap {
+  position: absolute;
+  right: 40px;
+  top: clamp(72px, 13vh, 120px);
+  z-index: 3;
   display: flex;
   flex-direction: column;
   gap: 20px;
-  padding-top: 62px;
-  justify-self: end;
 }
 
 .stat-card {
@@ -134,7 +117,7 @@ const stats = [
 
 .stat-value {
   color: #ffffff;
-  font-family: 'Playfair Display', serif;
+  font-family: theme('fontFamily.display');
   font-size: 48px;
   font-weight: 700;
   line-height: 56px;
@@ -144,7 +127,7 @@ const stats = [
 .stat-label {
   margin-top: 2px;
   color: #ffffffb2;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: theme('fontFamily.body');
   font-size: 13px;
   font-weight: 600;
   line-height: 20px;
@@ -154,40 +137,49 @@ const stats = [
 }
 
 @media (max-width: 1024px) {
-  .impact-section {
+  .impact-section,
+  .impact-inner {
     min-height: auto;
   }
 
   .impact-inner {
     display: flex;
     flex-direction: column;
-    min-height: auto;
     padding: 48px 24px 0;
     gap: 28px;
   }
 
+  .impact-copy,
+  .stats-wrap,
+  .impact-image-wrap {
+    position: relative;
+    left: auto;
+    right: auto;
+    top: auto;
+    bottom: auto;
+    transform: none;
+  }
+
   .impact-copy {
     order: 1;
-    padding-top: 0;
+    width: 100%;
   }
 
   .stats-wrap {
     order: 2;
     width: 100%;
-    padding-top: 0;
   }
 
   .impact-image-wrap {
     order: 3;
     width: 100%;
     height: auto;
-    overflow: visible;
   }
 
   .impact-image {
     position: relative;
     left: auto;
-    bottom: -8px;
+    bottom: -2px;
     width: 100%;
     max-width: 620px;
     margin: 0 auto;
@@ -202,7 +194,9 @@ const stats = [
   .stat-label {
     white-space: normal;
   }
+
+  .impact-button-spacing {
+    max-width: 258px;
+  }
 }
-
-
 </style>

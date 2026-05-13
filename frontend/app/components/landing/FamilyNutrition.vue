@@ -1,16 +1,16 @@
 <template>
-  <section class="relative overflow-hidden bg-[linear-gradient(154deg,#233144_0%,#565e74_100%)] px-6 py-20 lg:px-10 lg:py-[100px]">
+  <section class="section-large relative overflow-hidden bg-chere-slate">
     <div class="marquee-wrap">
       <div class="marquee-track">
         <span class="marquee-text">NUTRITION FIRST&nbsp;&nbsp;&nbsp;</span>
-        <span class="marquee-text">NUTRITION FIRSTR&nbsp;&nbsp;&nbsp;</span>
+        <span class="marquee-text">NUTRITION FIRST&nbsp;&nbsp;&nbsp;</span>
         <span class="marquee-text">NUTRITION FIRST&nbsp;&nbsp;&nbsp;</span>
       </div>
     </div>
 
-    <div class="relative z-10 mx-auto grid max-w-[1200px] items-center gap-12 lg:grid-cols-2">
+    <div class="section-inner family-inner relative z-10 grid items-center gap-12 lg:grid-cols-2">
       <div>
-        <h2 class="font-playfair text-[44px] font-semibold leading-[54px] text-white lg:text-[64px] lg:leading-[64px]">
+        <h2 class="font-display text-[44px] font-semibold leading-[54px] text-white lg:text-[64px] lg:leading-[64px]">
           Is Your Family Eating Right ?
         </h2>
 
@@ -21,17 +21,17 @@
             </div>
 
             <div>
-              <h3 class="font-playfair text-[24px] font-semibold leading-[32px] text-white">
+              <h3 class="font-display text-[24px] font-semibold leading-8 text-white">
                 {{ item.title }}
               </h3>
-              <p class="mt-1 max-w-[540px] font-jakarta text-[16px] leading-[24px] text-white/80">
+              <p class="mt-1 max-w-[540px] font-body text-[16px] leading-6 text-white/80">
                 {{ item.text }}
               </p>
             </div>
           </div>
         </div>
 
-        <NuxtLink to="/nutrition-guide" class="start-learning-button">
+        <NuxtLink to="/nutrition-guide" class="btn-blue start-learning-button">
           Start Learning
         </NuxtLink>
       </div>
@@ -45,7 +45,6 @@
       </div>
     </div>
   </section>
-
 </template>
 
 <script setup lang="ts">
@@ -66,42 +65,11 @@ const nutritionItems = [
     text: "Affordable, nutritious meal ideas that meet your family's daily needs - without breaking the bank.",
   },
 ]
-
-const cards = [
-  {
-    title: 'I need food today',
-    text: 'Find open relief services near you right now',
-    icon: '/images/landing/landing-4.png',
-    to: '/food-banks',
-  },
-  {
-    title: 'I have a limited budget',
-    text: 'Stretch your weekly shop further',
-    icon: '/images/landing/landing-4.png',
-    to: '/get-food',
-  },
-  {
-    title: "Unsure what's in my food?",
-    text: 'Know nutritious food that benefits your child',
-    icon: '/images/landing/landing-4.png',
-    to: '/nutrition-guide',
-  },
-  {
-    title: 'Understand my area',
-    text: 'Explore food insecurity data in Victoria',
-    icon: '/images/landing/landing-4.png',
-    to: '/learn-more',
-  },
-]
 </script>
 
 <style scoped>
-.font-playfair {
-  font-family: 'Playfair Display', serif;
-}
-
-.font-jakarta {
-  font-family: 'Plus Jakarta Sans', sans-serif;
+.family-inner {
+  min-height: theme('minHeight.section-lg');
 }
 
 .nutrition-row {
@@ -120,7 +88,7 @@ const cards = [
   justify-content: center;
   border-radius: 9999px;
   background: #ffffff33;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: theme('fontFamily.body');
   font-size: 16px;
   font-weight: 700;
   color: #ffffff;
@@ -128,72 +96,19 @@ const cards = [
 
 .start-learning-button {
   margin-top: 32px;
-  display: inline-flex;
-  height: 56px;
-  width: 258px;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
-  background: #396477;
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 18px;
-  font-weight: 800;
-  line-height: 20px;
-  color: #ffffff;
-  box-shadow:
-    0 8px 10px -6px #0000001a,
-    0 20px 25px -5px #0000001a;
 }
 
-.action-plan-button {
-  margin-top: 28px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
-  background: #131b2e;
-  padding: 16px 48px;
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 18px;
-  font-weight: 400;
-  line-height: 24px;
-  color: #ffffff;
-  box-shadow:
-    0 4px 6px -4px #0000001a,
-    0 10px 15px -3px #0000001a;
-}
-
-.cta-card {
-  display: flex;
-  min-height: 220px;
-  flex-direction: column;
-  align-items: center;
-  border: 1px solid #c6c6cd33;
-  border-radius: 12px;
-  background: #eff4ff;
-  padding: 24px 16px 32px;
-  text-align: center;
-  box-shadow: 0 1px 2px #0000000d;
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
-}
-
-.cta-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 24px #00000014;
-}
 .marquee-wrap {
   pointer-events: none;
   position: absolute;
-  left: 13%;
-  bottom: 0px;
+  right: 8%;
+  top: 50%;
   z-index: 0;
-  width: 100%;
-  height: 180px;
-  overflow: hidden;
+  width: 760px;
+  height: 760px;
+  overflow: visible;
   opacity: 0.035;
-  transform: rotate(90deg);
+  transform: translateY(-50%) rotate(90deg);
 }
 
 .marquee-track {
@@ -206,10 +121,10 @@ const cards = [
 .marquee-text {
   flex-shrink: 0;
   color: #ffffff;
-  font-family: 'Playfair Display', serif;
-  font-size: 240px;
+  font-family: theme('fontFamily.display');
+  font-size: clamp(150px, 16vw, 240px);
   font-weight: 600;
-  line-height: 160px;
+  line-height: 1;
   letter-spacing: -2px;
 }
 
@@ -225,25 +140,45 @@ const cards = [
 
 .nutrition-image-wrap {
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
 }
 
 .nutrition-image {
-  width: 560px;
-  height: 560px;
+  width: clamp(440px, 40vw, 560px);
+  height: clamp(440px, 40vw, 560px);
   border-radius: 9999px;
   object-fit: cover;
-
-  box-shadow: none;
-
   transform: translateX(24px);
 }
 
+@media (max-width: 1024px) {
+  .family-inner {
+    min-height: auto;
+  }
+
+  .nutrition-image {
+    transform: none;
+  }
+}
+
 @media (max-width: 768px) {
-  .start-learning-button,
-  .action-plan-button {
+  .marquee-wrap {
+    left: 0;
+    bottom: -10px;
+    height: 90px;
+    transform: none;
+  }
+
+  .marquee-text {
+    font-size: 96px;
+    line-height: 120px;
+  }
+
+  .nutrition-image {
     width: 100%;
+    height: auto;
+    max-width: 420px;
   }
 }
 </style>

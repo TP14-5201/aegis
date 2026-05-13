@@ -1,6 +1,6 @@
 <template>
-  <section class="relative overflow-hidden bg-gradient-to-b from-[#f8f9ff] to-[#e6eeff]">
-    <!-- Marquee background, behind everything -->
+  <section class="relative overflow-hidden bg-chere-hero">
+    <!-- Marquee background -->
     <div class="marquee-wrap">
       <div class="marquee-track">
         <span class="marquee-text">NOURISH TOGETHER&nbsp;&nbsp;&nbsp;</span>
@@ -10,26 +10,22 @@
     </div>
 
     <div
-      class="relative z-10 mx-auto grid min-h-[780px] max-w-[1200px] items-start gap-[40px] px-6 pb-[70px] pt-[78px] lg:grid-cols-[1.08fr_0.92fr] lg:px-10"
+      class="section-inner section-hero relative z-10 grid items-start gap-10 lg:grid-cols-[1.08fr_0.92fr]"
     >
       <!-- Text -->
       <div class="max-w-[640px]">
-        <h1
-          class="font-playfair text-[56px] font-semibold leading-[1.08] tracking-[-2px] text-[#0d1c2e]"
-        >
+        <h1 class="heading-xl max-w-[620px]">
           Ending Hunger:<br />
           Dignity in Every Bowl
         </h1>
 
-        <p
-          class="mt-4 max-w-[560px] font-jakarta text-[15px] font-normal leading-[1.7] text-[#45464d]"
-        >
+        <p class="body-copy mt-4 max-w-[560px]">
           The first step is always the hardest. We've mapped thousands of local food banks,
           ensuring that nutrition is never more than a mile away.
         </p>
 
         <div class="mt-8 flex flex-col gap-4 sm:flex-row">
-          <NuxtLink to="/food-banks" class="btn-primary">
+          <NuxtLink to="/food-banks" class="btn-dark">
             Find Food Banks
           </NuxtLink>
 
@@ -52,61 +48,11 @@
 </template>
 
 <style scoped>
-.font-playfair {
-  font-family: 'Playfair Display', serif;
-}
-
-.font-jakarta {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-}
-
-.btn-primary {
-  display: inline-flex;
-  height: 56px;
-  width: 258px;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
-  background: #000000;
-  padding: 16px 48px;
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 16px;
-  font-weight: 400;
-  line-height: 24px;
-  color: #ffffff;
-  transition: opacity 0.2s ease;
-}
-
-.btn-primary:hover {
-  opacity: 0.9;
-}
-
-.btn-outline {
-  display: inline-flex;
-  height: 56px;
-  width: 258px;
-  align-items: center;
-  justify-content: center;
-  border: 2px solid #000000;
-  border-radius: 8px;
-  padding: 16px 48px;
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 16px;
-  font-weight: 400;
-  line-height: 24px;
-  color: #000000;
-  transition: background 0.2s ease;
-}
-
-.btn-outline:hover {
-  background: #ffffff;
-}
-
 .marquee-wrap {
   pointer-events: none;
   position: absolute;
   left: 0;
-  bottom: 0px;
+  bottom: 0;
   z-index: 0;
   width: 100%;
   height: 180px;
@@ -123,8 +69,8 @@
 
 .marquee-text {
   flex-shrink: 0;
-  color: #0d1c2e;
-  font-family: 'Playfair Display', serif;
+  color: theme('colors.chere.navy');
+  font-family: theme('fontFamily.display');
   font-size: 240px;
   font-weight: 600;
   line-height: 160px;
@@ -163,11 +109,6 @@
     font-size: 92px;
     line-height: 130px;
     letter-spacing: -1px;
-  }
-
-  .btn-primary,
-  .btn-outline {
-    width: 100%;
   }
 }
 </style>
