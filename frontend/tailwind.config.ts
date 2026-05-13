@@ -1,55 +1,64 @@
 import type { Config } from 'tailwindcss'
 
 export default {
-  content: [
-    './app/**/*.{vue,ts,js}',
-  ],
+  content: ['./app/**/*.{vue,ts,js}'],
   theme: {
     extend: {
       colors: {
-        navy: '#181e4b',
-        'navy-deep': '#231c4e',
-        coral: '#df6951',
-        sky: '#b5dcff',
-        'sky-tint': '#dbedff6b',
-        'sky-active': '#029bc5',
-        'blue-glow': '#59b1e6cc',
-        ink: '#403b3b',
-        ash: '#525252',
-        muted: '#44474c',
-
-        primary: '#1B1E45',
-        'bright-blue': '#0298C5',
-        'light-blue': '#B5DCFF',
-        'coral-orange': '#DF6651',
-        'bg-blue': '#D8EDFF',
-        'bg-input': '#F4F4F9',
-        'heading-dark': '#1C1C11',
-        'body-grey': '#525252',
-        'border-grey': '#DEDEDB',
+        chere: {
+          navy: '#0D1C2E',
+          ink: '#131B2E',
+          blue: '#396477',
+          sky: '#DCE9FF',
+          skySoft: '#E6EEFF',
+          skyPale: '#F8F9FF',
+          coral: '#DF6951',
+          text: '#45464D',
+          muted: '#6B7280',
+          border: '#C6C6CD',
+          cream: '#FFF8E8',
+        },
       },
+
       fontFamily: {
-        roboto: ['Roboto', 'Helvetica', 'sans-serif'],
-        volkhov: ['Volkhov', 'Helvetica', 'serif'],
-        sans: ['Roboto', 'Helvetica', 'sans-serif'],
-        serif: ['Volkhov', 'Helvetica', 'serif'],
-      },
-      boxShadow: {
-        cta: '0px 18.05px 31.58px #f1a50126',
-        nav: '0px 4px 4px #00000040',
-        card: '0px 10px 30px #0000001a',
+        display: ['"Playfair Display"', 'serif'],
+        body: ['"Plus Jakarta Sans"', 'sans-serif'],
 
-        'card-white': '0px 12px 30px rgba(0,0,0,0.1)',
-        'card-blue': '0px 10px 15px rgba(0,0,0,0.1)',
+        playfair: ['"Playfair Display"', 'serif'],
+        jakarta: ['"Plus Jakarta Sans"', 'sans-serif'],
+        volkhov: ['"Playfair Display"', 'serif'],
+        roboto: ['"Plus Jakarta Sans"', 'sans-serif'],
       },
-      borderRadius: {
-        '20': '20px',
-        '14': '14px',
-        '10': '10px',
-        '6': '6px',
-      },
+
       maxWidth: {
-        '8xl': '1440px',
+        container: '1200px',
+      },
+
+      minHeight: {
+        section: 'clamp(640px, 82vh, 760px)',
+        'section-lg': 'clamp(700px, 86vh, 820px)',
+        'section-xl': 'clamp(720px, 88vh, 860px)',
+      },
+
+      spacing: {
+        nav: '72px',
+      },
+
+      borderRadius: {
+        card: '24px',
+        button: '20px',
+      },
+
+      boxShadow: {
+        card: '0 12px 30px rgba(0, 0, 0, 0.10)',
+        soft: '0 24px 60px -8px rgba(68, 154, 196, 0.22)',
+        button: '0 12px 28px rgba(68,154,196,0.22)',
+      },
+
+      backgroundImage: {
+        'chere-hero': 'linear-gradient(180deg, #F8F9FF 0%, #E6EEFF 100%)',
+        'chere-dark': 'linear-gradient(163deg, #131B2E 0%, #396477 100%)',
+        'chere-slate': 'linear-gradient(154deg, #233144 0%, #565E74 100%)',
       },
     },
   },
