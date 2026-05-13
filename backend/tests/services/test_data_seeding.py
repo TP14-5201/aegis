@@ -54,7 +54,9 @@ HEALTH_OUTCOME_DF     = pd.DataFrame({"lga_name": ["Melbourne"], "outcome": ["di
 LOW_COST_DIET_DF      = pd.DataFrame({"lga_name": ["Melbourne"], "weekly_cost": [120.0]})
 LOW_COST_DIET_HO_DF   = pd.DataFrame({"lga_name": ["Melbourne"], "linked_outcome": ["obesity"]})
 MACRONUTRIENT_DF      = pd.DataFrame({"lga_name": ["Melbourne"], "recommended_macronutrients_intake": [120.0]})
+FOOD_INACCESSIBILITY_REASONS_DF = pd.DataFrame({"reason": ["Cost"], "pct": [42.0]})
 INGREDIENT_DF         = pd.DataFrame({"ingredient_id": [1], "name": ["Tomato"]})
+INGREDIENT_NUTRITION_DF = pd.DataFrame({"ingredient_id": [1], "calories_100g": [80.0]})
 
 
 @pytest.fixture
@@ -95,7 +97,9 @@ def _all_loader_patches(overrides: dict = None):
         "load_low_cost_diet_dataset":                     LOW_COST_DIET_DF,
         "load_low_cost_diet_health_outcome_dataset":      LOW_COST_DIET_HO_DF,
         "load_recommended_macronutrients_intake_dataset": MACRONUTRIENT_DF,
+        "load_food_inaccessibility_reasons_dataset":      FOOD_INACCESSIBILITY_REASONS_DF,
         "load_ingredient_dataset":                        INGREDIENT_DF,
+        "load_ingredient_nutrition_dataset":              INGREDIENT_NUTRITION_DF,
     }
     if overrides:
         defaults.update(overrides)
