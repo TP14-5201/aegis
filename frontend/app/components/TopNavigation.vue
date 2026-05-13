@@ -21,7 +21,7 @@
       </nav>
 
       <NuxtLink
-        to="/get-food"
+        to="/quick-action"
         class="hidden h-10 items-center justify-center rounded-md bg-black px-7 text-[13px] font-bold text-white transition hover:opacity-90 lg:inline-flex"
       >
         Quick Action
@@ -67,7 +67,7 @@
         <NuxtLink to="/learn-more" class="mobile-link">Know more</NuxtLink>
 
         <NuxtLink
-          to="/get-food"
+          to="/quick-action"
           class="mt-3 inline-flex h-11 items-center justify-center rounded-md bg-black px-6 font-bold text-white"
         >
           Quick Action

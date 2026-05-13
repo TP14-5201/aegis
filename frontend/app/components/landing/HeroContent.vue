@@ -10,7 +10,7 @@
     </div>
 
     <div
-      class="relative z-10 mx-auto grid min-h-[600px] max-w-[1200px] items-start gap-[40px] px-6 pb-[70px] pt-[78px] lg:grid-cols-[1.08fr_0.92fr] lg:px-10"
+      class="relative z-10 mx-auto grid min-h-[780px] max-w-[1200px] items-start gap-[40px] px-6 pb-[70px] pt-[78px] lg:grid-cols-[1.08fr_0.92fr] lg:px-10"
     >
       <!-- Text -->
       <div class="max-w-[640px]">
