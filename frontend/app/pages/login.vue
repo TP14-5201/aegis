@@ -1,6 +1,6 @@
 <template>
   <main class="login-page">
-    <img class="login-bg" src="/images/login-bg.png" alt="" />
+    <img class="login-bg" src="/images/login-bg.webp" alt="" />
 
     <div class="login-container">
       <div class="welcome-block">
@@ -12,11 +12,7 @@
         <div class="decorative-line" />
 
         <div class="logo-area">
-          <img
-            class="logo"
-            src="/images/ChereBowl-Logo.png"
-            alt="ChèreBowl"
-          />
+          <img class="logo" src="/images/ChereBowl-Logo.webp" alt="ChèreBowl" />
         </div>
 
         <div class="form-area">
@@ -29,13 +25,8 @@
 
             <div class="input-wrapper">
               <img src="/images/lock.svg" alt="" class="lock-icon" />
-              <input
-                id="password"
-                v-model="password"
-                type="password"
-                placeholder="Enter your password"
-                :disabled="loading"
-              />
+              <input id="password" v-model="password" type="password" placeholder="Enter your password"
+                :disabled="loading" />
             </div>
 
             <p v-if="error" class="error">{{ error }}</p>
@@ -281,7 +272,9 @@ button[type="submit"]:disabled {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .bottom-text {
