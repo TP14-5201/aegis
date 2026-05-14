@@ -25,7 +25,7 @@
     </div>
   </div>
 
-  <!-- Header -->
+  <!-- Desktop -->
   <header
     class="fixed left-0 right-0 top-0 z-50 border-b border-[#e5e7eb] bg-[#f8f9ff]/95 backdrop-blur transition-transform duration-300"
     :class="[
@@ -52,9 +52,11 @@
 
       <NuxtLink
         to="/quick-action"
-        class="hidden h-10 items-center justify-center rounded-md bg-black px-7 text-[13px] font-bold text-white transition hover:opacity-90 lg:inline-flex"
+        class="quick-action-btn hidden h-10 items-center justify-center rounded-md bg-black px-7 text-[13px] font-bold text-white transition hover:opacity-90 lg:inline-flex"
       >
-        Quick Action
+        <span class="quick-action-text">
+          Quick Action
+        </span>
       </NuxtLink>
 
       <button
@@ -78,6 +80,7 @@
       </button>
     </div>
 
+    <!-- Mobile-->
     <Transition
       enter-active-class="transition duration-200 ease-out"
       enter-from-class="-translate-y-2 opacity-0"
@@ -98,7 +101,7 @@
 
         <NuxtLink
           to="/quick-action"
-          class="mt-3 inline-flex h-11 items-center justify-center rounded-md bg-black px-6 font-bold text-white"
+          class="quick-action-mobile mt-3 inline-flex h-11 items-center justify-center rounded-md bg-black px-6 font-bold text-white"
         >
           Quick Action
         </NuxtLink>
@@ -167,6 +170,26 @@ header {
   height: 2px;
   border-radius: 999px;
   background-color: #000000;
+}
+
+.quick-action-text {
+  position: relative;
+}
+
+.quick-action-btn.router-link-active .quick-action-text::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -4px;
+  width: 100%;
+  height: 2px;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background-color: #ffffff;
+}
+
+.quick-action-mobile.router-link-active {
+  box-shadow: 0 0 0 3px rgba(57, 100, 119, 0.22);
 }
 
 .mobile-link {

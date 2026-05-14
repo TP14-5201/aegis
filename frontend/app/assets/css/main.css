@@ -50,7 +50,11 @@
   }
 
   .btn-base {
-    @apply inline-flex h-[56px] w-[258px] items-center justify-center rounded-[8px] px-8 font-body text-[18px] font-bold leading-6 transition hover:-translate-y-1 active:translate-y-0;
+    @apply inline-flex h-[56px] w-[258px] items-center justify-center rounded-[8px] px-8 font-body text-[18px] font-semibold leading-6 transition hover:-translate-y-1 active:translate-y-0 max-sm:w-full;
+  }
+
+  .btn-primary-strong {
+    @apply btn-base font-bold;
   }
 
   .btn-dark {
@@ -65,10 +69,30 @@
     @apply btn-base bg-chere-blue text-white shadow-button;
   }
 
-  .btn-outline {
-    @apply btn-base border-2 border-chere-ink bg-white text-chere-ink;
+  .btn-lightblue {
+    @apply btn-base bg-chere-sky text-chere-navy shadow-button;
   }
 
+  .btn-outline {
+    @apply btn-base border-2 border-chere-ink bg-transparent text-chere-ink;
+  }
+
+  .btn-outline:hover {
+    @apply bg-white/60;
+  }
+
+  .btn-outline-light {
+    @apply btn-base border-2 border-white bg-transparent text-white;
+  }
+
+  .btn-outline-light:hover {
+    @apply bg-white/10;
+  }  
+
+  .btn-lightblue:hover {
+    @apply -translate-y-1 bg-[#cfe2ff];
+  }
+  
   .card-base {
     @apply rounded-card border border-chere-border/30 bg-white shadow-card;
   }
