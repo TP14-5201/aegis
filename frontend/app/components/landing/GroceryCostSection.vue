@@ -14,7 +14,7 @@
 
             <div class="mt-4 flex flex-col gap-4">
               <div v-for="tip in tips" :key="tip" class="flex gap-4">
-                <img src="/images/landing/icon-1.png" alt="" class="mt-1 h-5 w-5 shrink-0" />
+                <img :src="'/images/landing/icon-1.png'" alt="" class="mt-1 h-5 w-5 shrink-0" />
                 <p class="font-body text-[16px] leading-6 text-chere-text">
                   {{ tip }}
                 </p>
@@ -22,12 +22,11 @@
             </div>
           </div>
 
-          <img src="/images/landing/landing-3.webp" alt="Groceries on table"
-            class="mt-6 h-[216px] w-full rounded-lg object-cover" />
+          <img :src="'/images/landing/landing-3.webp'" alt="Groceries on table" class="mt-6 h-[216px] w-full rounded-lg object-cover" />
         </article>
 
         <article class="small-tip-card bg-chere-blue">
-          <img src="/images/landing/icon-2.png" alt="" class="h-[35px] w-[30px]" />
+          <img :src="'/images/landing/icon-2.png'" alt="" class="h-[35px] w-[30px]" />
           <h3 class="mt-2 font-display text-[24px] font-semibold leading-8 text-white">
             Meal plan
           </h3>
@@ -38,7 +37,7 @@
         </article>
 
         <article class="small-tip-card bg-chere-ink">
-          <img src="/images/landing/icon-3.png" alt="" class="h-[33px] w-[33px]" />
+          <img :src="'/images/landing/icon-3.png'" alt="" class="h-[33px] w-[33px]" />
           <h3 class="mt-2 font-display text-[24px] font-semibold leading-8 text-white">
             Substitutions
           </h3>
