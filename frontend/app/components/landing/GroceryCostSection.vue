@@ -22,7 +22,7 @@
             </div>
           </div>
 
-          <img src="/images/landing/landing-3.png" alt="Groceries on table"
+          <img src="/images/landing/landing-3.webp" alt="Groceries on table"
             class="mt-6 h-[216px] w-full rounded-lg object-cover" />
         </article>
 
