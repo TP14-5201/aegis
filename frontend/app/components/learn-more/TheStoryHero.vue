@@ -1,93 +1,102 @@
 <template>
-  <section class="w-full bg-white py-12 lg:py-20">
-    <div class="max-w-8xl mx-auto px-5 lg:px-12">
-      <p class="story-reveal font-roboto font-bold text-coral text-[16px] lg:text-[20px] uppercase">
-        Your journey through the data
-      </p>
+  <section class="w-full bg-chere-hero relative overflow-hidden py-12 lg:py-20 flex flex-col justify-center min-h-[calc(100vh-72px)] lg:min-h-[calc(100vh-100px)]">
 
-      <h1
-        class="story-reveal mt-3 font-volkhov font-bold text-navy
-               text-[32px] lg:text-[48px] leading-tight max-w-4xl"
-      >
-        Follow the path – Understand the story behind the numbers
-      </h1>
+    <div class="max-w-container mx-auto px-5 w-full relative z-10">
+      <div class="flex flex-col lg:flex-row items-center justify-between gap-10 lg:gap-20">
+        <!-- Text Content -->
+        <div class="hero-reveal flex-1">
+          <h1 class="font-playfair text-[40px] lg:text-[64px] leading-tight font-semibold tracking-[-2.1px] text-chere-navy">
+            Understand the story <br class="hidden lg:block"/>
+            <span class="text-black">behind</span> 
+            <span class="text-[#cd5005] italic"> the numbers</span>
+          </h1>
+          <button class="mt-8 lg:mt-12 bg-black text-white rounded-[8px] px-12 py-4 font-jakarta text-[18px] hover:scale-105 hover:shadow-button transition-all duration-300">
+            Explore the Story
+          </button>
+        </div>
 
-      <div class="story-reveal mt-5 h-[4px] w-[120px] bg-coral rounded-full" />
-
-      <!-- Desktop curved timeline -->
-      <div
-        ref="storyRef"
-        class="relative mt-10 hidden lg:block w-full aspect-[1200/560]"
-      >
-        <!-- Curved SVG path -->
-        <svg
-          class="absolute inset-0 w-full h-full pointer-events-none"
-          viewBox="0 0 1200 560"
-          preserveAspectRatio="xMidYMid meet"
-          fill="none"
-        >
-          <path class="story-path animate-draw" d="M190 300 C280 400, 350 420, 430 340"/>
-          <path class="story-path animate-draw" d="M500 320 C590 260, 560 130, 700 120"/>
-          <path class="story-path animate-draw" d="M780 140 C880 170, 930 280, 1040 300"/>
-        </svg>
-
-        <!-- Timeline items, positioned in the SAME 1200×560 coordinate system as the SVG -->
-        <div
-          v-for="(item, index) in storyItems"
-          :key="item.title"
-          class="story-node absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center text-center"
-          :style="{
-            left: `${(item.cx / 1200) * 100}%`,
-            top:  `${(item.cy / 560)  * 100}%`,
-            transitionDelay: `${index * 180}ms`,
-          }"
-        >
-          <p class="mb-3 font-roboto font-bold text-coral text-[16px]">{{ item.title }}</p>
-          <div class="relative w-[190px] h-[190px] rounded-full bg-[#B5DCFF]/60 flex items-center justify-center">
-            <img :src="item.img" :alt="item.title" class="w-[155px] h-[155px] rounded-full object-cover shadow-lg" />
-          </div>
+        <!-- Vertical border text -->
+        <div class="hero-reveal flex-1 lg:pl-10 lg:border-l-2 lg:border-[#c1c6d5]">
+          <p class="font-jakarta text-[16px] lg:text-[18px] leading-[28px] text-black">
+            Behind every statistic is a human experience. <br class="hidden lg:block"/>
+            Journey through the data to uncover the reality of <br class="hidden lg:block"/>
+            food insecurity in Victoria.
+          </p>
         </div>
       </div>
 
-
-      <!-- Mobile stacked timeline -->
-      <div class="mt-10 grid grid-cols-1 gap-8 lg:hidden">
-        <div
-          v-for="item in storyItems"
-          :key="item.title"
-          class="story-reveal flex flex-col items-center text-center"
-        >
-          <div class="relative w-[180px] h-[180px] rounded-full bg-[#B5DCFF]/60 flex items-center justify-center">
-            <img
-              :src="item.img"
-              :alt="item.title"
-              class="w-[145px] h-[145px] rounded-full object-cover shadow-lg"
-            />
+      <!-- Bento Cards -->
+      <div class="mt-20 lg:mt-32 grid grid-cols-1 lg:grid-cols-3 gap-6 relative z-10">
+        <!-- Card 1 -->
+        <div class="hero-reveal bg-white border-t-[4px] border-[#96432a] rounded-[24px] p-8 shadow-card flex flex-col hover:translate-y-[-4px] transition-transform duration-300">
+          <div class="flex items-start gap-1 min-h-[64px]">
+            <span class="font-playfair text-[64px] font-semibold text-[#151B2C] leading-none">1</span>
+            <span class="font-playfair text-[24px] font-semibold text-[#151B2C] mt-2">in</span>
+            <span class="font-playfair text-[64px] font-semibold text-[#151B2C] leading-none ml-1">9</span>
           </div>
-
-          <p class="mt-3 font-roboto font-bold text-coral text-[16px]">
-            {{ item.title }}
-          </p>
+          <div class="mt-6">
+            <h3 class="font-jakarta text-[14px] font-bold text-[#96432a] tracking-[1.4px] uppercase">Victorians</h3>
+            <div class="h-[1px] w-12 bg-[#dbc1ba] mt-3"></div>
+            <p class="font-playfair text-[20px] lg:text-[24px] font-semibold text-[#151B2C] leading-[30px] mt-4">
+              Go without enough food at <br class="hidden lg:block"/> some point each year
+            </p>
+          </div>
         </div>
+
+        <!-- Card 2 -->
+        <div class="hero-reveal bg-white border-t-[4px] border-[#585e4d] rounded-[24px] p-8 shadow-card flex flex-col hover:translate-y-[-4px] transition-transform duration-300">
+          <div class="flex items-start gap-1 min-h-[64px]">
+            <span class="font-playfair text-[64px] font-semibold text-[#151B2C] leading-none">35</span>
+            <span class="font-playfair text-[24px] font-semibold text-[#151B2C] mt-2">%</span>
+          </div>
+          <div class="mt-6">
+            <h3 class="font-jakarta text-[14px] font-bold text-[#585e4d] tracking-[1.4px] uppercase">Mental Distress</h3>
+            <div class="h-[1px] w-12 bg-[#dbc1ba] mt-3"></div>
+            <p class="font-playfair text-[20px] lg:text-[24px] font-semibold text-[#151B2C] leading-[30px] mt-4">
+              Of food-insecure adults <br class="hidden lg:block"/> report serious mental <br class="hidden lg:block"/> distress
+            </p>
+          </div>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="hero-reveal bg-white border-t-[4px] border-[#716252] rounded-[24px] p-8 shadow-card flex flex-col hover:translate-y-[-4px] transition-transform duration-300">
+          <div class="flex items-start gap-1 min-h-[64px]">
+            <span class="font-playfair text-[64px] font-semibold text-[#151B2C] leading-none">12</span>
+            <span class="font-playfair text-[24px] font-semibold text-[#151B2C] mt-2">%</span>
+          </div>
+          <div class="mt-6">
+            <h3 class="font-jakarta text-[14px] font-bold text-[#716252] tracking-[1.4px] uppercase">Children</h3>
+            <div class="h-[1px] w-12 bg-[#dbc1ba] mt-3"></div>
+            <p class="font-playfair text-[20px] lg:text-[24px] font-semibold text-[#151B2C] leading-[30px] mt-4">
+              Of Victorian children are <br class="hidden lg:block"/> not getting adequate daily <br class="hidden lg:block"/> nutrition
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Impact Background Marquee -->
+    <div class="w-full overflow-hidden pointer-events-none select-none mt-16 lg:mt-24 opacity-[0.47] z-[0]">
+      <div class="flex w-max animate-marquee font-playfair text-[140px] lg:text-[200px] xl:text-[256px] font-semibold text-[#CADCE5] tracking-widest uppercase leading-none">
+        <span class="mx-8 lg:mx-12">IMPACT</span>
+        <span class="mx-8 lg:mx-12">IMPACT</span>
+        <span class="mx-8 lg:mx-12">IMPACT</span>
+        <span class="mx-8 lg:mx-12">IMPACT</span>
+        <!-- Duplicated for seamless scrolling -->
+        <span class="mx-8 lg:mx-12">IMPACT</span>
+        <span class="mx-8 lg:mx-12">IMPACT</span>
+        <span class="mx-8 lg:mx-12">IMPACT</span>
+        <span class="mx-8 lg:mx-12">IMPACT</span>
       </div>
     </div>
   </section>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
-
-const storyRef = ref<HTMLElement | null>(null)
-
-const storyItems = [
-  { title: 'Where it happens', img: '/images/subject-26-1.png', cx: 80,  cy: 160 },
-  { title: 'Who it affects',   img: '/images/subject-33-1.png', cx: 380,  cy: 200 },
-  { title: 'The Impact',       img: '/images/subject-31-1.png', cx: 680,  cy: 20 },
-  { title: 'Finding Support',  img: '/images/subject-30-1.png', cx: 980, cy: 180 },
-]
+import { onMounted } from 'vue'
 
 onMounted(() => {
-  const elements = document.querySelectorAll('.story-reveal, .story-node, .story-path')
+  const elements = document.querySelectorAll('.hero-reveal')
 
   const observer = new IntersectionObserver(
     entries => {
@@ -97,43 +106,36 @@ onMounted(() => {
         }
       })
     },
-    { threshold: 0.2 }
+    { threshold: 0.1 }
   )
 
-  elements.forEach(el => observer.observe(el))
+  elements.forEach((el, index) => {
+    if (el.classList.contains('bg-white')) {
+      ;(el as HTMLElement).style.transitionDelay = `${index * 150}ms`
+    }
+    observer.observe(el)
+  })
 })
 </script>
 
 <style scoped>
-.story-reveal,
-.story-node {
+.hero-reveal {
   opacity: 0;
   transform: translateY(28px);
-  transition:
-    opacity 700ms ease,
-    transform 700ms ease;
+  transition: opacity 700ms ease, transform 700ms ease;
 }
 
-.story-reveal.is-visible,
-.story-node.is-visible {
+.hero-reveal.is-visible {
   opacity: 1;
   transform: translateY(0);
 }
 
-.story-path {
-  fill: none;
-  stroke: #6B7280;
-  stroke-width: 2;
-  stroke-linecap: round;
-  vector-effect: non-scaling-stroke;
-
-  stroke-dasharray: 10 10;
-  stroke-dashoffset: 600;
-  transition: stroke-dashoffset 1600ms ease;
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
 }
 
-.story-path.is-visible {
-  stroke-dashoffset: 0;
+.animate-marquee {
+  animation: marquee 30s linear infinite;
 }
-
 </style>
