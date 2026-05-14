@@ -9,9 +9,7 @@
       </div>
     </div>
 
-    <div
-      class="section-inner section-hero relative z-10 grid items-start gap-10 lg:grid-cols-[1.08fr_0.92fr]"
-    >
+    <div class="section-inner section-hero relative z-10 grid items-start gap-10 lg:grid-cols-[1.08fr_0.92fr]">
       <!-- Text -->
       <div class="max-w-[640px]">
         <h1 class="heading-xl max-w-[620px]">
@@ -37,11 +35,8 @@
 
       <!-- Image -->
       <div class="relative mx-auto h-[340px] w-full max-w-[520px] lg:ml-auto">
-        <img
-          src="/images/landing/landing-1.png"
-          alt="Supportive parent and child"
-          class="absolute right-0 top-0 h-[319px] w-[428px] max-w-full object-contain"
-        />
+        <img src="/images/landing/landing-1.webp" alt="Supportive parent and child"
+          class="absolute right-0 top-0 h-[319px] w-[428px] max-w-full object-contain" />
       </div>
     </div>
   </section>

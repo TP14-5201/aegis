@@ -1,19 +1,27 @@
 <template>
-  <section class="w-full bg-white py-16 lg:py-24" ref="sectionRef">
-    <div class="max-w-8xl mx-auto px-5 lg:px-12">
+  <section class="w-full bg-[#C6C6CD33]/20 py-16 lg:py-24" ref="sectionRef">
+    <div class="max-w-[1280px] mx-auto px-5 lg:px-12">
 
-      <!-- Heading -->
-      <p class="text-coral font-bold uppercase tracking-widest text-[14px] lg:text-[16px]">
-        The behavioural impact
-      </p>
-
-      <h2 class="mt-3 font-volkhov font-bold text-navy text-[28px] lg:text-[48px]">
-        The hidden cost of food insecurity
-      </h2>
-
-      <p class="mt-4 text-black max-w-3xl text-[16px] lg:text-[20px]">
-        Food insecurity doesn't just leave families hungry. It reshapes habits, emotions, and long-term wellbeing.
-      </p>
+      <!-- Heading Area -->
+      <div class="flex flex-col lg:flex-row gap-6 lg:items-center">
+        <div class="flex-1">
+          <div class="flex items-center gap-4">
+            <span class="text-[#DF6951] text-5xl lg:text-6xl font-playfair font-bold">03</span>
+            <h2 class="text-[#3D687C] font-bold uppercase tracking-widest text-[14px] lg:text-[16px]">
+              The behavioural impact
+            </h2>
+          </div>
+          <h3 class="mt-4 font-playfair font-bold text-black text-[32px] lg:text-[52px] leading-tight">
+            Beyond an empty plate - <br class="hidden lg:block" />
+            <span class="text-[#DF6951] italic font-playfair">hidden cost of food insecurity</span>
+          </h3>
+        </div>
+        <div class="lg:w-[400px] border-l-2 border-[#C6C6CD] pl-6 mt-6 lg:mt-0">
+          <p class="text-black text-[16px] lg:text-[18px]">
+            Food insecurity doesn't just leave families hungry. It reshapes habits, emotions, and long-term wellbeing.
+          </p>
+        </div>
+      </div>
 
       <!-- ================= DESKTOP ================= -->
       <div class="relative mt-16 min-h-[720px] hidden lg:block" ref="desktopContainerRef">
@@ -70,15 +78,50 @@
         </div>
       </div>
 
+      <!-- Bottom Cards -->
+      <div class="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Card 1 (Orange) -->
+        <div class="bg-[#E8A85D] rounded-[12px] p-8 flex flex-col text-black shadow-sm">
+          <p class="font-bold uppercase tracking-widest text-[12px] mb-6">In Real Numbers</p>
+          <p class="font-playfair font-bold text-5xl mb-4">$2.80</p>
+          <p class="text-[15px] leading-relaxed">
+            less per serve — the average saving of a healthy home-cooked meal vs fast food. Over a week that adds up to
+            $22 saved.
+          </p>
+        </div>
+
+        <!-- Card 2 (White) -->
+        <div class="bg-[#FFFFFF] rounded-[12px] p-8 flex flex-col text-black shadow-sm">
+          <p class="font-bold uppercase tracking-widest text-[12px] mb-6">Why This Happens</p>
+          <p class="text-[15px] leading-relaxed">
+            When time and energy are depleted by financial stress, fast food becomes the default — it's quick, cheap,
+            and predictable.
+          </p>
+        </div>
+
+        <!-- Card 3 (Beige) -->
+        <div class="bg-[#ECEAE1] rounded-[12px] p-8 flex flex-col text-black shadow-sm">
+          <p class="font-bold uppercase tracking-widest text-[12px] mb-6">What You Can Do</p>
+          <p class="text-[15px] leading-relaxed flex-1">
+            Quick affordable home meals don't need much time or skill. See ingredients that offers plenty nutritional
+            benefits
+          </p>
+          <NuxtLink to="/get-food"
+            class="mt-6 inline-flex justify-center items-center px-6 py-3 bg-[#E8A85D] hover:bg-[#d6964a] text-black font-bold rounded-[8px] transition-all duration-300 hover:-translate-y-1 hover:shadow-lg cursor-pointer">
+            Browse affordable ingredients
+          </NuxtLink>
+        </div>
+      </div>
+
       <!-- Data resources -->
-      <div class="mt-10 lg:mt-12 pt-6 border-t border-gray-200 text-[11px] text-ash">
-        <p class="font-bold uppercase tracking-widest mb-3 text-navy/60">Data Resources Used</p>
+      <div class="mt-16 pt-6 border-t border-gray-300 text-[11px] text-gray-500">
+        <p class="font-bold uppercase tracking-widest mb-3 text-black/60">Data Resources Used</p>
         <div class="flex flex-wrap gap-x-8 gap-y-3">
           <span class="flex items-center gap-2">
-            <span class="font-semibold text-navy/70">Food Insecurity:</span>
+            <span class="font-semibold text-black/70">Food Insecurity:</span>
             <a href="https://discover.data.vic.gov.au/dataset/victorian-population-health-survey-2014-vhiss/resource/d72215cf-afad-4571-869f-8f3647a84ab4"
               target="_blank" rel="noopener"
-              class="hover:text-sky-active underline decoration-gray-300 underline-offset-2">
+              class="hover:text-[#E8A85D] underline decoration-gray-400 underline-offset-2 transition-colors">
               VPHS 2014 (Victorian Population Health Survey)
             </a>
           </span>
@@ -116,41 +159,41 @@ const stats = computed(() => [
     id: 'sugary_drinks',
     title: 'Drink sugary soft drinks daily',
     value: getStat(dietIndicators, 'Sugar-Sweetened Soft Drinks Daily', 'Yes', 'worried_pct', 13.9),
-    color: '#6A8F7B',
-    desktopClass: 'absolute left-[4%] top-[15%] w-[260px]',
-    lineTarget: { x: '15%', y: '15%' }
-  },
-  {
-    id: 'poor_health_lcd',
-    title: 'Poor health (Low-cost diet)',
-    value: getStat(lcdHealthOutcomes, 'Self-Reported Health Status', 'Fair or poor', 'relied_lowcost_yes_pct', 32.3),
-    color: '#4A6D7C',
-    desktopClass: 'absolute left-[55%] -translate-x-1/2 top-[0%] w-[260px]',
-    lineTarget: { x: '45%', y: '10%' }
+    color: '#5E8470',
+    desktopClass: 'absolute left-[0%] top-[20%] w-[250px]',
+    lineTarget: { x: '25%', y: '25%' }
   },
   {
     id: 'no_veg',
     title: 'Eat almost no vegetables daily',
     value: getStat(dietIndicators, 'Serves of Vegetables Per Day', 'Less than 1 serve', 'worried_pct', 7.8),
-    color: '#4F83AF',
-    desktopClass: 'absolute right-[0%] top-[35%] w-[260px]',
-    lineTarget: { x: '85%', y: '35%' }
+    color: '#6B8CA8',
+    desktopClass: 'absolute left-[25%] top-[0%] w-[250px]',
+    lineTarget: { x: '65%', y: '15%' }
   },
   {
     id: 'mental_distress',
     title: 'Suffer serious mental distress',
     value: getStat(healthOutcomes, 'Psychological Distress Level', 'High or very high', 'insecure_hunger_pct', 31.3),
-    color: '#7C5295',
-    desktopClass: 'absolute right-[10%] bottom-[5%] w-[270px]',
-    lineTarget: { x: '80%', y: '85%' }
+    color: '#4A7BA7',
+    desktopClass: 'absolute right-[0%] top-[15%] w-[260px]',
+    lineTarget: { x: '85%', y: '50%' }
+  },
+  {
+    id: 'poor_health_lcd',
+    title: 'Report poor physical health',
+    value: getStat(lcdHealthOutcomes, 'Self-Reported Health Status', 'Fair or poor', 'relied_lowcost_yes_pct', 31.3),
+    color: '#A73E5C',
+    desktopClass: 'absolute right-[10%] bottom-[5%] w-[250px]',
+    lineTarget: { x: '45%', y: '85%' }
   },
   {
     id: 'fast_food',
     title: 'Eat fast food 2x a week',
     value: getStat(dietIndicators, 'Fast Food Consumption', 'Two or more times a week', 'worried_pct', 15.7),
-    color: '#E9B15C',
-    desktopClass: 'absolute left-[10%] bottom-[10%] w-[250px]',
-    lineTarget: { x: '20%', y: '80%' }
+    color: '#E8A85D',
+    desktopClass: 'absolute left-[0%] bottom-[15%] w-[240px]',
+    lineTarget: { x: '15%', y: '50%' }
   }
 ])
 

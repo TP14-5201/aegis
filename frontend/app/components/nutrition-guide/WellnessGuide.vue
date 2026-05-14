@@ -20,13 +20,8 @@
           <div class="orbit-ring" />
           <div class="centre-bubble">Orbit</div>
 
-          <button
-            v-for="item in orbitItems"
-            :key="item.label"
-            class="orbit-item"
-            :class="[item.side, item.position]"
-            @click="openPopup(item)"
-          >
+          <button v-for="item in orbitItems" :key="item.label" class="orbit-item" :class="[item.side, item.position]"
+            @click="openPopup(item)">
             <span class="orbit-label">{{ item.label }}</span>
 
             <span class="orbit-icon" :class="item.side">
@@ -91,11 +86,7 @@
             <li>full cream dairy products</li>
           </ul>
 
-          <img
-            src="/images/burger.png"
-            alt="Burger example of saturated fats"
-            class="popup-food-img"
-          />
+          <img src="/images/burger.webp" alt="Burger example of saturated fats" class="popup-food-img" />
         </div>
       </div>
     </div>
@@ -108,17 +99,17 @@ import { ref } from "vue";
 const activePopup = ref(null);
 
 const orbitItems = [
-  { label: "Hydrate", iconSrc: "/images/wellness/do-1.png", side: "do", position: "do-hydrate" },
-  { label: "Sleep", iconSrc: "/images/wellness/do-2.png", side: "do", position: "do-sleep" },
-  { label: "Veggies", iconSrc: "/images/wellness/do-3.png", side: "do", position: "do-veggies" },
-  { label: "Fruits", iconSrc: "/images/wellness/do-4.png", side: "do", position: "do-fruits" },
-  { label: "Food Variety", iconSrc: "/images/wellness/do-5.png", side: "do", position: "do-variety" },
-  { label: "Stay Active", iconSrc: "/images/wellness/do-6.png", side: "do", position: "do-active" },
-  { label: "Lean Protein", iconSrc: "/images/wellness/do-7.png", side: "do", position: "do-protein" },
+  { label: "Hydrate", iconSrc: "/images/wellness/do-1.webp", side: "do", position: "do-hydrate" },
+  { label: "Sleep", iconSrc: "/images/wellness/do-2.webp", side: "do", position: "do-sleep" },
+  { label: "Veggies", iconSrc: "/images/wellness/do-3.webp", side: "do", position: "do-veggies" },
+  { label: "Fruits", iconSrc: "/images/wellness/do-4.webp", side: "do", position: "do-fruits" },
+  { label: "Food Variety", iconSrc: "/images/wellness/do-5.webp", side: "do", position: "do-variety" },
+  { label: "Stay Active", iconSrc: "/images/wellness/do-6.webp", side: "do", position: "do-active" },
+  { label: "Lean Protein", iconSrc: "/images/wellness/do-7.webp", side: "do", position: "do-protein" },
 
   {
     label: "Saturated fats",
-    iconSrc: "/images/wellness/dt-1.png",
+    iconSrc: "/images/wellness/dt-1.webp",
     side: "dont",
     position: "dont-fat",
     popup: true,
@@ -130,34 +121,34 @@ const orbitItems = [
     rule: "Less red meat, more beans and lentils — cheaper and healthier.",
     tip: "Replace butter or oil with a little vegetable broth or water when cooking — it cuts saturated fat and still tastes great.",
   },
-  { label: "Added sugar", iconSrc: "/images/wellness/dt-2.png", side: "dont", position: "dont-sugar" },
-  { label: "Sugary drinks", iconSrc: "/images/wellness/dt-3.png", side: "dont", position: "dont-drinks" },
-  { label: "Fast food", iconSrc: "/images/wellness/dt-4.png", side: "dont", position: "dont-fast" },
-  { label: "Screen Time", iconSrc: "/images/wellness/dt-5.png", side: "dont", position: "dont-screen" },
-  { label: "Hidden Salt", iconSrc: "/images/wellness/dt-6.png", side: "dont", position: "dont-salt" },
-  { label: "Late snacking", iconSrc: "/images/wellness/dt-7.png", side: "dont", position: "dont-snack" },
+  { label: "Added sugar", iconSrc: "/images/wellness/dt-2.webp", side: "dont", position: "dont-sugar" },
+  { label: "Sugary drinks", iconSrc: "/images/wellness/dt-3.webp", side: "dont", position: "dont-drinks" },
+  { label: "Fast food", iconSrc: "/images/wellness/dt-4.webp", side: "dont", position: "dont-fast" },
+  { label: "Screen Time", iconSrc: "/images/wellness/dt-5.webp", side: "dont", position: "dont-screen" },
+  { label: "Hidden Salt", iconSrc: "/images/wellness/dt-6.webp", side: "dont", position: "dont-salt" },
+  { label: "Late snacking", iconSrc: "/images/wellness/dt-7.webp", side: "dont", position: "dont-snack" },
 ];
 
 const quickTips = [
   {
     title: "Mindful Portions",
     text: "Use smaller plates to help manage portion sizes naturally during meals.",
-    iconSrc: "/images/wellness/tips-1.png",
+    iconSrc: "/images/wellness/tips-1.webp",
   },
   {
     title: "Freeze your greens",
     text: "Extend the life of fresh produce by freezing them before they wilt.",
-    iconSrc: "/images/wellness/tips-2.png",
+    iconSrc: "/images/wellness/tips-2.webp",
   },
   {
     title: "Meal planning",
     text: "Plan meals ahead to avoid relying on fast food during busy days.",
-    iconSrc: "/images/wellness/tips-3.png",
+    iconSrc: "/images/wellness/tips-3.webp",
   },
   {
     title: "Keep water close",
     text: "A visible water bottle encourages constant hydration throughout the day.",
-    iconSrc: "/images/wellness/tips-4.png",
+    iconSrc: "/images/wellness/tips-4.webp",
   },
 ];
 
@@ -227,11 +218,9 @@ function closePopup() {
   position: absolute;
   inset: -60px;
   border-radius: 9999px;
-  background: linear-gradient(
-    154deg,
-    rgba(190, 233, 255, 0.18) 0%,
-    rgba(190, 233, 255, 0) 100%
-  );
+  background: linear-gradient(154deg,
+      rgba(190, 233, 255, 0.18) 0%,
+      rgba(190, 233, 255, 0) 100%);
   filter: blur(32px);
   pointer-events: none;
 }
@@ -369,22 +358,76 @@ function closePopup() {
 }
 
 /* DO positions */
-.do-hydrate { left: 56px; top: 51px; }
-.do-sleep { left: 8px; top: 82px; }
-.do-veggies { left: -23px; top: 130px; }
-.do-fruits { left: -31px; top: 175px; }
-.do-variety { left: -23px; top: 220px; }
-.do-active { left: 8px; top: 268px; }
-.do-protein { left: 45px; top: 295px; }
+.do-hydrate {
+  left: 56px;
+  top: 51px;
+}
+
+.do-sleep {
+  left: 8px;
+  top: 82px;
+}
+
+.do-veggies {
+  left: -23px;
+  top: 130px;
+}
+
+.do-fruits {
+  left: -31px;
+  top: 175px;
+}
+
+.do-variety {
+  left: -23px;
+  top: 220px;
+}
+
+.do-active {
+  left: 8px;
+  top: 268px;
+}
+
+.do-protein {
+  left: 45px;
+  top: 295px;
+}
 
 /* DON'T positions */
-.dont-fat { left: 295px; top: 55px; }
-.dont-sugar { left: 332px; top: 82px; }
-.dont-drinks { left: 363px; top: 130px; }
-.dont-fast { left: 371px; top: 175px; }
-.dont-screen { left: 363px; top: 220px; }
-.dont-salt { left: 332px; top: 268px; }
-.dont-snack { left: 295px; top: 295px; }
+.dont-fat {
+  left: 295px;
+  top: 55px;
+}
+
+.dont-sugar {
+  left: 332px;
+  top: 82px;
+}
+
+.dont-drinks {
+  left: 363px;
+  top: 130px;
+}
+
+.dont-fast {
+  left: 371px;
+  top: 175px;
+}
+
+.dont-screen {
+  left: 363px;
+  top: 220px;
+}
+
+.dont-salt {
+  left: 332px;
+  top: 268px;
+}
+
+.dont-snack {
+  left: 295px;
+  top: 295px;
+}
 
 /* RIGHT SIDE */
 .tips-panel {

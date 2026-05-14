@@ -17,14 +17,10 @@
         <h3>{{ currentFood.name }}</h3>
 
         <div class="food-image-ring">
-          <img
-            :src="
-              currentFood.name.toLowerCase() === 'salmon'
-                ? '/images/foodguide/fg-1.png'
-                : currentFood.image
-            "
-            :alt="currentFood.name"
-          />
+          <img :src="currentFood.name.toLowerCase() === 'salmon'
+              ? '/images/foodguide/fg-1.webp'
+              : currentFood.image
+            " :alt="currentFood.name" />
         </div>
 
         <div class="tag-row">
@@ -43,11 +39,7 @@
           </div>
 
           <div class="macro-grid">
-            <div
-              v-for="macro in currentFood.macros"
-              :key="macro.label"
-              class="macro-card"
-            >
+            <div v-for="macro in currentFood.macros" :key="macro.label" class="macro-card">
               <strong>
                 {{ macro.value.replace('g', '') }}<span class="macro-unit">g</span>
               </strong>
@@ -57,22 +49,12 @@
         </article>
 
         <div class="swap-grid">
-          <article
-            v-for="swap in currentFood.swaps"
-            :key="swap.name"
-            class="swap-card"
-            :class="swap.variant"
-          >
+          <article v-for="swap in currentFood.swaps" :key="swap.name" class="swap-card" :class="swap.variant">
             <div class="swap-label">
-              <img
-                :src="
-                  swap.variant === 'budget'
-                    ? '/images/foodguide/fg-2.png'
-                    : '/images/foodguide/fg-3.png'
-                "
-                class="swap-icon"
-                alt=""
-              />
+              <img :src="swap.variant === 'budget'
+                  ? '/images/foodguide/fg-2.webp'
+                  : '/images/foodguide/fg-3.webp'
+                " class="swap-icon" alt="" />
 
               <h5>{{ swap.type }}</h5>
             </div>
@@ -83,14 +65,11 @@
         </div>
 
         <article class="recommendation-card">
-            <div class="calendar-icon">
-              <img
-                src="/images/foodguide/fg-4.png"
-                alt="Calendar icon"
-              />
-            </div>
-            <h4>How often?</h4>
-            <p>{{ currentFood.howOften }}</p>
+          <div class="calendar-icon">
+            <img src="/images/foodguide/fg-4.webp" alt="Calendar icon" />
+          </div>
+          <h4>How often?</h4>
+          <p>{{ currentFood.howOften }}</p>
 
         </article>
       </div>
@@ -105,36 +84,36 @@ const activeIndex = ref(0);
 
 const foods = [
   {
-  name: "Salmon",
-  image: "/images/foodguide/fg-1.png",
-  tags: ["High Protein", "Omega-3 Rich"],
-  macros: [
-    { label: "FAT", value: "13g" },
-    { label: "CARBS", value: "2g" },
-    { label: "PROTEIN", value: "22g" },
-  ],
-  swaps: [
-    {
-      type: "Budget Swap",
-      name: "Sardines",
-      variant: "budget",
-      description:
-        "Similar Omega-3 profile. Highly sustainable and lower heavy metal risk due to their position on the food chain.",
-    },
-    {
-      type: "Optimal Swap",
-      name: "Mackerel",
-      variant: "optimal",
-      description:
-        "Often higher in Omega-3s than farmed salmon. Choose Atlantic or Atka mackerel to minimize mercury exposure.",
-    },
-  ],
-  howOften:
-    "Aim for 2 portions per week around 140g per portion. Prioritize wild-caught Alaskan salmon when budget allows for optimal nutrient density.",
+    name: "Salmon",
+    image: "/images/foodguide/fg-1.webp",
+    tags: ["High Protein", "Omega-3 Rich"],
+    macros: [
+      { label: "FAT", value: "13g" },
+      { label: "CARBS", value: "2g" },
+      { label: "PROTEIN", value: "22g" },
+    ],
+    swaps: [
+      {
+        type: "Budget Swap",
+        name: "Sardines",
+        variant: "budget",
+        description:
+          "Similar Omega-3 profile. Highly sustainable and lower heavy metal risk due to their position on the food chain.",
+      },
+      {
+        type: "Optimal Swap",
+        name: "Mackerel",
+        variant: "optimal",
+        description:
+          "Often higher in Omega-3s than farmed salmon. Choose Atlantic or Atka mackerel to minimize mercury exposure.",
+      },
+    ],
+    howOften:
+      "Aim for 2 portions per week around 140g per portion. Prioritize wild-caught Alaskan salmon when budget allows for optimal nutrient density.",
   },
   {
     name: "Eggs",
-    image: "/images/foodguide/eggs.png",
+    image: "/images/foodguide/eggs.webp",
     tags: ["High Protein", "Affordable"],
     macros: [
       { label: "FAT", value: "5g" },
@@ -162,7 +141,7 @@ const foods = [
   },
   {
     name: "Pasta",
-    image: "/images/foodguide/pasta.png",
+    image: "/images/foodguide/pasta.webp",
     tags: ["Budget Friendly", "Easy Meal"],
     macros: [
       { label: "FAT", value: "1g" },
@@ -190,7 +169,7 @@ const foods = [
   },
   {
     name: "Chicken",
-    image: "/images/foodguide/chicken.png",
+    image: "/images/foodguide/chicken.webp",
     tags: ["High Protein", "Family Meal"],
     macros: [
       { label: "FAT", value: "4g" },
@@ -453,7 +432,7 @@ const previousFood = () => {
   color: #0d1c2e;
 }
 
-.macro-card > span {
+.macro-card>span {
   font-family: "Plus Jakarta Sans", sans-serif;
   font-size: 14px;
   font-weight: 700;

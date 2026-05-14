@@ -11,14 +11,8 @@
       <div class="body-layout">
         <!-- LEFT BUTTONS -->
         <div class="part-list" aria-label="Body parts">
-          <button
-            v-for="part in bodyParts"
-            :key="part.key"
-            class="part-button"
-            :class="{ active: activePart === part.key }"
-            type="button"
-            @click="togglePart(part.key)"
-          >
+          <button v-for="part in bodyParts" :key="part.key" class="part-button"
+            :class="{ active: activePart === part.key }" type="button" @click="togglePart(part.key)">
             <span class="part-icon">
               <img :src="part.icon" :alt="`${part.label} icon`" />
             </span>
@@ -30,50 +24,29 @@
         <div class="body-figure">
           <div class="body-image-wrap">
             <Transition name="body-highlight" mode="out-in">
-              <img
-                v-if="!selectedPart"
-                key="base"
-                src="/images/bodymap/base.svg"
-                alt="Body map illustration"
-                class="body-image"
-              />
+              <img v-if="!selectedPart" key="base" src="/images/bodymap/base.svg" alt="Body map illustration"
+                class="body-image" />
 
-              <img
-                v-else
-                :key="selectedPart.key"
-                :src="selectedPart.image"
-                :alt="`${selectedPart.label} body highlight`"
-                class="body-image"
-              />
+              <img v-else :key="selectedPart.key" :src="selectedPart.image"
+                :alt="`${selectedPart.label} body highlight`" class="body-image" />
             </Transition>
-            
+
             <!-- BODY BUTTONS -->
-            <button
-              v-for="part in bodyParts"
-              :key="part.key + '-hotspot'"
-              class="body-hotspot"
-              :class="['hotspot-' + part.key, { active: activePart === part.key }]"
-              type="button"
-              :aria-label="'Show ' + part.label + ' nutrition information'"
-              @click="togglePart(part.key)"
-            >
+            <button v-for="part in bodyParts" :key="part.key + '-hotspot'" class="body-hotspot"
+              :class="['hotspot-' + part.key, { active: activePart === part.key }]" type="button"
+              :aria-label="'Show ' + part.label + ' nutrition information'" @click="togglePart(part.key)">
               <img :src="part.icon" alt="" />
             </button>
 
             <!-- DASHED CONNECTOR LINE -->
-            <svg
-              v-if="selectedPart"
-              class="connector-svg"
-              viewBox="0 0 520 500"
-              preserveAspectRatio="none"
-              aria-hidden="true"
-            >
+            <svg v-if="selectedPart" class="connector-svg" viewBox="0 0 520 500" preserveAspectRatio="none"
+              aria-hidden="true">
               <path :d="selectedPart.linePath" class="connector-line" />
             </svg>
           </div>
 
           <div class="click-hint">
-            <img src="/images/bodymap/bm-8.png" alt="" />
+            <img src="/images/bodymap/bm-8.webp" alt="" />
             <span>Click on any body part to explore</span>
           </div>
         </div>
@@ -86,11 +59,7 @@
           <h4>Optimal Food Sources</h4>
 
           <div class="food-grid">
-            <div
-              v-for="food in selectedPart.foods"
-              :key="food.name"
-              class="food-card"
-            >
+            <div v-for="food in selectedPart.foods" :key="food.name" class="food-card">
               <img :src="food.image" :alt="food.name" />
               <span>{{ food.name }}</span>
             </div>
@@ -139,17 +108,17 @@ function togglePart(key: string) {
 }
 
 const image = {
-  walnuts: '/images/bodymap/bm-walnuts.png',
-  blueberries: '/images/bodymap/bm-blueberries.png',
-  eggs: '/images/bodymap/bm-eggs.png',
-  milk: '/images/bodymap/bm-milk.png',
+  walnuts: '/images/bodymap/bm-walnuts.webp',
+  blueberries: '/images/bodymap/bm-blueberries.webp',
+  eggs: '/images/bodymap/bm-eggs.webp',
+  milk: '/images/bodymap/bm-milk.webp',
 }
 
 const bodyParts: BodyPart[] = [
   {
     key: 'brain',
     label: 'Brain',
-    icon: '/images/bodymap/bm-1.png',
+    icon: '/images/bodymap/bm-1.webp',
     image: '/images/bodymap/brain.svg',
     linePath: 'M 245 88 C 320 80, 405 115, 515 165',
     description:
@@ -166,7 +135,7 @@ const bodyParts: BodyPart[] = [
   {
     key: 'eyes',
     label: 'Eye',
-    icon: '/images/bodymap/bm-2.png',
+    icon: '/images/bodymap/bm-2.webp',
     image: '/images/bodymap/eyes.svg',
     linePath: 'M 250 128 C 325 125, 410 145, 515 178',
     description:
@@ -183,7 +152,7 @@ const bodyParts: BodyPart[] = [
   {
     key: 'teeth',
     label: 'Teeth',
-    icon: '/images/bodymap/bm-7.png',
+    icon: '/images/bodymap/bm-7.webp',
     image: '/images/bodymap/teeth.svg',
     linePath: 'M 210 155 C 360 155, 500 175, 660 210',
     description:
@@ -200,7 +169,7 @@ const bodyParts: BodyPart[] = [
   {
     key: 'energy',
     label: 'Energy',
-    icon: '/images/bodymap/bm-6.png',
+    icon: '/images/bodymap/bm-6.webp',
     image: '/images/bodymap/energy.svg',
     linePath: 'M 205 220 C 330 200, 515 150, 600 200',
     description:
@@ -217,7 +186,7 @@ const bodyParts: BodyPart[] = [
   {
     key: 'muscles',
     label: 'Muscles',
-    icon: '/images/bodymap/bm-4.png',
+    icon: '/images/bodymap/bm-4.webp',
     image: '/images/bodymap/muscles.svg',
     linePath: 'M 245 245 C 330 245, 415 235, 515 215',
     description:
@@ -234,7 +203,7 @@ const bodyParts: BodyPart[] = [
   {
     key: 'immunity',
     label: 'Immunity',
-    icon: '/images/bodymap/bm-5.png',
+    icon: '/images/bodymap/bm-5.webp',
     image: '/images/bodymap/immunity.svg',
     linePath: 'M 245 315 C 330 315, 410 270, 515 230',
     description:
@@ -251,7 +220,7 @@ const bodyParts: BodyPart[] = [
   {
     key: 'bones',
     label: 'Bones',
-    icon: '/images/bodymap/bm-3.png',
+    icon: '/images/bodymap/bm-3.webp',
     image: '/images/bodymap/bones.svg',
     linePath: 'M 235 385 C 330 205, 415 205, 515 200',
     description:
@@ -264,7 +233,7 @@ const bodyParts: BodyPart[] = [
     ],
     why:
       'Calcium, vitamin D and protein help build strong bones during childhood.',
-  }, 
+  },
 ]
 
 const selectedPart = computed(() => {
@@ -279,11 +248,9 @@ const selectedPart = computed(() => {
   padding: 48px 0 52px;
   scroll-margin-top: 100px;
   background:
-    radial-gradient(
-      circle at 42% 52%,
+    radial-gradient(circle at 42% 52%,
       rgba(255, 255, 255, 0.62) 0%,
-      rgba(255, 255, 255, 0) 36%
-    ),
+      rgba(255, 255, 255, 0) 36%),
     linear-gradient(116deg, #e6eeff 0%, #d7e7f8 47%, #8298ab 100%);
 }
 
@@ -467,6 +434,7 @@ const selectedPart = computed(() => {
     stroke-dashoffset: 0;
   }
 }
+
 /* BODY BUTTONS */
 .body-hotspot {
   position: absolute;

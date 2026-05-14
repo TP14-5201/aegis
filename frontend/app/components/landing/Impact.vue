@@ -15,11 +15,7 @@
 
       <!-- Bottom image -->
       <div class="impact-image-wrap">
-        <img
-          src="/images/landing/landing-2.png"
-          alt="Food insecurity support illustration"
-          class="impact-image"
-        />
+        <img src="/images/landing/landing-2.webp" alt="Food insecurity support illustration" class="impact-image" />
       </div>
 
       <!-- Stats -->
@@ -137,6 +133,7 @@ const stats = [
 }
 
 @media (max-width: 1024px) {
+
   .impact-section,
   .impact-inner {
     min-height: auto;
