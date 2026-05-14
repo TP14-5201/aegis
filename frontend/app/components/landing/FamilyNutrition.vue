@@ -37,11 +37,7 @@
       </div>
 
       <div class="nutrition-image-wrap">
-        <img
-          src="/images/landing/landing-4.png"
-          alt="Nutritious food bowl"
-          class="nutrition-image"
-        />
+        <img src="/images/landing/landing-4.webp" alt="Nutritious food bowl" class="nutrition-image" />
       </div>
     </div>
   </section>

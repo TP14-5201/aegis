@@ -17,22 +17,14 @@
         </div>
 
         <div class="hero-image-wrap">
-          <img
-            src="/images/nutrition-guide/nh-1.png"
-            alt="Healthy food bowl"
-            class="hero-image"
-          />
+          <img src="/images/nutrition-guide/nh-1.webp" alt="Healthy food bowl" class="hero-image" />
         </div>
       </div>
 
       <!-- QUICK ACCESS CARDS -->
       <div class="quick-access-grid">
         <article class="quick-card">
-          <img
-            src="/images/nutrition-guide/nh-2.png"
-            alt="Body map icon"
-            class="quick-icon"
-          />
+          <img src="/images/nutrition-guide/nh-2.webp" alt="Body map icon" class="quick-icon" />
 
           <h3>Interactive Body Map</h3>
 
@@ -46,11 +38,7 @@
         </article>
 
         <article class="quick-card">
-          <img
-            src="/images/nutrition-guide/nh-3.png"
-            alt="Food guide icon"
-            class="quick-icon"
-          />
+          <img src="/images/nutrition-guide/nh-3.webp" alt="Food guide icon" class="quick-icon" />
 
           <h3>Smart Nutrition Guide</h3>
 
@@ -64,11 +52,7 @@
         </article>
 
         <article class="quick-card">
-          <img
-            src="/images/nutrition-guide/nh-4.png"
-            alt="Wellness icon"
-            class="quick-icon"
-          />
+          <img src="/images/nutrition-guide/nh-4.webp" alt="Wellness icon" class="quick-icon" />
 
           <h3>Wellness Tips</h3>
 
@@ -92,12 +76,10 @@
   margin-top: -72px;
   padding: 112px 0 44px;
   overflow: hidden;
-  background: linear-gradient(
-    180deg,
-    #f8f9ff 0%,
-    #eef3ff 45%,
-    #e6eeff 100%
-  );
+  background: linear-gradient(180deg,
+      #f8f9ff 0%,
+      #eef3ff 45%,
+      #e6eeff 100%);
 }
 
 .nutrition-hero-inner {

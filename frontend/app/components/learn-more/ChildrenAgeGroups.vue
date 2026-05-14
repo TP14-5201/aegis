@@ -188,11 +188,11 @@ const { data: macronutrientsData, pending } = useFetch<NutrientData[]>(
 )
 
 const ageImageMap: Record<string, string> = {
-  '0-6 months': '/images/children-newborn.png',
-  '7-12 months': '/images/children-infant.png',
-  '1-3 years': '/images/children-toddler.png',
-  '4-8 years': '/images/children-preschool.png',
-  '9-13 years': '/images/children-school-age.png'
+  '0-6 months': '/images/learn-more/children-newborn.webp',
+  '7-12 months': '/images/learn-more/children-infant.webp',
+  '1-3 years': '/images/learn-more/children-toddler.webp',
+  '4-8 years': '/images/learn-more/children-preschool.webp',
+  '9-13 years': '/images/learn-more/children-school-age.webp'
 }
 
 const ageOrder = ['0-6 months', '7-12 months', '1-3 years', '4-8 years', '9-13 years']
@@ -228,7 +228,7 @@ const ageGroups = computed(() => {
 
   return uniqueAges.map(age => ({
     label: age,
-    img: ageImageMap[age] || '/images/boy-5.png'
+    img: ageImageMap[age]
   }))
 })
 
@@ -245,7 +245,7 @@ const selectedGroupLabel = ref('7-12 months')
 const fillTrigger = ref(false)
 
 const selectedGroupImage = computed(() => {
-  return ageImageMap[selectedGroupLabel.value] || '/images/boy-5.png'
+  return ageImageMap[selectedGroupLabel.value]
 })
 
 const selectedGroupNutrients = computed(() => {
@@ -282,12 +282,12 @@ const extractValue = (goal: string | undefined) => {
 const getNutrientImage = (nutrient: string) => {
   const n = (nutrient || '').toLowerCase()
 
-  if (n.includes('energy')) return '/images/energy.png'
-  if (n.includes('protein')) return '/images/protein.png'
-  if (n.includes('fibre') || n.includes('fiber')) return '/images/fibre.png'
-  if (n.includes('fluid')) return '/images/fluid.png'
-  if (n.includes('fat')) return '/images/fat.png'
-  if (n.includes('carbohydrate')) return '/images/carbohydrate.jpg'
+  if (n.includes('energy')) return '/images/learn-more/energy.webp'
+  if (n.includes('protein')) return '/images/learn-more/protein.webp'
+  if (n.includes('fibre') || n.includes('fiber')) return '/images/learn-more/fibre.webp'
+  if (n.includes('fluid')) return '/images/learn-more/fluid.webp'
+  if (n.includes('fat')) return '/images/learn-more/fat.webp'
+  if (n.includes('carbohydrate')) return '/images/learn-more/carbohydrate.webp'
 
 }
 </script>

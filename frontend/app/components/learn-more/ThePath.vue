@@ -98,7 +98,7 @@ interface StoryItem {
 const storyItems: StoryItem[] = [
   {
     title: 'Where it happens',
-    img: '/images/subject-26-1.png',
+    img: '/images/learn-more/subject-26-1.webp',
     cx: 80, cy: 160,
     description: 'Every region in Victoria tells a different story. Discover how different areas are dealing with food insecurity and the community efforts stepping up to help.',
     targetId: 'region-map',
@@ -106,7 +106,7 @@ const storyItems: StoryItem[] = [
   },
   {
     title: 'Who it affects',
-    img: '/images/subject-33-1.png',
+    img: '/images/learn-more/subject-33-1.webp',
     cx: 380, cy: 200,
     description: 'Food insecurity does not discriminate by age. See how varying demographics and especially children are affected across the state.',
     targetId: 'children-age-groups',
@@ -114,7 +114,7 @@ const storyItems: StoryItem[] = [
   },
   {
     title: 'The Impact',
-    img: '/images/subject-31-1.png',
+    img: '/images/learn-more/subject-31-1.webp',
     cx: 680, cy: 20,
     description: 'The effects run deeper than skipped meals. Learn about the profound behavioral and psychological impacts this crisis leaves on individuals.',
     targetId: 'behavioural-impact',
@@ -122,7 +122,7 @@ const storyItems: StoryItem[] = [
   },
   {
     title: 'Finding Support',
-    img: '/images/subject-30-1.png',
+    img: '/images/learn-more/subject-30-1.webp',
     cx: 980, cy: 180,
     description: 'There are tangible ways to make a difference. Find out the next steps you can take to access support or contribute to helping others.',
     targetId: 'next-steps',

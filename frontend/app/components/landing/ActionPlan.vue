@@ -3,11 +3,8 @@
     <div class="section-inner">
       <div class="action-panel">
         <!-- Decorative background -->
-        <img
-          src="/images/landing/landing-5.png"
-          alt=""
-          class="pointer-events-none absolute -right-16 top-0 h-full w-[30%] object-fill opacity-100"
-        />
+        <img src="/images/landing/landing-5.webp" alt=""
+          class="pointer-events-none absolute -right-16 top-0 h-full w-[30%] object-fill opacity-100" />
 
         <!-- Header -->
         <div class="relative z-10 text-center">
@@ -27,20 +24,10 @@
 
         <!-- Cards -->
         <div class="relative z-10 mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <NuxtLink
-            v-for="card in cards"
-            :key="card.title"
-            :to="card.to"
-            class="cta-card"
-          >
+          <NuxtLink v-for="card in cards" :key="card.title" :to="card.to" class="cta-card">
             <div
-              class="flex h-14 w-14 items-center justify-center rounded-full border border-white/60 bg-white/70 shadow-sm backdrop-blur-sm"
-            >
-              <img
-                :src="card.icon"
-                :alt="card.title"
-                class="h-8 w-8 object-contain"
-              />
+              class="flex h-14 w-14 items-center justify-center rounded-full border border-white/60 bg-white/70 shadow-sm backdrop-blur-sm">
+              <img :src="card.icon" :alt="card.title" class="h-8 w-8 object-contain" />
             </div>
 
             <h3 class="mt-4 font-display text-[22px] font-semibold leading-[30px] text-chere-navy">
@@ -104,11 +91,9 @@ const cards = [
   align-items: center;
   border: 1px solid rgb(198 198 205 / 22%);
   border-radius: 20px;
-  background: linear-gradient(
-    180deg,
-    rgb(239 244 255 / 96%) 0%,
-    rgb(231 238 255 / 92%) 100%
-  );
+  background: linear-gradient(180deg,
+      rgb(239 244 255 / 96%) 0%,
+      rgb(231 238 255 / 92%) 100%);
   padding: 28px 18px 34px;
   text-align: center;
   box-shadow:
