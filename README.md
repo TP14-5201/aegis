@@ -55,6 +55,7 @@ Cherebowl is a web platform that helps Victorians experiencing food insecurity f
     - [Installation](#installation)
       - [Backend Setup](#backend-setup)
       - [Frontend Setup](#frontend-setup)
+      - [Utility Scripts](#utility-scripts)
   - [Usage](#usage)
     - [Running Backend Tests](#running-backend-tests)
   - [Roadmap](#roadmap)
@@ -180,6 +181,15 @@ npm run dev
 ```
 
 The app will be available at `http://localhost:3000`.
+
+#### Utility Scripts
+
+**Convert images to webp:**
+
+```bash
+cd backend
+python -m src.scripts.convert_images_to_webp
+```
 
 ---
 
