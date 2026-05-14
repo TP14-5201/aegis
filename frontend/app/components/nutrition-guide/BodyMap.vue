@@ -1,18 +1,21 @@
 <template>
-  <section id="body-map" class="body-map-section">
-    <div class="body-map-inner">
+  <section id="body-map" class="body-map-section section-large">
+    <div class="section-inner body-map-inner">
       <div class="section-heading">
         <h2>Interactive Body Map : Feed Your Body Right</h2>
-        <p>
-          Select a body-part to explore the foods required to make them grow stronger.
-        </p>
+        <p>Select a body-part to explore the foods required to make them grow stronger.</p>
       </div>
 
       <div class="body-layout">
-        <!-- LEFT BUTTONS -->
         <div class="part-list" aria-label="Body parts">
-          <button v-for="part in bodyParts" :key="part.key" class="part-button"
-            :class="{ active: activePart === part.key }" type="button" @click="togglePart(part.key)">
+          <button
+            v-for="part in bodyParts"
+            :key="part.key"
+            class="part-button"
+            :class="{ active: activePart === part.key }"
+            type="button"
+            @click="togglePart(part.key)"
+          >
             <span class="part-icon">
               <img :src="part.icon" :alt="`${part.label} icon`" />
             </span>
@@ -20,27 +23,45 @@
           </button>
         </div>
 
-        <!-- BODY IMAGE -->
         <div class="body-figure">
           <div class="body-image-wrap">
             <Transition name="body-highlight" mode="out-in">
-              <img v-if="!selectedPart" key="base" src="/images/bodymap/base.svg" alt="Body map illustration"
-                class="body-image" />
+              <img
+                v-if="!selectedPart"
+                key="base"
+                src="/images/bodymap/base.svg"
+                alt="Body map illustration"
+                class="body-image"
+              />
 
-              <img v-else :key="selectedPart.key" :src="selectedPart.image"
-                :alt="`${selectedPart.label} body highlight`" class="body-image" />
+              <img
+                v-else
+                :key="selectedPart.key"
+                :src="selectedPart.image"
+                :alt="`${selectedPart.label} body highlight`"
+                class="body-image"
+              />
             </Transition>
 
-            <!-- BODY BUTTONS -->
-            <button v-for="part in bodyParts" :key="part.key + '-hotspot'" class="body-hotspot"
-              :class="['hotspot-' + part.key, { active: activePart === part.key }]" type="button"
-              :aria-label="'Show ' + part.label + ' nutrition information'" @click="togglePart(part.key)">
+            <button
+              v-for="part in bodyParts"
+              :key="part.key + '-hotspot'"
+              class="body-hotspot"
+              :class="['hotspot-' + part.key, { active: activePart === part.key }]"
+              type="button"
+              :aria-label="'Show ' + part.label + ' nutrition information'"
+              @click="togglePart(part.key)"
+            >
               <img :src="part.icon" alt="" />
             </button>
 
-            <!-- DASHED CONNECTOR LINE -->
-            <svg v-if="selectedPart" class="connector-svg" viewBox="0 0 520 500" preserveAspectRatio="none"
-              aria-hidden="true">
+            <svg
+              v-if="selectedPart"
+              class="connector-svg"
+              viewBox="0 0 520 500"
+              preserveAspectRatio="none"
+              aria-hidden="true"
+            >
               <path :d="selectedPart.linePath" class="connector-line" />
             </svg>
           </div>
@@ -51,10 +72,12 @@
           </div>
         </div>
 
-        <!-- RIGHT PANEL -->
         <article v-if="selectedPart" class="info-panel">
           <h3>{{ selectedPart.label }}</h3>
-          <p class="description">{{ selectedPart.description }}</p>
+
+          <p class="description">
+            {{ selectedPart.description }}
+          </p>
 
           <h4>Optimal Food Sources</h4>
 
@@ -108,10 +131,34 @@ function togglePart(key: string) {
 }
 
 const image = {
-  walnuts: '/images/bodymap/bm-walnuts.webp',
-  blueberries: '/images/bodymap/bm-blueberries.webp',
-  eggs: '/images/bodymap/bm-eggs.webp',
-  milk: '/images/bodymap/bm-milk.webp',
+  eggs: '/images/bodymap/bmp-11.webp',
+  milk: '/images/bodymap/bmp-9.webp',
+  beefLean: '/images/bodymap/bmp-1.webp',
+  mushrooms: '/images/bodymap/bmp-2.webp',
+  proteinCereal: '/images/bodymap/bmp-3.webp',
+  salmon: '/images/bodymap/bmp-4.webp',
+  carrots: '/images/bodymap/bmp-5.webp',
+  spinach: '/images/bodymap/bmp-6.webp',
+  silverbeet: '/images/bodymap/bmp-7.webp',
+  tomatoKumato: '/images/bodymap/bmp-8.webp',
+  yoghurt: '/images/bodymap/bmp-25.webp',
+  parmesan: '/images/bodymap/bmp-26.webp',
+  qukes: '/images/bodymap/bmp-27.webp',
+  onions: '/images/bodymap/bmp-28.webp',
+  oats: '/images/bodymap/bmp-21.webp',
+  wholemealBread: '/images/bodymap/bmp-22.webp',
+  sourdough: '/images/bodymap/bmp-23.webp',
+  turkey: '/images/bodymap/bmp-24.webp',
+  chicken: '/images/bodymap/bmp-13.webp',
+  beefRump: '/images/bodymap/bmp-14.webp',
+  lamb: '/images/bodymap/bmp-15.webp',
+  fishBasa: '/images/bodymap/bmp-16.webp',
+  brusselSprouts: '/images/bodymap/bmp-17.webp',
+  redCabbage: '/images/bodymap/bmp-18.webp',
+  prawns: '/images/bodymap/bmp-19.webp',
+  yellowNectarines: '/images/bodymap/bmp-20.webp',
+  cheddar: '/images/bodymap/bmp-10.webp',
+  redSnapper: '/images/bodymap/bmp-12.webp',
 }
 
 const bodyParts: BodyPart[] = [
@@ -122,32 +169,32 @@ const bodyParts: BodyPart[] = [
     image: '/images/bodymap/brain.svg',
     linePath: 'M 245 88 C 320 80, 405 115, 515 165',
     description:
-      "The brain is the body's most energy-demanding organ. Targeted nutrition supports neuroplasticity, memory retention, and long-term cognitive health.",
+      "Children's brains develop faster in the first five years than at any other time – this is when the foundations for learning, health and behaviour are laid down.",
     foods: [
-      { name: 'Walnuts', image: image.walnuts },
-      { name: 'Blueberries', image: image.blueberries },
-      { name: 'Eggs', image: image.eggs },
-      { name: 'milk', image: image.milk },
+      { name: 'Lean red meat(Beef)', image: image.beefLean },
+      { name: 'Mushrooms', image: image.mushrooms },
+      { name: 'Protein cereal', image: image.proteinCereal },
+      { name: 'Salmon', image: image.salmon },
     ],
     why:
-      'These foods are rich in Omega-3, good fats, vitamins and minerals that support brain growth and memory.',
+      'Omega-3 drives brain development and learning. Iodine fuels tissue growth. Iron powers brain function and oxygen supply.',
   },
   {
     key: 'eyes',
-    label: 'Eye',
+    label: 'Eyes',
     icon: '/images/bodymap/bm-2.webp',
     image: '/images/bodymap/eyes.svg',
     linePath: 'M 250 128 C 325 125, 410 145, 515 178',
     description:
-      'Supports healthy vision and helps children see clearly during learning, reading and play.',
+      'Good eyesight starts on the plate. Vitamin A is needed for eyesight, growth & development - found in orange vegetables like carrots , and leafy greens like spinach and broccoli',
     foods: [
-      { name: 'Eggs', image: image.eggs },
-      { name: 'Blueberries', image: image.blueberries },
-      { name: 'milk', image: image.milk },
-      { name: 'Walnuts', image: image.walnuts },
+      { name: 'carrots', image: image.carrots },
+      { name: 'Spinach', image: image.spinach },
+      { name: 'Silverbeet', image: image.silverbeet },
+      { name: 'Tomato (kumato)', image: image.tomatoKumato },
     ],
     why:
-      'Vitamin-rich foods, protein and minerals help support everyday eye health.',
+      'Carrots & leafy greens are rich in beta-carotene, which converts to Vitamin A , the that retina needs for healthy vision.',
   },
   {
     key: 'teeth',
@@ -156,15 +203,15 @@ const bodyParts: BodyPart[] = [
     image: '/images/bodymap/teeth.svg',
     linePath: 'M 210 155 C 360 155, 500 175, 660 210',
     description:
-      'Teeth help children bite, chew and keep a bright smile.',
+      'Tooth decay is a common diet-related disease - 1 in 3 children already have untreated tooth decay and what they eat from the start makes all the difference.',
     foods: [
-      { name: 'milk', image: image.milk },
-      { name: 'Eggs', image: image.eggs },
-      { name: 'Walnuts', image: image.walnuts },
-      { name: 'Blueberries', image: image.blueberries },
+      { name: 'Yoghurt', image: image.yoghurt },
+      { name: 'Cheese. (Parmeasan)', image: image.parmesan },
+      { name: 'Qukes', image: image.qukes },
+      { name: 'Onions', image: image.onions },
     ],
     why:
-      'Calcium-rich and low-sugar foods help protect teeth and support healthy gums.',
+      'Calcium gives teeth their strength, fluoride in tap water prevents decay and Vitamin C keeps gums healthy.',
   },
   {
     key: 'energy',
@@ -173,15 +220,15 @@ const bodyParts: BodyPart[] = [
     image: '/images/bodymap/energy.svg',
     linePath: 'M 205 220 C 330 200, 515 150, 600 200',
     description:
-      'Energy gives children power for learning, playing and daily activities.',
+      "A child's immune system needs Vitamin C to fight infections and zinc to heal and grow. Vitamin E also boosts immunity – the right foods together build a strong daily protection.",
     foods: [
-      { name: 'Eggs', image: image.eggs },
-      { name: 'milk', image: image.milk },
-      { name: 'Blueberries', image: image.blueberries },
-      { name: 'Walnuts', image: image.walnuts },
+      { name: 'oats', image: image.oats },
+      { name: 'wholemeal bread', image: image.wholemealBread },
+      { name: 'Sourdough', image: image.sourdough },
+      { name: 'Turkey', image: image.turkey },
     ],
     why:
-      'Balanced meals provide steady energy throughout the day.',
+      "Vitamin C, zinc, iron and Vitamin E work together by fighting infections, healing wounds and building the body's immunity",
   },
   {
     key: 'muscles',
@@ -190,15 +237,15 @@ const bodyParts: BodyPart[] = [
     image: '/images/bodymap/muscles.svg',
     linePath: 'M 245 245 C 330 245, 415 235, 515 215',
     description:
-      'Muscles help children move, run, play and stay active throughout the day.',
+      'Muscles grow and repair throughout childhood .Protein is the building block that makes it happen. Iron stores oxygen in muscle cells to fuel growth.',
     foods: [
-      { name: 'Eggs', image: image.eggs },
-      { name: 'milk', image: image.milk },
-      { name: 'Walnuts', image: image.walnuts },
-      { name: 'Blueberries', image: image.blueberries },
+      { name: 'chicken', image: image.chicken },
+      { name: 'Red meat(Beef Rump)', image: image.beefRump },
+      { name: 'Lean red meat (Lamb)', image: image.lamb },
+      { name: 'Fish( Basa fillets)', image: image.fishBasa },
     ],
     why:
-      'Protein-rich foods help muscles grow, repair and stay strong.',
+      'Protein builds muscle. Iron fuels its growth and stores oxygen in muscle cells via myoglobin.',
   },
   {
     key: 'immunity',
@@ -207,15 +254,15 @@ const bodyParts: BodyPart[] = [
     image: '/images/bodymap/immunity.svg',
     linePath: 'M 245 315 C 330 315, 410 270, 515 230',
     description:
-      'Immunity protects the body from germs and helps children stay healthy.',
+      "A child's immune system needs Vitamin C to fight infections and zinc to heal and grow. Vitamin E also boosts immunity - the right foods together build a strong daily protection.",
     foods: [
-      { name: 'Eggs', image: image.eggs },
-      { name: 'Blueberries', image: image.blueberries },
-      { name: 'milk', image: image.milk },
-      { name: 'Walnuts', image: image.walnuts },
+      { name: 'Brussel sprouts', image: image.brusselSprouts },
+      { name: 'Red Cabbage', image: image.redCabbage },
+      { name: 'Prawns (black Tiger)', image: image.prawns },
+      { name: 'Yellow nectarines', image: image.yellowNectarines },
     ],
     why:
-      'Vitamins, minerals and protein support the immune system and help the body fight sickness.',
+      "Vitamin C, zinc, iron and Vitamin E work together by fighting infections, healing wounds and building the body's immunity",
   },
   {
     key: 'bones',
@@ -224,15 +271,15 @@ const bodyParts: BodyPart[] = [
     image: '/images/bodymap/bones.svg',
     linePath: 'M 235 385 C 330 205, 415 205, 515 200',
     description:
-      'Bones give the body shape and help children stand, walk and grow strong.',
+      'Bones grow fast in childhood and even faster in the teen years. Calcium is vital for healthy bones and teeth - strong bones built now reduce the risk of osteoporosis later in life.',
     foods: [
-      { name: 'milk', image: image.milk },
+      { name: 'Milk', image: image.milk },
+      { name: 'Cheddar cheese', image: image.cheddar },
       { name: 'Eggs', image: image.eggs },
-      { name: 'Walnuts', image: image.walnuts },
-      { name: 'Blueberries', image: image.blueberries },
+      { name: 'Fish (Red Snapper)', image: image.redSnapper },
     ],
     why:
-      'Calcium, vitamin D and protein help build strong bones during childhood.',
+      'Calcium is vital for bones ,teeth and skeleton development . Vitamin D helps the body absorb it to keep bones strong.',
   },
 ]
 
@@ -245,82 +292,72 @@ const selectedPart = computed(() => {
 .body-map-section {
   width: 100%;
   min-height: 760px;
-  padding: 48px 0 52px;
+  padding: 44px 0 52px;
   scroll-margin-top: 100px;
   background:
-    radial-gradient(circle at 42% 52%,
+    radial-gradient(
+      circle at 42% 52%,
       rgba(255, 255, 255, 0.62) 0%,
-      rgba(255, 255, 255, 0) 36%),
+      rgba(255, 255, 255, 0) 36%
+    ),
     linear-gradient(116deg, #e6eeff 0%, #d7e7f8 47%, #8298ab 100%);
 }
 
 .body-map-inner {
-  width: min(1200px, calc(100% - 80px));
   margin: 0 auto;
 }
 
-/* HEADING */
 .section-heading {
-  margin-bottom: 24px;
+  margin-bottom: 18px;
 }
 
 .section-heading h2 {
   margin: 0;
-  color: #000000;
+  color: #0d1c2e;
   font-family: 'Playfair Display', serif;
-  font-size: 44px;
+  font-size: 40px;
   font-weight: 700;
   line-height: 1.08;
   letter-spacing: -0.8px;
 }
 
 .section-heading p {
-  margin: 12px 0 0;
+  margin: 8px 0 0;
   color: #45464d;
   font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 16px;
+  font-size: 15px;
   line-height: 1.45;
 }
 
-/* MAIN LAYOUT */
 .body-layout {
   display: grid;
-  grid-template-columns: 180px minmax(360px, 1fr) 380px;
-  gap: 30px;
+  grid-template-columns: 170px minmax(320px, 1fr) 360px;
+  gap: 24px;
   align-items: center;
-  min-height: 560px;
+  min-height: 590px;
 }
 
-/* LEFT BUTTONS */
 .part-list {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 14px;
 }
 
 .part-button {
   display: flex;
   align-items: center;
-  gap: 16px;
-
-  min-height: 56px;
-
+  gap: 14px;
+  min-height: 52px;
   border: none;
   border-radius: 18px;
-
-  padding: 12px 18px;
-
+  padding: 10px 16px;
   background: #f8f9ff;
   color: #181e4b;
-
   font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 15px;
-  font-weight: 500;
-
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
-
-  box-shadow: 0 5px 8px rgba(24, 30, 75, 0.18);
-
+  box-shadow: 0 5px 8px rgba(24, 30, 75, 0.16);
   transition:
     background 0.22s ease,
     transform 0.22s ease,
@@ -337,16 +374,11 @@ const selectedPart = computed(() => {
 .part-icon {
   display: grid;
   place-items: center;
-
-  width: 38px;
-  height: 38px;
-
+  width: 36px;
+  height: 36px;
   border-radius: 999px;
-
   background: transparent;
-
   flex-shrink: 0;
-
   transition: background 0.22s ease;
 }
 
@@ -355,73 +387,58 @@ const selectedPart = computed(() => {
 }
 
 .part-icon img {
-  width: 28px;
-  height: 28px;
-
+  width: 26px;
+  height: 26px;
   object-fit: contain;
   display: block;
 }
 
-/* BODY FIGURE */
 .body-figure {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-
-  min-height: 560px;
-
+  min-height: 520px;
   position: relative;
   z-index: 2;
 }
 
 .body-image-wrap {
-  width: min(100%, 350px);
-  min-height: 450px;
-
+  width: min(100%, 320px);
+  min-height: 410px;
   display: grid;
   place-items: center;
-
   position: relative;
   overflow: visible;
 }
 
 .body-image {
   width: 100%;
-  max-height: 480px;
-
+  max-height: 430px;
   object-fit: contain;
   display: block;
-
   position: relative;
   z-index: 2;
 }
 
-/* DASHED CONNECTOR */
 .connector-svg {
   position: absolute;
   top: 0;
   left: 0;
-
   width: 155%;
   height: 100%;
-
   pointer-events: none;
-
   z-index: 1;
   overflow: visible;
 }
 
 .connector-line {
   fill: none;
-
   stroke: #000000;
-  stroke-width: 2.4;
+  stroke-width: 2.3;
   stroke-linecap: round;
   stroke-dasharray: 9 9;
-
-  opacity: 0.8;
-
+  opacity: 0.75;
   animation: dashMove 1s linear infinite;
 }
 
@@ -435,26 +452,18 @@ const selectedPart = computed(() => {
   }
 }
 
-/* BODY BUTTONS */
 .body-hotspot {
   position: absolute;
   z-index: 4;
-
   display: grid;
   place-items: center;
-
-  width: 34px;
-  height: 34px;
-
+  width: 32px;
+  height: 32px;
   border: 2px solid #ffffff;
   border-radius: 999px;
-
   background: rgba(255, 255, 255, 0.92);
-
   box-shadow: 0 8px 18px rgba(24, 30, 75, 0.22);
-
   cursor: pointer;
-
   transition:
     transform 0.2s ease,
     background 0.2s ease,
@@ -462,8 +471,8 @@ const selectedPart = computed(() => {
 }
 
 .body-hotspot img {
-  width: 21px;
-  height: 21px;
+  width: 20px;
+  height: 20px;
   object-fit: contain;
 }
 
@@ -479,203 +488,171 @@ const selectedPart = computed(() => {
   filter: brightness(0) invert(1);
 }
 
-/* adjust these positions based on your boy image */
 .body-hotspot.hotspot-brain {
-  top: 58px;
-  left: 204px;
+  top: 54px;
+  left: 186px;
 }
 
 .body-hotspot.hotspot-eyes {
-  top: 100px;
-  left: 222px;
+  top: 94px;
+  left: 202px;
 }
 
 .body-hotspot.hotspot-teeth {
-  top: 134px;
-  left: 200px;
+  top: 126px;
+  left: 182px;
 }
 
 .body-hotspot.hotspot-immunity {
-  top: 288px;
-  left: 236px;
+  top: 262px;
+  left: 216px;
 }
 
 .body-hotspot.hotspot-muscles {
-  top: 209px;
-  left: 235px;
+  top: 192px;
+  left: 214px;
 }
 
 .body-hotspot.hotspot-energy {
-  top: 198px;
-  left: 200px;
+  top: 184px;
+  left: 184px;
 }
 
 .body-hotspot.hotspot-bones {
-  top: 366px;
-  left: 210px;
+  top: 334px;
+  left: 192px;
 }
 
-/* CLICK HINT */
 .click-hint {
   display: flex;
   align-items: center;
   gap: 8px;
-
-  margin-top: 18px;
-
+  margin-top: 8px;
   color: #0d1c2e;
-
   font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 14px;
+  font-size: 13px;
   line-height: 20px;
 }
 
 .click-hint img {
-  width: 18px;
-  height: 18px;
-
+  width: 17px;
+  height: 17px;
   object-fit: contain;
 }
 
-/* RIGHT PANEL */
 .info-panel {
   align-self: center;
-
+  width: 100%;
+  min-height: 560px;
   border-radius: 28px;
-
-  padding: 24px;
-
+  padding: 22px;
   background: #ffffff;
-
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.16);
-
   position: relative;
   z-index: 3;
 }
 
 .info-panel h3 {
   margin: 0 0 8px;
-
   color: #006a61;
-
   font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 16px;
-  font-weight: 700;
+  font-size: 15px;
+  font-weight: 800;
   line-height: 1;
-
-  letter-spacing: 1.3px;
+  letter-spacing: 1.6px;
   text-transform: uppercase;
 }
 
 .description {
+  display: -webkit-box;
+  min-height: 66px;
   margin: 0;
-
+  overflow: hidden;
   color: #45464d;
-
   font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 15px;
-  line-height: 1.5;
+  font-size: 13.5px;
+  line-height: 1.55;
+  -webkit-box-orient: vertical;
 }
 
 .info-panel h4 {
-  margin: 22px 0 14px;
-
-  padding-bottom: 8px;
-
+  margin: 16px 0 12px;
+  padding-bottom: 7px;
   border-bottom: 1px solid #c6c6cd;
-
   color: #76777d;
-
   font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 16px;
-  font-weight: 600;
-
-  letter-spacing: 1.3px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
   text-transform: uppercase;
 }
 
-/* FOOD GRID */
 .food-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  gap: 10px;
 }
 
 .food-card {
   overflow: hidden;
-
   border: 1px solid #c6c6cd;
-  border-radius: 4px;
-
+  border-radius: 8px;
   background: #ffffff;
 }
 
 .food-card img {
   width: 100%;
-  height: 104px;
-
+  height: 82px;
   object-fit: cover;
   display: block;
 }
 
 .food-card span {
   display: block;
-
-  padding: 8px;
-
+  min-height: 34px;
+  padding: 7px 9px;
   color: #191c1e;
-
   font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 13px;
-  font-weight: 700;
-  line-height: 1;
+  font-size: 12.5px;
+  font-weight: 800;
+  line-height: 1.15;
 }
 
-/* WHY CARD */
 .why-card {
-  margin-top: 22px;
-
+  margin-top: 14px;
   border: 1px solid #c6c6cd;
-  border-radius: 4px;
-
-  padding: 18px;
-
+  border-radius: 8px;
+  padding: 14px;
   background: #f2f4f6;
 }
 
 .why-card h5 {
-  margin: 0 0 10px;
-
+  margin: 0 0 7px;
   color: #006a61;
-
   font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 16px;
-  font-weight: 700;
-
-  letter-spacing: 1.3px;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
   text-transform: uppercase;
 }
 
 .why-card p {
+  display: -webkit-box;
   margin: 0;
-
+  overflow: hidden;
   color: #191c1e;
-
   font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 15px;
+  font-size: 13.5px;
   line-height: 1.5;
+  -webkit-box-orient: vertical;
 }
 
-/* EMPTY PANEL */
 .empty-panel {
-  min-height: 260px;
-
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
 
-/* TRANSITION */
 .body-highlight-enter-active,
 .body-highlight-leave-active {
   transition:
@@ -689,15 +666,14 @@ const selectedPart = computed(() => {
   transform: scale(0.98);
 }
 
-/* TABLET */
 @media (max-width: 1024px) {
-  .body-map-inner {
-    width: min(900px, calc(100% - 40px));
+  .body-map-section {
+    min-height: auto;
   }
 
   .body-layout {
     grid-template-columns: 1fr;
-    gap: 30px;
+    gap: 28px;
   }
 
   .part-list {
@@ -717,18 +693,15 @@ const selectedPart = computed(() => {
 
   .info-panel {
     width: min(100%, 520px);
+    height: auto;
+    min-height: 520px;
     margin: 0 auto;
   }
 }
 
-/* MOBILE */
 @media (max-width: 640px) {
   .body-map-section {
     padding: 48px 0 60px;
-  }
-
-  .body-map-inner {
-    width: calc(100% - 32px);
   }
 
   .section-heading h2 {
@@ -776,8 +749,15 @@ const selectedPart = computed(() => {
   }
 
   .info-panel {
+    min-height: unset;
+    height: auto;
     border-radius: 24px;
     padding: 22px;
+  }
+
+  .description,
+  .why-card p {
+    -webkit-line-clamp: unset;
   }
 
   .food-card img {
