@@ -22,7 +22,8 @@
             </div>
           </div>
 
-          <img :src="'/images/landing/landing-3.webp'" alt="Groceries on table" class="mt-6 h-[216px] w-full rounded-lg object-cover" />
+          <img src="/images/landing/landing-3.webp" alt="Groceries on table"
+            class="mt-6 h-[240px] w-full rounded-lg object-cover" />
         </article>
 
         <article class="small-tip-card bg-chere-blue">
@@ -95,14 +96,14 @@ const tips = [
 }
 
 .large-feature-card {
-  min-height: 538px;
+  min-height: 560px;
 }
 
 .small-tip-card {
   position: relative;
   z-index: 1;
   overflow: hidden;
-  min-height: 400px;
+  min-height: 316px;
   border-radius: 12px;
   padding: 24px;
   box-shadow: 0 1px 2px #0000000d;
@@ -111,7 +112,7 @@ const tips = [
 .horizontal-highlight {
   position: relative;
   z-index: 3;
-  min-height: 206px;
+  padding-bottom: 96px;
 }
 
 .horizontal-highlight h3 {
@@ -131,7 +132,7 @@ const tips = [
 @media (min-width: 1024px) {
   .grocery-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    grid-template-rows: 316px 206px;
+    align-items: stretch;
   }
 
   .large-feature-card {
@@ -139,27 +140,22 @@ const tips = [
     grid-row: span 2 / span 2;
   }
 
-  .horizontal-highlight {
-    grid-column: span 2 / span 2;
-    margin-top: -42px;
+  .small-tip-card {
+    min-height: 400px;
   }
 
-  .small-tip-card {
-    margin-bottom: 60px;
+  .horizontal-highlight {
+    grid-column: span 2 / span 2;
+    min-height: 240px;
+    margin-top: -120px;
   }
 }
 
 @media (max-width: 1023px) {
-  .large-feature-card {
-    min-height: auto;
-  }
 
+  .large-feature-card,
   .small-tip-card {
     min-height: auto;
-  }
-
-  .horizontal-highlight {
-    padding-bottom: 96px;
   }
 
   .grocery-button {
