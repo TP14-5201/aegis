@@ -1,5 +1,5 @@
 <template>
-  <section class="w-full bg-white py-12 lg:py-20">
+  <section id="age-groups" class="w-full bg-white py-12 lg:py-20">
     <div class="max-w-8xl mx-auto px-5 lg:px-12">
       <!-- Heading -->
       <p class="font-roboto font-bold text-coral text-[16px] lg:text-[20px] tracking-[2px] uppercase">
