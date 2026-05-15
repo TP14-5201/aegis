@@ -47,10 +47,10 @@
   pointer-events: none;
   position: absolute;
   left: 0;
-  bottom: 0;
+  bottom: -16px;
   z-index: 0;
   width: 100%;
-  height: 180px;
+  height: 170px;
   overflow: hidden;
   opacity: 0.035;
 }
@@ -66,10 +66,10 @@
   flex-shrink: 0;
   color: theme('colors.chere.navy');
   font-family: theme('fontFamily.display');
-  font-size: 240px;
+  font-size: 160px;
   font-weight: 600;
-  line-height: 160px;
-  letter-spacing: -2px;
+  line-height: 170px;
+  letter-spacing: -3px;
 }
 
 @keyframes marquee-scroll {
