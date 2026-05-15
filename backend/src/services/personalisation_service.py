@@ -27,6 +27,11 @@ import logging
 import os
 from typing import TypedDict
 
+try:
+    from groq import Groq
+except ImportError:
+    Groq = None  # type: ignore[assignment,misc]
+
 logger = logging.getLogger(__name__)
 
 _GROQ_MODEL = "llama-3.1-8b-instant"
@@ -77,7 +82,9 @@ def extract_preferences(description: str | None) -> ShoppingPreferences:
         return _EMPTY_PREFERENCES
 
     try:
-        from groq import Groq  # lazy import — only required when key is present
+        if Groq is None:
+            logger.warning("groq package not installed; skipping preference extraction.")
+            return _EMPTY_PREFERENCES
 
         client = Groq(api_key=api_key)
         response = client.chat.completions.create(

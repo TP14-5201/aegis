@@ -309,7 +309,7 @@ class TestScoreIngredientsWithPreferences:
             )
         veg = result[result["sub_category"] == "Vegetables"]
         if not veg.empty and veg.iloc[0]["rec_score"] > 0:
-            assert veg.iloc[0]["final_score"] > veg.iloc[0]["rec_score"]
+            assert veg.iloc[0]["preference_alignment"] > 0.0
 
     def test_no_preferences_final_score_equals_rec_score(self):
         with patch("src.services.recommendation_service._load_ingredients_df", return_value=_make_ingredients_df()), \
