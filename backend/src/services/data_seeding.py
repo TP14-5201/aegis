@@ -4,11 +4,11 @@ import pandas as pd
 from sqlalchemy.orm import Session
 from src.database import SessionLocal, engine
 from src.models import (
-    Base, SupportService, FoodInsecurity, 
-    VicLgaBoundary, LgaPopulation, 
+    Base, SupportService, FoodInsecurity,
+    VicLgaBoundary, LgaPopulation,
     DietIndicator, HealthOutcome, LowCostDiet,
-    LowCostDietHealthOutcome, RecommendedMacronutrientsIntake, FoodInaccessibilityReasons, 
-    Ingredient, IngredientNutrition
+    LowCostDietHealthOutcome, RecommendedMacronutrientsIntake, FoodInaccessibilityReasons,
+    Ingredient, IngredientNutrition, IngredientHealthRating
 )
 
 from src.core.config import settings
@@ -26,7 +26,8 @@ from src.data.loaders.data_loader import (
     load_recommended_macronutrients_intake_dataset,
     load_food_inaccessibility_reasons_dataset,
     load_ingredient_dataset,
-    load_ingredient_nutrition_dataset
+    load_ingredient_nutrition_dataset,
+    load_ingredient_health_rating_dataset,
 )
 
 
@@ -91,13 +92,16 @@ def load_dataset() -> pd.DataFrame:
         (load_recommended_macronutrients_intake_dataset, RecommendedMacronutrientsIntake),
         (load_food_inaccessibility_reasons_dataset, FoodInaccessibilityReasons),
         (load_ingredient_dataset, Ingredient),
-        (load_ingredient_nutrition_dataset, IngredientNutrition)
+        (load_ingredient_nutrition_dataset, IngredientNutrition),
+        (load_ingredient_health_rating_dataset, IngredientHealthRating),
     ]
     
     return [(loader(), model) for loader, model in DATASET_REGISTRY]
 
 
 if __name__ == "__main__":
+    from src.services.ingredient_substitution import engine as substitution_engine
+
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
 
@@ -107,5 +111,8 @@ if __name__ == "__main__":
     try:
         for df, model in datasets:
             seed_database(db, df, model)
+        logger.info("Building FAISS substitution index…")
+        substitution_engine.build_index(db)
+        logger.info("FAISS index built successfully.")
     finally:
         db.close()
