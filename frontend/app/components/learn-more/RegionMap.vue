@@ -68,7 +68,7 @@
         </button>
       </div>
 
-      <div class="mt-6 grid grid-cols-1 gap-5 lg:grid-cols-[230px_minmax(0,1fr)]">
+      <div class="mt-6 grid grid-cols-1 gap-x-5 gap-y-1 lg:grid-cols-[230px_minmax(0,1fr)]">
         <aside class="space-y-6">
           <div>
             <p class="mb-5 font-roboto text-[12px] font-bold uppercase tracking-[0.14em] text-[#434656]">
