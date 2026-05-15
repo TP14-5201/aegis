@@ -74,7 +74,7 @@
   position: relative;
   width: 100%;
   margin-top: -72px;
-  padding: 112px 0 44px;
+  padding: 128px 0 44px;
   overflow: hidden;
   background: linear-gradient(180deg,
       #f8f9ff 0%,
@@ -83,7 +83,7 @@
 }
 
 .nutrition-hero-inner {
-  width: min(1200px, calc(100% - 80px));
+  width: min(1120px, calc(100% - 120px));
   margin: 0 auto;
 }
 
@@ -224,7 +224,7 @@
   }
 
   .nutrition-hero-inner {
-    width: min(100% - 40px, 900px);
+    width: min(100% - 72px, 920px);
   }
 
   .hero-card {
@@ -250,14 +250,15 @@
 @media (min-width: 1024px) {
   .nutrition-hero-section {
     margin-top: -100px;
-    padding-top: 132px;
+    padding-top: 148px;
+    padding-bottom: 84px;
   }
 }
 
 /* MOBILE */
 @media (max-width: 640px) {
   .nutrition-hero-inner {
-    width: calc(100% - 32px);
+    width: calc(100% - 40px);
   }
 
   .hero-copy {
