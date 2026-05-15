@@ -22,6 +22,7 @@ from src.data.wranglers.food_inaccessibility_reasons_wrangler import wrangle_foo
 
 from src.data.wranglers.ingredient_wrangler import wrangle_ingredient
 from src.data.wranglers.nutrition_wrangler import wrangle_ingredient_nutrition
+from src.data.wranglers.health_rating_wrangler import wrangle_ingredient_health_ratings
 
 
 def _load_and_wrangle(
@@ -133,3 +134,10 @@ def load_ingredient_nutrition_dataset() -> pd.DataFrame:
     ingredient_df = load_ingredient_dataset()
     ingredient_nutrition_df = wrangle_ingredient_nutrition(ingredient_df, nutrition_df)
     return ingredient_nutrition_df
+
+
+def load_ingredient_health_rating_dataset() -> pd.DataFrame:
+    """Compute Nutri-Score health ratings for all ingredients from AFCD nutrition data."""
+    ingredient_df = load_ingredient_dataset()
+    nutrition_df = load_ingredient_nutrition_dataset()
+    return wrangle_ingredient_health_ratings(ingredient_df, nutrition_df)

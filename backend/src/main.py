@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import json
+import os
 from typing import List, Optional
 import math
 from datetime import datetime
 
+import httpx
 from fastapi import Depends, FastAPI, HTTPException, Query
 from pydantic import BaseModel
 from fastapi.responses import JSONResponse
@@ -37,6 +39,8 @@ from src.schemas import (
     RecommendedMacronutrientsIntakeOut,
 )
 from src.services.ingredient_substitution import engine as substitution_engine, SubstituteResult
+from src.services import recommendation_service
+from src.services import personalisation_service
 from src.services.nearby_search import DEFAULT_KEYWORDS, find_nearby_support_services, search_support_service_suburbs
 from src.services.gtfsr import fetch_vehicle_positions, fetch_trip_updates
 from src.utils.opening_hours import is_open_now, _now_in_tz
@@ -70,8 +74,16 @@ app.add_middleware(
 
 @app.on_event("startup")
 def on_startup() -> None:
-    # Ensure tables exist; seeding is handled elsewhere
     Base.metadata.create_all(bind=engine)
+    db = next(get_db())
+    try:
+        recommendation_service.warm_percentiles(db)
+    except Exception as exc:
+        logger.warning("Could not warm nutrient percentiles at startup: %s", exc)
+    try:
+        substitution_engine.load_index(db)
+    except Exception as exc:
+        logger.warning("Could not load substitution index at startup: %s", exc)
     logger.info("API startup complete; database ready.")
 
 
@@ -553,6 +565,40 @@ def get_ingredient_substitutes(
 
 
 # ---------------------------------------------------------------------------
+# Weather — proxied from backend so the API key never reaches the browser
+# ---------------------------------------------------------------------------
+
+_OPENWEATHER_KEY = os.getenv("OPENWEATHER_API_KEY", "")
+
+@app.get("/weather")
+async def get_weather(lat: float = Query(...), lon: float = Query(...)):
+    if not _OPENWEATHER_KEY:
+        raise HTTPException(status_code=503, detail="Weather service not configured")
+    url = (
+        f"https://api.openweathermap.org/data/2.5/weather"
+        f"?lat={lat}&lon={lon}&appid={_OPENWEATHER_KEY}&units=metric"
+    )
+    async with httpx.AsyncClient(timeout=8) as client:
+        try:
+            r = await client.get(url)
+            r.raise_for_status()
+        except httpx.HTTPStatusError as exc:
+            raise HTTPException(status_code=502, detail=f"OpenWeather error: {exc.response.status_code}")
+        except Exception as exc:
+            logger.exception("Weather fetch failed: %s", exc)
+            raise HTTPException(status_code=502, detail="Could not fetch weather data")
+    data = r.json()
+    return {
+        "temp": round(data["main"]["temp"]),
+        "feels_like": round(data["main"]["feels_like"]),
+        "rain_mm": round(data.get("rain", {}).get("1h", 0), 1),
+        "wind_kph": round(data["wind"]["speed"] * 3.6, 1),
+        "description": data["weather"][0]["description"].capitalize(),
+        "icon": data["weather"][0]["icon"],
+    }
+
+
+# ---------------------------------------------------------------------------
 # GTFSR — real-time vehicle positions + trip updates (proxied from backend
 # so the API key never reaches the browser)
 # ---------------------------------------------------------------------------
@@ -582,3 +628,98 @@ async def gtfsr_trip_update(trip_id: str, mode: str = "train"):
     except Exception as exc:
         logger.exception("GTFSR trip update error for trip %s: %s", trip_id, exc)
         raise HTTPException(status_code=502, detail="Could not fetch trip updates from GTFSR feed")
+
+
+# ---------------------------------------------------------------------------
+# Recommendations — value-based ingredient ranking
+# ---------------------------------------------------------------------------
+
+class RecommendationRequest(BaseModel):
+    budget: float
+    people: int
+    days: int
+    description: Optional[str] = None
+    dietary_goal: Optional[str] = None
+    dietary_needs: List[str] = []
+
+
+class ScoredIngredient(BaseModel):
+    ingredient_code: str
+    product_name: str
+    sub_category: str
+    retail_price: float
+    health_score: float
+    rec_score: float
+    nutrient_badges: List[str] = []
+
+
+class RecommendationResponse(BaseModel):
+    ingredients: List[ScoredIngredient]
+    budget_per_dish_per_person: float
+
+
+@app.post(
+    "/recommendations",
+    response_model=RecommendationResponse,
+    summary="Budget-aware ingredient recommendations",
+    tags=["recommendations"],
+)
+def get_recommendations(
+    body: RecommendationRequest,
+    bag_size: int = Query(default=15, ge=5, le=40),
+    db: Session = Depends(get_db),
+) -> dict:
+    """
+    Score all ingredients for the user's planner profile and return globally
+    ranked top items (up to bag_size, max 3 per sub_category), ranked by
+    rec_score (or final_score when a description is provided).
+
+    rec_score = 0.50 × affordability + 0.30 × health + 0.20 × nutrient_density.
+    Dietary incompatibility and prices above budget/5 are hard-vetoed to 0.
+    health_score is returned normalised to [0, 1].
+    """
+    description = body.description and body.description.strip()
+    dietary_goal = body.dietary_goal and body.dietary_goal.strip()
+    combined_text = " ".join(filter(None, [description, dietary_goal])) or None
+
+    if combined_text:
+        preferences = personalisation_service.extract_preferences(combined_text)
+        scored = recommendation_service.score_ingredients_with_preferences(
+            db=db,
+            budget=body.budget,
+            people=body.people,
+            days=body.days,
+            dietary_needs=body.dietary_needs,
+            preferences=preferences,
+            description=combined_text,
+        )
+        score_col = "final_score"
+    else:
+        scored = recommendation_service.score_ingredients(
+            db=db,
+            budget=body.budget,
+            people=body.people,
+            days=body.days,
+            dietary_needs=body.dietary_needs,
+        )
+        score_col = "rec_score"
+
+    bdpp = body.budget / max(body.people, 1) / max(body.days, 1) / 3
+
+    viable = scored[scored[score_col] > 0]
+    top = recommendation_service.select_bag(viable, bag_size=bag_size, max_per_category=3, score_col=score_col)
+
+    ingredients = [
+        {
+            "ingredient_code": row["ingredient_code"],
+            "product_name":    row["product_name"],
+            "sub_category":    row["sub_category"] or "",
+            "retail_price":    float(row["retail_price"]),
+            "health_score":    float(row["final_health_score"] or 0.0) / 100.0,
+            "rec_score":       float(row[score_col]),
+            "nutrient_badges": row["nutrient_badges"],
+        }
+        for _, row in top.iterrows()
+    ]
+
+    return {"ingredients": ingredients, "budget_per_dish_per_person": bdpp}

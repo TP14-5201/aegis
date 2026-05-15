@@ -57,6 +57,7 @@ MACRONUTRIENT_DF      = pd.DataFrame({"lga_name": ["Melbourne"], "recommended_ma
 FOOD_INACCESSIBILITY_REASONS_DF = pd.DataFrame({"reason": ["Cost"], "pct": [42.0]})
 INGREDIENT_DF         = pd.DataFrame({"ingredient_id": [1], "name": ["Tomato"]})
 INGREDIENT_NUTRITION_DF = pd.DataFrame({"ingredient_id": [1], "calories_100g": [80.0]})
+INGREDIENT_HEALTH_RATING_DF = pd.DataFrame({"ingredient_id": [1], "health_rating": ["A"]})
 
 
 @pytest.fixture
@@ -80,7 +81,7 @@ def mock_model():
 
 def _all_loader_patches(overrides: dict = None):
     """
-    Returns a dict of patch kwargs for the 10 named loaders with their default
+    Returns a dict of patch kwargs for the 13 named loaders with their default
     return values.
 
     Pass ``overrides`` to swap individual loaders, e.g.::
@@ -100,6 +101,7 @@ def _all_loader_patches(overrides: dict = None):
         "load_food_inaccessibility_reasons_dataset":      FOOD_INACCESSIBILITY_REASONS_DF,
         "load_ingredient_dataset":                        INGREDIENT_DF,
         "load_ingredient_nutrition_dataset":              INGREDIENT_NUTRITION_DF,
+        "load_ingredient_health_rating_dataset":          INGREDIENT_HEALTH_RATING_DF,
     }
     if overrides:
         defaults.update(overrides)
@@ -393,22 +395,21 @@ class TestDownloadDataset:
 
 class TestLoadDataset:
     """
-    load_dataset() calls 10 loaders and returns a list of 10 (df, model) tuples
+    load_dataset() calls 13 loaders and returns a list of 13 (df, model) tuples
     in the following order:
-        (emergency_services_df, SupportService),
-        (food_insecurity_df,    FoodInsecurity),
-        (lga_boundaries_df,     VicLgaBoundary),
-        (lga_population_df,     LgaPopulation),
-        (diet_indicator_df,     DietIndicator),
-        (health_outcome_df,     HealthOutcome),
-        (low_cost_diet_df,      LowCostDiet),
-        (low_cost_diet_ho_df,   LowCostDietHealthOutcome),
-        (macronutrient_df,      RecommendedMacronutrientsIntake),
-        (ingredient_df,         Ingredient),
-
-    Note: IngredientNutrition is seeded separately in __main__ via
-    load_ingredient_nutrition_dataset() and is NOT part of load_dataset()'s
-    return value.
+        (lga_population_df,        LgaPopulation),
+        (lga_boundaries_df,        VicLgaBoundary),
+        (emergency_services_df,    SupportService),
+        (food_insecurity_df,       FoodInsecurity),
+        (diet_indicator_df,        DietIndicator),
+        (health_outcome_df,        HealthOutcome),
+        (low_cost_diet_df,         LowCostDiet),
+        (low_cost_diet_ho_df,      LowCostDietHealthOutcome),
+        (macronutrient_df,         RecommendedMacronutrientsIntake),
+        (food_inaccessibility_df,  FoodInaccessibilityReasons),
+        (ingredient_df,            Ingredient),
+        (ingredient_nutrition_df,  IngredientNutrition),
+        (ingredient_health_df,     IngredientHealthRating),
 
     Correct patch targets (functions imported into data_seeding):
         src.services.data_seeding.load_emergency_services_dataset
@@ -420,14 +421,17 @@ class TestLoadDataset:
         src.services.data_seeding.load_low_cost_diet_dataset
         src.services.data_seeding.load_low_cost_diet_health_outcome_dataset
         src.services.data_seeding.load_recommended_macronutrients_intake_dataset
+        src.services.data_seeding.load_food_inaccessibility_reasons_dataset
         src.services.data_seeding.load_ingredient_dataset
+        src.services.data_seeding.load_ingredient_nutrition_dataset
+        src.services.data_seeding.load_ingredient_health_rating_dataset
     """
 
     BASE = "src.services.data_seeding"
 
     def _run_with_all_patches(self, overrides=None):
         """
-        Starts patches for all 10 named loaders and returns (result, started_mocks).
+        Starts patches for all 13 named loaders and returns (result, started_mocks).
         """
         patches_cfg = _all_loader_patches()
         patch_objs = []
@@ -456,9 +460,9 @@ class TestLoadDataset:
         assert isinstance(result, list)
 
     def test_returns_correct_num_items(self):
-        """Tests that load_dataset returns exactly 10 (df, model) pairs."""
+        """Tests that load_dataset returns exactly 13 (df, model) pairs."""
         result, _ = self._run_with_all_patches()
-        assert len(result) == 12
+        assert len(result) == 13
 
     def test_each_item_is_two_tuple(self):
         """Tests that every item in the result is a 2-tuple of (DataFrame, model class)."""
@@ -541,3 +545,11 @@ class TestLoadDataset:
     def test_propagates_exception_from_ingredient_loader(self):
         """Tests that a failure in load_ingredient_dataset propagates up."""
         self._assert_propagates("load_ingredient_dataset")
+
+    def test_propagates_exception_from_ingredient_nutrition_loader(self):
+        """Tests that a failure in load_ingredient_nutrition_dataset propagates up."""
+        self._assert_propagates("load_ingredient_nutrition_dataset")
+
+    def test_propagates_exception_from_ingredient_health_rating_loader(self):
+        """Tests that a failure in load_ingredient_health_rating_dataset propagates up."""
+        self._assert_propagates("load_ingredient_health_rating_dataset")

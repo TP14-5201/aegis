@@ -429,44 +429,69 @@ class IngredientSubstitutionEngine:
             balanced=_to_slot(balanced_row,   "_score_balanced"),
         )
 
+    def find_similar_to_text(self, text: str, top_k: int = 200) -> dict[str, float]:
+        """Embed free text and return {ingredient_code: cosine_similarity} for top_k results.
+
+        Appends zero nutritional features so the query vector matches the 388-d index dim.
+        Returns {} if the engine is not ready.
+        """
+        if not self._ready or self._model is None or self._index is None or self._df is None:
+            return {}
+        text_vec = self._model.encode(
+            [text.strip()[:300]], normalize_embeddings=True
+        )[0].astype("float32")
+        full_vec = np.concatenate([text_vec, np.zeros(4, dtype="float32")]).reshape(1, -1)
+        k = min(top_k, len(self._df))
+        distances, indices = self._index.search(full_vec, k)
+        code_list = self._df.index.tolist()
+        result: dict[str, float] = {}
+        for dist, idx in zip(distances[0], indices[0]):
+            if 0 <= idx < len(code_list):
+                result[code_list[idx]] = float(max(0.0, dist))
+        return result
+
     # ------------------------------------------------------------------
     # Internal helpers
     # ------------------------------------------------------------------
 
     def _load_dataframe(self, db: Session) -> pd.DataFrame:
         """
-        Join ingredient + nutrition + ingredient_price tables into a single
+        Join ingredient + nutrition + health_rating tables into a single
         flat DataFrame indexed by ingredient_code.
         """
-        from src.models import Ingredient, Nutrition, IngredientPrice  # noqa: PLC0415
+        from src.models import Ingredient, IngredientNutrition, IngredientHealthRating  # noqa: PLC0415
 
         rows = (
             db.query(
                 Ingredient.ingredient_code,
                 Ingredient.product_name,
-                Nutrition.nutrition_grade_fr,
-                Nutrition.energy_100g,
-                Nutrition.proteins_100g,
-                Nutrition.carbohydrates_100g,
-                Nutrition.fat_100g,
-                IngredientPrice.sub_category,
-                IngredientPrice.retail_price,
-                IngredientPrice.health_benefits,
+                Ingredient.sub_category,
+                Ingredient.retail_price,
+                IngredientHealthRating.nutriscore_grade.label("nutrition_grade_fr"),
+                IngredientNutrition.protein_g.label("proteins_100g"),
+                IngredientNutrition.fat_total_g.label("fat_100g"),
+                IngredientNutrition.available_carbohydrate_without_sugar_alcohols_g.label("carbohydrates_100g"),
             )
-            .outerjoin(Nutrition,       Nutrition.ingredient_code       == Ingredient.ingredient_code)
-            .outerjoin(IngredientPrice, IngredientPrice.ingredient_code == Ingredient.ingredient_code)
+            .outerjoin(IngredientNutrition,    IngredientNutrition.ingredient_code    == Ingredient.ingredient_code)
+            .outerjoin(IngredientHealthRating, IngredientHealthRating.ingredient_code == Ingredient.ingredient_code)
             .all()
         )
 
         df = pd.DataFrame(rows, columns=[
-            "ingredient_code", "product_name", "nutrition_grade_fr", 
-            "energy_100g", "proteins_100g", "carbohydrates_100g", "fat_100g", 
-            "sub_category", "retail_price", "health_benefits"
+            "ingredient_code", "product_name", "sub_category", "retail_price",
+            "nutrition_grade_fr", "proteins_100g", "fat_100g", "carbohydrates_100g",
         ]).set_index("ingredient_code")
 
         df["nutrition_grade_fr"] = df["nutrition_grade_fr"].str.lower().where(
             df["nutrition_grade_fr"].notna(), other=None
         )
+        # Derive energy from macros (Atwater factors) since there is no stored energy column
+        df["energy_100g"] = (
+            df["proteins_100g"].fillna(0) * 17.0
+            + df["fat_100g"].fillna(0) * 37.0
+            + df["carbohydrates_100g"].fillna(0) * 17.0
+        )
+        df["health_benefits"] = None
         df["functional_role"] = df["sub_category"].apply(_infer_role)
         return df
 

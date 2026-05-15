@@ -5,6 +5,11 @@ export default {
   theme: {
     extend: {
       colors: {
+        navy: '#0D1C2E',
+        coral: '#DF6951',
+        sky: '#449AC4',
+        clay: '#C1694F',
+
         chere: {
           navy: '#0D1C2E',
           ink: '#131B2E',
