@@ -26,16 +26,15 @@ class FakeDB:
 
 
 class FakeRow:
-    def __init__(self, lga_pid, lga_name, pop_2024_total, men_pct, women_pct, emergency_services_count):
+    def __init__(self, lga_pid, lga_name, pop_2024_total, food_insecurity_pct, emergency_services_count):
         self.lga_pid = lga_pid
         self.lga_name = lga_name
         self.pop_2024_total = pop_2024_total
-        self.men_pct = men_pct
-        self.women_pct = women_pct
+        self.food_insecurity_pct = food_insecurity_pct
         self.emergency_services_count = emergency_services_count
 
 
-def test_get_lga_stats_returns_aggregated_stats():
+def test_get_lga_stats_returns_combined_food_insecurity_stats():
     def fake_get_db():
         yield FakeDB(
             [
@@ -43,8 +42,7 @@ def test_get_lga_stats_returns_aggregated_stats():
                     lga_pid="123",
                     lga_name="Sample LGA",
                     pop_2024_total=10000,
-                    men_pct=12.345,
-                    women_pct=8.901,
+                    food_insecurity_pct=21.246,
                     emergency_services_count=4,
                 )
             ]
@@ -62,8 +60,7 @@ def test_get_lga_stats_returns_aggregated_stats():
         {
             "lga_name": "Sample LGA",
             "pop_2024_total": 10000,
-            "men_pct": 12.345,
-            "women_pct": 8.901,
+            "food_insecurity_pct": 21.246,
             "emergency_services_count": 4,
         }
     ]
