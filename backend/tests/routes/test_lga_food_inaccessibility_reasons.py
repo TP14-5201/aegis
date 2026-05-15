@@ -66,6 +66,21 @@ def test_get_lga_food_inaccessibility_reasons_returns_selected_fields():
     ]
 
 
+def test_get_lga_food_inaccessibility_reasons_returns_empty_list_when_no_data():
+    def fake_get_db():
+        yield FakeDB([])
+
+    app.dependency_overrides[get_db] = fake_get_db
+    client = TestClient(app)
+
+    response = client.get("/lga/food-inaccessibility-reasons")
+
+    app.dependency_overrides.clear()
+
+    assert response.status_code == 200
+    assert response.json() == []
+
+
 def test_get_lga_food_inaccessibility_reasons_returns_unknown_for_missing_values():
     def fake_get_db():
         yield FakeDB(

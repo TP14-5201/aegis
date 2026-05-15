@@ -126,3 +126,27 @@ class TestExtractPreferences:
         call_args = mock_client.chat.completions.create.call_args
         user_message = call_args.kwargs["messages"][1]["content"]
         assert len(user_message) <= 300
+
+    def test_groq_not_installed_returns_empty(self):
+        with patch("src.services.personalisation_service.os.environ.get", return_value="fake-key"), \
+             patch("src.services.personalisation_service.Groq", None), \
+             patch("src.services.personalisation_service.logger") as mock_logger:
+            result = extract_preferences("I like vegetables")
+        assert result == _EMPTY_PREFERENCES
+        mock_logger.warning.assert_called()
+
+    def test_markdown_fence_without_json_header_still_parsed(self):
+        mock_response = MagicMock()
+        mock_response.choices[0].message.content = (
+            "```\n"
+            '{"preferred_sub_categories": ["Fruit"], "nutrient_priorities": [], "avoid_sub_categories": []}'
+            "\n```"
+        )
+        mock_client = MagicMock()
+        mock_client.chat.completions.create.return_value = mock_response
+
+        with patch("src.services.personalisation_service.os.environ.get", return_value="fake-key"), \
+             patch("src.services.personalisation_service.Groq", return_value=mock_client):
+            result = extract_preferences("I like fruit")
+
+        assert result["preferred_sub_categories"] == ["Fruit"]

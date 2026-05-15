@@ -350,3 +350,43 @@ class TestScoreIngredientsWithPreferences:
             )
         scores = result["final_score"].tolist()
         assert scores == sorted(scores, reverse=True)
+
+
+# ---------------------------------------------------------------------------
+# select_bag — additional edge cases
+# ---------------------------------------------------------------------------
+
+class TestSelectBagEdgeCases:
+    def _scored(self, entries):
+        rows = [
+            {"sub_category": cat, "rec_score": score, "ingredient_code": f"code_{i}",
+             "product_name": f"Item {i}", "retail_price": 5.0, "nutriscore_grade": "b",
+             "nova_score": 1, "final_health_score": 70.0, "protein_g": 5.0,
+             "fibre_g": 2.0, "fat_g": 1.0, "sugars_g": 2.0, "nutrient_badges": []}
+            for i, (cat, score) in enumerate(entries)
+        ]
+        df = pd.DataFrame(rows)
+        return df.sort_values("rec_score", ascending=False).reset_index(drop=True)
+
+    def test_stops_exactly_at_bag_size(self):
+        entries = [(f"Cat{i}", 1.0 - i * 0.01) for i in range(10)]
+        result = select_bag(self._scored(entries), bag_size=5, max_per_category=3)
+        assert len(result) == 5
+
+    def test_none_sub_category_treated_as_empty_string(self):
+        entries = [(None, 0.9), (None, 0.8), (None, 0.7), (None, 0.6)]
+        result = select_bag(self._scored(entries), bag_size=10, max_per_category=3)
+        assert len(result) == 3
+
+
+# ---------------------------------------------------------------------------
+# score_ingredients — budget-zero edge case
+# ---------------------------------------------------------------------------
+
+class TestScoreIngredientsEdgeCases:
+    def test_budget_zero_gives_all_zero_scores(self):
+        with patch("src.services.recommendation_service._load_ingredients_df",
+                   return_value=_make_ingredients_df()):
+            db = MagicMock()
+            result = score_ingredients(db, budget=0.0, people=2, days=5, dietary_needs=[])
+        assert (result["rec_score"] == 0.0).all()

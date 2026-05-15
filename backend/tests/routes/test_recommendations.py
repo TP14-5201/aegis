@@ -229,3 +229,22 @@ class TestEdgeCases:
             resp = _post({"budget": 5, "people": 2, "days": 5, "dietary_needs": []})
         assert resp.status_code == 200
         assert resp.json()["ingredients"] == []
+
+    def test_whitespace_only_description_uses_base_path(self):
+        df = _base_ingredients()
+        viable = df[df["rec_score"] > 0].reset_index(drop=True)
+        with patch("src.services.recommendation_service.score_ingredients", return_value=df) as mock_score, \
+             patch("src.services.recommendation_service.select_bag", return_value=viable):
+            resp = _post({"budget": 60, "people": 2, "days": 5, "dietary_needs": [],
+                          "description": "   "})
+        assert resp.status_code == 200
+        mock_score.assert_called_once()
+
+    def test_budget_zero_returns_200(self):
+        df = _base_ingredients()
+        df["rec_score"] = 0.0
+        empty = df[df["rec_score"] > 0].reset_index(drop=True)
+        with patch("src.services.recommendation_service.score_ingredients", return_value=df), \
+             patch("src.services.recommendation_service.select_bag", return_value=empty):
+            resp = _post({"budget": 0, "people": 2, "days": 5, "dietary_needs": []})
+        assert resp.status_code == 200

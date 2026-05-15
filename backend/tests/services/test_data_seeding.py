@@ -545,3 +545,11 @@ class TestLoadDataset:
     def test_propagates_exception_from_ingredient_loader(self):
         """Tests that a failure in load_ingredient_dataset propagates up."""
         self._assert_propagates("load_ingredient_dataset")
+
+    def test_propagates_exception_from_ingredient_nutrition_loader(self):
+        """Tests that a failure in load_ingredient_nutrition_dataset propagates up."""
+        self._assert_propagates("load_ingredient_nutrition_dataset")
+
+    def test_propagates_exception_from_ingredient_health_rating_loader(self):
+        """Tests that a failure in load_ingredient_health_rating_dataset propagates up."""
+        self._assert_propagates("load_ingredient_health_rating_dataset")
