@@ -1,4 +1,4 @@
-from typing import List, Optional, Any
+from typing import List, Optional, Any, Union
 import math
 
 from pydantic import BaseModel, Field, validator
@@ -46,10 +46,17 @@ class FoodInsecurityRegion(BaseModel):
 
 class LgaStatsOut(BaseModel):
     lga_name: Optional[str] = None
-    men_pct: float = 0.0
-    women_pct: float = 0.0
+    food_insecurity_pct: float = 0.0
     pop_2024_total: Optional[int] = None
     emergency_services_count: int = 0
+
+
+class LgaFoodInaccessibilityReasonsOut(BaseModel):
+    lga_pid: str
+    limited_variety: Union[float, str]
+    too_expensive: Union[float, str]
+    wrong_quality: Union[float, str]
+    transport_gap: Union[float, str]
 
 
 class DietIndicatorOut(BaseModel):

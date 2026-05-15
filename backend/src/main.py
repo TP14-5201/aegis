@@ -12,8 +12,30 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from src.core.logging import logger
 from src.database import Base, engine, get_db
-from src.models import LgaPopulation, FoodInsecurity, VicLgaBoundary, SupportService, DietIndicator, HealthOutcome, LowCostDiet, LowCostDietHealthOutcome, RecommendedMacronutrientsIntake
-from src.schemas import NearbyServiceOut, FoodInsecurityRegion, LgaStatsOut, DietIndicatorOut, HealthOutcomeOut, LowCostDietOut, LowCostDietHealthOutcomeOut, RecommendedMacronutrientsIntakeOut, IngredientSubstitutesOut
+from src.models import (
+    DietIndicator,
+    FoodInaccessibilityReasons,
+    FoodInsecurity,
+    HealthOutcome,
+    LgaPopulation,
+    LowCostDiet,
+    LowCostDietHealthOutcome,
+    RecommendedMacronutrientsIntake,
+    SupportService,
+    VicLgaBoundary,
+)
+from src.schemas import (
+    DietIndicatorOut,
+    FoodInsecurityRegion,
+    HealthOutcomeOut,
+    IngredientSubstitutesOut,
+    LgaFoodInaccessibilityReasonsOut,
+    LgaStatsOut,
+    LowCostDietHealthOutcomeOut,
+    LowCostDietOut,
+    NearbyServiceOut,
+    RecommendedMacronutrientsIntakeOut,
+)
 from src.services.ingredient_substitution import engine as substitution_engine, SubstituteResult
 from src.services.nearby_search import DEFAULT_KEYWORDS, find_nearby_support_services, search_support_service_suburbs
 from src.services.gtfsr import fetch_vehicle_positions, fetch_trip_updates
@@ -113,7 +135,7 @@ def get_lga_boundaries(db: Session = Depends(get_db)) -> dict:
 
 @app.get("/lga/stats", response_model=List[LgaStatsOut])
 def get_lga_stats(db: Session = Depends(get_db)) -> List[dict]:
-    """Return population, gendered food insecurity averages, and emergency service counts per LGA."""
+    """Return population, combined food insecurity percentage, and emergency service counts per LGA."""
     try:
         men_pct = func.coalesce(
             func.round(
@@ -151,8 +173,7 @@ def get_lga_stats(db: Session = Depends(get_db)) -> List[dict]:
                 LgaPopulation.lga_pid,
                 LgaPopulation.lga_name,
                 LgaPopulation.pop_2024_total,
-                men_pct.label("men_pct"),
-                women_pct.label("women_pct"),
+                (men_pct + women_pct).label("food_insecurity_pct"),
                 emergency_services_count.label("emergency_services_count"),
             )
             .outerjoin(FoodInsecurity, FoodInsecurity.lga_pid == LgaPopulation.lga_pid)
@@ -164,8 +185,7 @@ def get_lga_stats(db: Session = Depends(get_db)) -> List[dict]:
         return [
             {
                 "lga_name": row.lga_name,
-                "men_pct": float(row.men_pct),
-                "women_pct": float(row.women_pct),
+                "food_insecurity_pct": float(row.food_insecurity_pct),
                 "pop_2024_total": row.pop_2024_total,
                 "emergency_services_count": int(row.emergency_services_count),
             }
@@ -174,6 +194,51 @@ def get_lga_stats(db: Session = Depends(get_db)) -> List[dict]:
     except Exception as exc:
         logger.exception("Failed to fetch LGA stats: %s", exc)
         raise HTTPException(status_code=500, detail="Internal error fetching LGA stats")
+
+
+def _unknown_if_missing(value):
+    if value is None:
+        return "Unknown"
+    try:
+        if math.isnan(value):
+            return "Unknown"
+    except TypeError:
+        pass
+    return value
+
+
+@app.get("/lga/food-inaccessibility-reasons", response_model=List[LgaFoodInaccessibilityReasonsOut])
+def get_lga_food_inaccessibility_reasons(db: Session = Depends(get_db)) -> List[dict]:
+    """Return food inaccessibility reason percentages by LGA."""
+    try:
+        rows = (
+            db.query(
+                FoodInaccessibilityReasons.lga_pid,
+                FoodInaccessibilityReasons.limited_variety,
+                FoodInaccessibilityReasons.too_expensive,
+                FoodInaccessibilityReasons.wrong_quality,
+                FoodInaccessibilityReasons.transport_gap,
+            )
+            .order_by(FoodInaccessibilityReasons.lga_pid)
+            .all()
+        )
+
+        return [
+            {
+                "lga_pid": row.lga_pid,
+                "limited_variety": _unknown_if_missing(row.limited_variety),
+                "too_expensive": _unknown_if_missing(row.too_expensive),
+                "wrong_quality": _unknown_if_missing(row.wrong_quality),
+                "transport_gap": _unknown_if_missing(row.transport_gap),
+            }
+            for row in rows
+        ]
+    except Exception as exc:
+        logger.exception("Failed to fetch LGA food inaccessibility reasons: %s", exc)
+        raise HTTPException(
+            status_code=500,
+            detail="Internal error fetching LGA food inaccessibility reasons",
+        )
 
 
 @app.get("/services", response_model=List[NearbyServiceOut])
