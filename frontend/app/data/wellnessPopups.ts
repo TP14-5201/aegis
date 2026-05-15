@@ -3,7 +3,6 @@ export type WellnessTableVariant = "plain" | "compare";
 
 export type WellnessCommonItem = {
   label: string;
-  /** Optional line icon; chip still renders without it. */
   iconSrc?: string;
 };
 

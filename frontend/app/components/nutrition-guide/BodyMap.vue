@@ -82,10 +82,17 @@
           <h4>Optimal Food Sources</h4>
 
           <div class="food-grid">
-            <div v-for="food in selectedPart.foods" :key="food.name" class="food-card">
+            <button
+              v-for="food in selectedPart.foods"
+              :key="food.name"
+              type="button"
+              class="food-card"
+              @click="emit('select-food', food.name)"
+            >
               <img :src="food.image" :alt="food.name" />
+
               <span>{{ food.name }}</span>
-            </div>
+            </button>
           </div>
 
           <div class="why-card">
@@ -124,7 +131,11 @@ type BodyPart = {
   why: string
 }
 
-const activePart = ref<string | null>('brain')
+const activePart = ref<string | null>(null)
+
+const emit = defineEmits<{
+  'select-food': [foodName: string]
+}>()
 
 function togglePart(key: string) {
   activePart.value = activePart.value === key ? null : key
@@ -598,6 +609,26 @@ const selectedPart = computed(() => {
   border: 1px solid #c6c6cd;
   border-radius: 8px;
   background: #ffffff;
+  padding: 0;
+  box-shadow: 0 14px 28px rgba(13, 28, 46, 0.14);
+  cursor: pointer;
+  text-align: left;
+  transition:
+    transform 0.22s ease,
+    box-shadow 0.22s ease,
+    border-color 0.22s ease,
+    background 0.22s ease;
+}
+
+.food-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  border-color: #7aa6d9;
+  background: #f8fbff;
+  box-shadow: 0 14px 28px rgba(13, 28, 46, 0.14);
+}
+
+.food-card:active {
+  transform: translateY(-1px) scale(0.99);
 }
 
 .food-card img {
@@ -605,6 +636,14 @@ const selectedPart = computed(() => {
   height: 82px;
   object-fit: cover;
   display: block;
+  transition:
+    transform 0.3s ease,
+    filter 0.3s ease;
+}
+
+.food-card:hover img {
+  transform: scale(1.05);
+  filter: brightness(1.03);
 }
 
 .food-card span {
@@ -616,6 +655,11 @@ const selectedPart = computed(() => {
   font-size: 12.5px;
   font-weight: 800;
   line-height: 1.15;
+  transition: color 0.22s ease;
+}
+
+.food-card:hover span {
+  color: #0d1c2e;
 }
 
 .why-card {

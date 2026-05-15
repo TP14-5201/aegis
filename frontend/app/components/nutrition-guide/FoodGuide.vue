@@ -48,164 +48,65 @@
           </div>
         </article>
 
-        <div class="swap-grid">
-          <article v-for="swap in currentFood.swaps" :key="swap.name" class="swap-card" :class="swap.variant">
-            <div class="swap-label">
-              <img :src="swap.variant === 'budget'
-                  ? '/images/foodguide/fg-2.webp'
-                  : '/images/foodguide/fg-3.webp'
-                " class="swap-icon" alt="" />
-
-              <h5>{{ swap.type }}</h5>
-            </div>
-
-            <h6>{{ swap.name }}</h6>
-            <p>{{ swap.description }}</p>
-          </article>
-        </div>
-
         <article class="recommendation-card">
           <div class="calendar-icon">
             <img src="/images/foodguide/fg-4.webp" alt="Calendar icon" />
           </div>
           <h4>How often?</h4>
           <p>{{ currentFood.howOften }}</p>
-
         </article>
+        <NuxtLink to="/get-food" class="food-guide-cta">
+          <div>
+            <h4>Looking for healthier alternatives?</h4>
+            <p>Learn about alternate foods to swap your food with.</p>
+          </div>
+
+          <span>Explore Smart swaps</span>
+        </NuxtLink>
       </div>
     </div>
   </section>
 </template>
 
-<script setup>
-import { ref, computed } from "vue";
+<script setup lang="ts">
+import { computed, ref, watch } from 'vue'
+import { foodGuideItems, findFoodGuideIndex } from '~/data/foodGuide'
 
-const activeIndex = ref(0);
+const props = defineProps<{
+  selectedFood?: string | null
+}>()
 
-const foods = [
-  {
-    name: "Salmon",
-    image: "/images/foodguide/fg-1.webp",
-    tags: ["High Protein", "Omega-3 Rich"],
-    macros: [
-      { label: "FAT", value: "13g" },
-      { label: "CARBS", value: "2g" },
-      { label: "PROTEIN", value: "22g" },
-    ],
-    swaps: [
-      {
-        type: "Budget Swap",
-        name: "Sardines",
-        variant: "budget",
-        description:
-          "Similar Omega-3 profile. Highly sustainable and lower heavy metal risk due to their position on the food chain.",
-      },
-      {
-        type: "Optimal Swap",
-        name: "Mackerel",
-        variant: "optimal",
-        description:
-          "Often higher in Omega-3s than farmed salmon. Choose Atlantic or Atka mackerel to minimize mercury exposure.",
-      },
-    ],
-    howOften:
-      "Aim for 2 portions per week around 140g per portion. Prioritize wild-caught Alaskan salmon when budget allows for optimal nutrient density.",
-  },
-  {
-    name: "Eggs",
-    image: "/images/foodguide/eggs.webp",
-    tags: ["High Protein", "Affordable"],
-    macros: [
-      { label: "FAT", value: "5g" },
-      { label: "CARBS", value: "1g" },
-      { label: "PROTEIN", value: "6g" },
-    ],
-    swaps: [
-      {
-        type: "Budget Swap",
-        name: "Lentils",
-        variant: "budget",
-        description:
-          "Affordable plant protein with fibre. Great for soups, curries, and family meals.",
-      },
-      {
-        type: "Optimal Swap",
-        name: "Canned Tuna",
-        variant: "optimal",
-        description:
-          "Higher protein option that is easy to store and prepare when fresh food is limited.",
-      },
-    ],
-    howOften:
-      "1–2 eggs per day can fit into a balanced diet when served with vegetables, grains, or fruit.",
-  },
-  {
-    name: "Pasta",
-    image: "/images/foodguide/pasta.webp",
-    tags: ["Budget Friendly", "Easy Meal"],
-    macros: [
-      { label: "FAT", value: "1g" },
-      { label: "CARBS", value: "43g" },
-      { label: "PROTEIN", value: "8g" },
-    ],
-    swaps: [
-      {
-        type: "Budget Swap",
-        name: "Rice",
-        variant: "budget",
-        description:
-          "Usually low-cost, filling, and easy to pair with vegetables or protein.",
-      },
-      {
-        type: "Optimal Swap",
-        name: "Wholemeal Pasta",
-        variant: "optimal",
-        description:
-          "Adds more fibre and keeps children feeling full for longer.",
-      },
-    ],
-    howOften:
-      "Pasta can be eaten regularly when balanced with vegetables and protein sources.",
-  },
-  {
-    name: "Chicken",
-    image: "/images/foodguide/chicken.webp",
-    tags: ["High Protein", "Family Meal"],
-    macros: [
-      { label: "FAT", value: "4g" },
-      { label: "CARBS", value: "0g" },
-      { label: "PROTEIN", value: "31g" },
-    ],
-    swaps: [
-      {
-        type: "Budget Swap",
-        name: "Beans",
-        variant: "budget",
-        description:
-          "A cheaper protein source with fibre, useful for soups, wraps, and rice bowls.",
-      },
-      {
-        type: "Optimal Swap",
-        name: "Canned Tuna",
-        variant: "optimal",
-        description:
-          "Shelf-stable protein that can be used quickly in sandwiches, pasta, or salads.",
-      },
-    ],
-    howOften:
-      "Chicken is a strong protein source but can be balanced with plant-based foods across the week.",
-  },
-];
+const activeIndex = ref(0)
 
-const currentFood = computed(() => foods[activeIndex.value]);
+const foods = foodGuideItems
+
+const currentFood = computed(() => foods[activeIndex.value])
+
+watch(
+  () => props.selectedFood,
+  (foodName) => {
+    if (!foodName) return
+
+    const index = findFoodGuideIndex(foodName)
+
+    if (index !== -1) {
+      activeIndex.value = index
+
+      document.getElementById('food-guide')?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      })
+    }
+  },
+)
 
 const nextFood = () => {
-  activeIndex.value = (activeIndex.value + 1) % foods.length;
-};
+  activeIndex.value = (activeIndex.value + 1) % foods.length
+}
 
 const previousFood = () => {
-  activeIndex.value = (activeIndex.value - 1 + foods.length) % foods.length;
-};
+  activeIndex.value = (activeIndex.value - 1 + foods.length) % foods.length
+}
 </script>
 
 <style scoped>
@@ -213,6 +114,7 @@ const previousFood = () => {
   width: min(1120px, calc(100% - 48px));
   margin: 0 auto;
   padding: 56px 0 72px;
+  min-height: 820px;
 }
 
 .guide-heading {
@@ -242,17 +144,17 @@ const previousFood = () => {
   grid-template-columns: 0.95fr 1.35fr;
   gap: 22px;
   align-items: stretch;
+  min-height: 642px;
 }
 
 /* LEFT FEATURE CARD */
 .featured-card {
   position: relative;
-  height: auto;
-  align-self: stretch;
+  height: 642px;
   overflow: hidden;
   border-radius: 12px;
   background: #d5e3fc;
-  padding: 64px 28px;
+  padding: 56px 28px 48px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -287,13 +189,20 @@ const previousFood = () => {
 .featured-card h3 {
   position: relative;
   z-index: 2;
-  margin: 0 0 24px;
+  height: 150px;
+  max-width: 340px;
+  margin: 0 0 18px;
   font-family: "Playfair Display", Georgia, serif;
-  font-size: clamp(38px, 4vw, 48px);
+  font-size: clamp(34px, 3.3vw, 48px);
   font-weight: 700;
-  line-height: 1.15;
+  line-height: 1.12;
   color: #0d1c2e;
   text-align: center;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .food-image-ring {
@@ -301,6 +210,7 @@ const previousFood = () => {
   z-index: 2;
   width: 260px;
   height: 260px;
+  flex: 0 0 260px;
   padding: 16px;
   border-radius: 9999px;
   background: #fff;
@@ -318,11 +228,12 @@ const previousFood = () => {
 .tag-row {
   position: relative;
   z-index: 2;
+  min-height: 40px;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: 16px;
-  margin-top: 24px;
+  margin-top: 26px;
 }
 
 .tag-row span {
@@ -340,37 +251,52 @@ const previousFood = () => {
   position: absolute;
   top: 50%;
   z-index: 5;
-  width: 42px;
-  height: 42px;
+  width: 46px;
+  height: 46px;
   border: 1px solid #bae6fd;
   border-radius: 9999px;
-  background: #fff;
+  background: #ffffff;
   color: #0d1c2e;
-  font-size: 30px;
+  font-size: 34px;
+  line-height: 1;
   cursor: pointer;
   transform: translateY(-50%);
-  transition: transform 0.2s ease, background 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 4px;
 }
 
 .arrow-btn:hover {
   background: #eff4ff;
   transform: translateY(-50%) scale(1.08);
+  box-shadow: 0 8px 20px rgba(13, 28, 46, 0.12);
 }
 
 .arrow-left {
-  left: 22px;
+  left: 24px;
 }
 
 .arrow-right {
-  right: 22px;
+  right: 24px;
 }
 
 /* RIGHT SIDE */
 .content-stack {
-  height: 100%;
+  height: 642px;
   display: grid;
-  grid-template-rows: auto auto 1fr;
+  grid-template-rows: 320px 152px 136px;
   gap: 18px;
+}
+
+.profile-card,
+.recommendation-card,
+.food-guide-cta {
+  overflow: hidden;
 }
 
 .profile-card {
@@ -563,6 +489,51 @@ const previousFood = () => {
   font-size: 15px;
   line-height: 1.5;
   color: #d5e3fc;
+}
+
+.food-guide-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 18px 20px;
+  border: 1px solid #c6c6cd;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #0d1c2e;
+  text-decoration: none;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.food-guide-cta h4 {
+  margin: 0;
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: #0d1c2e;
+}
+
+.food-guide-cta p {
+  margin: 6px 0 0;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 14px;
+  line-height: 1.4;
+  color: #45464d;
+}
+
+.food-guide-cta span {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 24px;
+  border-radius: 8px;
+  background: #000000;
+  color: #ffffff;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 /* RESPONSIVE */
