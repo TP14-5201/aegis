@@ -45,6 +45,7 @@ class FoodInsecurityRegion(BaseModel):
 
 
 class LgaStatsOut(BaseModel):
+    lga_pid: Optional[str] = None
     lga_name: Optional[str] = None
     food_insecurity_pct: float = 0.0
     pop_2024_total: Optional[int] = None

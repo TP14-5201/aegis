@@ -484,6 +484,7 @@ function useMyLocation() {
 const statsMap = computed(() => {
   const m = {}
   lgaStats.value.forEach((s) => {
+    if (s.lga_pid) m[s.lga_pid] = s
     m[s.lga_name] = s
     m[s.lga_key] = s
   })
@@ -492,7 +493,11 @@ const statsMap = computed(() => {
 
 const reasonStatsMap = computed(() => {
   const m = {}
-  reasonStats.value.forEach(s => { m[s.lga_name] = s })
+  reasonStats.value.forEach((s) => {
+    if (s.lga_pid) m[s.lga_pid] = s
+    if (s.lga_name) m[s.lga_name] = s
+    if (s.lga_key) m[s.lga_key] = s
+  })
   return m
 })
 
@@ -503,23 +508,23 @@ const selectedLgaStat = computed(() => {
 
 const foodInsecurityStat = computed(() => {
   if (!selectedLgaStat.value) return 0
-  return Math.round((selectedLgaStat.value.men_pct + selectedLgaStat.value.women_pct) / 2)
+  return Math.round(selectedLgaStat.value.food_insecurity_pct)
 })
 
 const peopleAffectedStat = computed(() => {
   if (!selectedLgaStat.value) return 0
-  const totalPct = (selectedLgaStat.value.men_pct + selectedLgaStat.value.women_pct) / 2
+  const totalPct = selectedLgaStat.value.food_insecurity_pct
   return Math.round((selectedLgaStat.value.pop_2024_total * totalPct) / 100)
 })
 
 const menNeedRatio = computed(() => {
   if (!selectedLgaStat.value) return 0
-  return Math.max(1, Math.min(10, Math.round(selectedLgaStat.value.men_pct / 10)))
+  return Math.max(1, Math.min(10, Math.round(selectedLgaStat.value.food_insecurity_pct / 10)))
 })
 
 const womenNeedRatio = computed(() => {
   if (!selectedLgaStat.value) return 0
-  return Math.max(1, Math.min(10, Math.round(selectedLgaStat.value.women_pct / 10)))
+  return Math.max(1, Math.min(10, Math.round(selectedLgaStat.value.food_insecurity_pct / 10)))
 })
 
 const foodBanksStat = computed(() => getFoodBankSites(selectedLgaStat.value))
@@ -556,7 +561,6 @@ const selectedMetricValue = computed(() => {
 const displaySelectedMetric = useCountUp(selectedMetricValue)
 
 const selectedMetricDisplay = computed(() => displaySelectedMetric.value.toLocaleString())
-console.log(selectedMetricDisplay)
 
 const selectedMetricSuffix = computed(() => {
   if (currentMetric.value === 'foodBanks' || currentMetric.value === 'peopleAffected') return ''
@@ -635,11 +639,11 @@ const legendColors = computed(() => legendItems.value.map(item => item.color))
 
 function getMetricValue(stat, key) {
   if (!stat) return null
-  if (key === 'foodInsecurity') return (stat.men_pct + stat.women_pct) / 2
+  if (key === 'foodInsecurity') return stat.food_insecurity_pct
   if (key === 'foodBanks') return getFoodBankSites(stat)
-  if (key === 'peopleAffected') return stat.pop_2024_total * (stat.men_pct + stat.women_pct) / 200
+  if (key === 'peopleAffected') return stat.pop_2024_total * stat.food_insecurity_pct / 100
   if (barrierKeys.has(key)) {
-    const reason = reasonStatsMap.value[stat.lga_name]
+    const reason = reasonStatsMap.value[stat.lga_pid] || reasonStatsMap.value[stat.lga_name] || reasonStatsMap.value[stat.lga_key]
     const value = reason?.[key]
     return Number.isFinite(value) ? value : null
   }
@@ -715,21 +719,23 @@ watch(reasonStats, () => {
 function normalizeReasonRows(rows) {
   if (!Array.isArray(rows)) return []
   return rows.map(row => ({
+    lga_pid: row.lga_pid,
     lga_name: row.lga_name ?? row.lga ?? row.name,
+    lga_key: normalizeLgaName(row.lga_name ?? row.lga ?? row.name),
     limited_variety: toOptionalNumber(row.limited_variety ?? row.limitedVariety ?? row.variety),
     too_expensive: toOptionalNumber(row.too_expensive ?? row.tooExpensive ?? row.expensive),
     wrong_quality: toOptionalNumber(row.wrong_quality ?? row.wrongQuality ?? row.quality),
     transport_gap: toOptionalNumber(row.transport_gap ?? row.transportGap ?? row.transport),
-  })).filter(row => row.lga_name)
+  })).filter(row => row.lga_pid || row.lga_name)
 }
 
 function normalizeStatsRows(rows) {
   if (!Array.isArray(rows)) return []
   return rows.map(row => ({
     ...row,
+    lga_pid: row.lga_pid,
     lga_key: normalizeLgaName(row.lga_name),
-    men_pct: Number(row.men_pct ?? 0),
-    women_pct: Number(row.women_pct ?? 0),
+    food_insecurity_pct: Number(row.food_insecurity_pct ?? row.foodInsecurityPct ?? row.food_insecurity_rate ?? 0),
     pop_2024_total: Number(row.pop_2024_total ?? 0),
     food_bank_sites: getFoodBankSites(row),
   }))
