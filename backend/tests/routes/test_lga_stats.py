@@ -58,6 +58,7 @@ def test_get_lga_stats_returns_combined_food_insecurity_stats():
     assert response.status_code == 200
     assert response.json() == [
         {
+            "lga_pid": "123",
             "lga_name": "Sample LGA",
             "pop_2024_total": 10000,
             "food_insecurity_pct": 21.246,
