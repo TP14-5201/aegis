@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, Float, DateTime, JSON, ForeignKey
+from sqlalchemy import Column, Integer, String, Float, DateTime, JSON, ForeignKey, LargeBinary
 from sqlalchemy.orm import relationship
 from geoalchemy2 import Geometry
 from src.database import Base
@@ -185,6 +185,7 @@ class Ingredient(Base):
     retail_price = Column(Float, nullable=False)
 
     ingredient_nutrition = relationship("IngredientNutrition", back_populates="ingredient", uselist=False)
+    health_rating = relationship("IngredientHealthRating", back_populates="ingredient", uselist=False)
 
 
 class IngredientNutrition(Base):
@@ -199,3 +200,37 @@ class IngredientNutrition(Base):
     sodium_na_mg = Column(Float)
 
     ingredient = relationship("Ingredient", back_populates="ingredient_nutrition")
+
+
+class IngredientHealthRating(Base):
+    __tablename__ = "ingredient_health_rating"
+
+    ingredient_code = Column(String, ForeignKey("ingredient.ingredient_code"), primary_key=True, index=True)
+    nutriscore_grade = Column(String, nullable=True)   # A–E from OpenFoodFacts, null if not found
+    nutriscore_score = Column(Integer, nullable=True)  # raw OFF score, null if not found
+    nova_score = Column(Integer, nullable=True)        # 1–4 processing level, null if not found
+    computed_health_score = Column(Float, nullable=False)  # always present, derived from nutrition columns
+    final_health_score = Column(Float, nullable=False)     # 0–100; OFF-based if available, else computed
+    health_source = Column(String, nullable=False)         # 'openfoodfacts' or 'computed'
+    last_fetched = Column(DateTime, default=datetime.utcnow)
+
+    ingredient = relationship("Ingredient", back_populates="health_rating")
+
+
+class IngredientEmbedding(Base):
+    __tablename__ = "ingredient_embedding"
+
+    ingredient_code = Column(String, ForeignKey("ingredient.ingredient_code"), primary_key=True, index=True)
+    embedding = Column(LargeBinary, nullable=False)       # float32 bytes, 388-d vector
+    functional_role = Column(String, nullable=True)
+    proteins_100g = Column(Float, nullable=True)
+    fat_100g = Column(Float, nullable=True)
+    carbohydrates_100g = Column(Float, nullable=True)
+    energy_100g = Column(Float, nullable=True)
+
+
+class SubstitutionMeta(Base):
+    __tablename__ = "substitution_meta"
+
+    key = Column(String, primary_key=True, index=True)    # e.g. "scaler"
+    value = Column(LargeBinary, nullable=False)           # pickled object

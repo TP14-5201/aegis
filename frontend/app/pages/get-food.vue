@@ -4,9 +4,13 @@
   <div>
     <GetFoodHero />
 
-    <GetFoodGroceryPlanner @submit-planner="handlePlannerSubmit" />
+    <GetFoodGroceryPlanner
+      :showing-results="showRecommendations"
+      @submit-planner="handlePlannerSubmit"
+      @reset-planner="handleReset"
+    />
 
-    <GetFoodGroceryRecommendation
+    <GetFoodGroceryBag
       v-if="showRecommendations"
       :planner-data="plannerData"
     />
@@ -16,12 +20,14 @@
 <script setup lang="ts">
 useHead({ title: 'ChereBowl - Get Food' })
 
-type PlannerData = {
+export type PlannerData = {
   budget: number
   people: number
-  dishes: number
-  cuisine: string | null
+  days: number
   dietaryNeeds: string[]
+  dietaryGoal: string | null
+  description: string | null
+  budgetTier: string
 }
 
 const showRecommendations = ref(false)
@@ -34,6 +40,17 @@ const handlePlannerSubmit = (data: PlannerData) => {
   nextTick(() => {
     document
       .getElementById('grocery-recommendations')
+      ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  })
+}
+
+const handleReset = () => {
+  showRecommendations.value = false
+  plannerData.value = null
+
+  nextTick(() => {
+    document
+      .getElementById('grocery-planner')
       ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   })
 }

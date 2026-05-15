@@ -80,3 +80,21 @@ def test_get_lga_stats_returns_empty_list_when_no_data():
 
     assert response.status_code == 200
     assert response.json() == []
+
+
+def test_get_lga_stats_returns_500_on_db_exception():
+    class BrokenDB:
+        def query(self, *args, **kwargs):
+            raise RuntimeError("DB unavailable")
+
+    def fake_get_db():
+        yield BrokenDB()
+
+    app.dependency_overrides[get_db] = fake_get_db
+    client = TestClient(app)
+
+    response = client.get("/lga/stats")
+
+    app.dependency_overrides.clear()
+
+    assert response.status_code == 500
