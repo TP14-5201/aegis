@@ -10,7 +10,9 @@
             <span class="text-black">behind</span> 
             <span class="text-[#cd5005] italic"> the numbers</span>
           </h1>
-          <button class="mt-8 lg:mt-12 bg-black text-white rounded-[8px] px-12 py-4 font-jakarta text-[18px] hover:scale-105 hover:shadow-button transition-all duration-300">
+          <button 
+            href="/"
+            class="mt-8 lg:mt-12 bg-black text-white rounded-[8px] px-12 py-4 font-jakarta text-[18px] hover:scale-105 hover:shadow-button transition-all duration-300">
             Explore the Story
           </button>
         </div>

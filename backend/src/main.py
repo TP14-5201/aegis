@@ -98,10 +98,11 @@ def get_lga_boundaries(db: Session = Depends(get_db)) -> dict:
     try:
         rows = (
             db.query(
+                VicLgaBoundary.lga_pid,
                 VicLgaBoundary.lga_name,
                 ST_AsGeoJSON(VicLgaBoundary.geometry).label("geojson"),
             )
-            .distinct(VicLgaBoundary.lga_name)
+            .distinct(VicLgaBoundary.lga_pid)
             .all()
         )
 
@@ -113,7 +114,7 @@ def get_lga_boundaries(db: Session = Depends(get_db)) -> dict:
             features.append(
                 {
                     "type": "Feature",
-                    "properties": {"lga_name": row.lga_name},
+                    "properties": {"lga_name": row.lga_name, "lga_pid": row.lga_pid},
                     "geometry": geometry,
                 }
             )
@@ -184,6 +185,7 @@ def get_lga_stats(db: Session = Depends(get_db)) -> List[dict]:
 
         return [
             {
+                "lga_pid": row.lga_pid,
                 "lga_name": row.lga_name,
                 "food_insecurity_pct": float(row.food_insecurity_pct),
                 "pop_2024_total": row.pop_2024_total,

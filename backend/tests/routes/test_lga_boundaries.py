@@ -23,14 +23,15 @@ class FakeDB:
 
 
 class FakeRow:
-    def __init__(self, lga_name, geojson):
+    def __init__(self, lga_pid, lga_name, geojson):
+        self.lga_pid = lga_pid
         self.lga_name = lga_name
         self.geojson = geojson
 
 
 def test_get_lga_boundaries_returns_feature_collection():
     def fake_get_db():
-        yield FakeDB([FakeRow("Melbourne", '{"type":"Polygon","coordinates":[]}')])
+        yield FakeDB([FakeRow("VIC123", "Melbourne", '{"type":"Polygon","coordinates":[]}')])
 
     app.dependency_overrides[get_db] = fake_get_db
     client = TestClient(app)
@@ -45,7 +46,7 @@ def test_get_lga_boundaries_returns_feature_collection():
         "features": [
             {
                 "type": "Feature",
-                "properties": {"lga_name": "Melbourne"},
+                "properties": {"lga_name": "Melbourne", "lga_pid": "VIC123"},
                 "geometry": {"type": "Polygon", "coordinates": []},
             }
         ],

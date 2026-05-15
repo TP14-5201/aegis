@@ -1,95 +1,188 @@
 <template>
-  <section class="w-full py-12 lg:py-20 bg-[linear-gradient(106deg,#131B2E_0%,#396477_100%)]">
-    <div class="max-w-8xl mx-auto px-5 lg:px-12">
-      <p class="story-reveal font-roboto font-bold text-coral text-[16px] lg:text-[20px] uppercase">
-        Your journey through the data
-      </p>
+  <section id="story-path" class="w-full">
+    <div class="w-full bg-[linear-gradient(106deg,#131B2E_0%,#396477_100%)]">
+      <div class="mx-auto w-full max-w-[1280px] px-5 pb-12 pt-12 sm:px-8 lg:min-h-[968px] lg:px-14 lg:pb-0">
+        <div class="story-reveal max-w-[520px]">
+          <h1 class="font-volkhov text-[48px] font-bold leading-[0.95] tracking-normal text-white sm:text-[64px] lg:text-[72px]">
+            Follow the
+            <span class="font-normal italic text-[#DF6951]">path</span>
+          </h1>
 
-      <h1 class="story-reveal mt-3 font-volkhov font-bold text-white
-               text-[32px] lg:text-[48px] leading-tight max-w-4xl">
-        Follow the path – Understand the story behind the numbers
-      </h1>
-
-      <div class="story-reveal mt-5 h-[4px] w-[120px] bg-coral rounded-full" />
-
-      <!-- Desktop curved timeline -->
-      <div ref="storyRef" class="relative mt-10 hidden lg:block w-full aspect-[1200/560]">
-        <!-- Curved SVG path -->
-        <svg class="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 1200 560"
-          preserveAspectRatio="xMidYMid meet" fill="none">
-          <path class="story-path animate-draw" d="M190 300 C280 400, 350 420, 430 340" />
-          <path class="story-path animate-draw" d="M500 320 C590 260, 560 130, 700 120" />
-          <path class="story-path animate-draw" d="M780 140 C880 170, 930 280, 1040 300" />
-        </svg>
-
-        <!-- Timeline items, positioned in the SAME 1200x560 coordinate system as the SVG -->
-        <div v-for="(item, index) in storyItems" :key="item.title"
-          class="story-node absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center text-center cursor-pointer group"
-          :style="{
-            left: `${(item.cx / 1200) * 100}%`,
-            top: `${(item.cy / 560) * 100}%`,
-            transitionDelay: `${index * 180}ms`,
-          }" @click="selectItem(item)">
-          <p class="mb-3 font-roboto font-bold text-[16px] transition-colors"
-            :class="selectedItem?.title === item.title ? 'text-coral' : 'text-white group-hover:text-coral'">
-            {{ item.title }}
-          </p>
-          <div
-            class="relative w-[190px] h-[190px] rounded-full flex items-center justify-center transition-all duration-300"
-            :class="selectedItem?.title === item.title ? 'bg-coral/20 ring-4 ring-coral ring-offset-4 ring-offset-[#131B2E] scale-105' : 'bg-[#B5DCFF]/20 hover:scale-[1.03]'">
-            <img :src="item.img" :alt="item.title" class="w-[155px] h-[155px] rounded-full object-cover shadow-lg" />
-          </div>
-        </div>
-      </div>
-
-      <!-- Mobile stacked timeline -->
-      <div class="mt-10 grid grid-cols-1 gap-8 lg:hidden">
-        <div v-for="item in storyItems" :key="item.title"
-          class="story-reveal flex flex-col items-center text-center cursor-pointer group" @click="selectItem(item)">
-          <div
-            class="relative w-[180px] h-[180px] rounded-full flex items-center justify-center transition-all duration-300"
-            :class="selectedItem?.title === item.title ? 'bg-coral/20 ring-4 ring-coral ring-offset-4 ring-offset-[#131B2E] scale-105' : 'bg-[#B5DCFF]/20 hover:scale-[1.03]'">
-            <img :src="item.img" :alt="item.title" class="w-[145px] h-[145px] rounded-full object-cover shadow-lg" />
-          </div>
-
-          <p class="mt-3 font-roboto font-bold text-[16px] transition-colors"
-            :class="selectedItem?.title === item.title ? 'text-coral' : 'text-white group-hover:text-coral'">
-            {{ item.title }}
+          <p class="mt-10 max-w-[500px] font-roboto text-[16px] leading-7 text-white/90 lg:text-[18px]">
+            Four chapters, plotted as a journey. Start with where food insecurity happens,
+            meet the families it touches, see the long-term impact, and end with how to find
+            support today.
           </p>
         </div>
-      </div>
 
-      <!-- Bottom Interactive Section -->
-      <transition name="fade-slide">
-        <div v-if="selectedItem"
-          class="mt-12 max-w-4xl mx-auto bg-[#F8F9FF] rounded-[24px] p-8 lg:p-12 shadow-soft text-center">
-          <h3 class="font-volkhov font-bold text-navy text-[24px] lg:text-[32px] mb-4">
-            {{ selectedItem.title }}
-          </h3>
-          <p class="font-roboto text-text text-[16px] lg:text-[18px] leading-relaxed max-w-2xl mx-auto mb-8">
-            {{ selectedItem.description }}
-          </p>
+        <!-- Desktop plotted journey -->
+        <div ref="storyRef" class="relative -mt-10 hidden h-[690px] w-full lg:block">
+          <svg
+            class="absolute inset-0 h-full w-full pointer-events-none"
+            viewBox="0 0 1200 620"
+            preserveAspectRatio="xMidYMid meet"
+            fill="none"
+          >
+            <path class="story-path" d="M165 405 C245 530, 330 560, 430 505" />
+            <path class="story-path" d="M505 500 C640 455, 640 335, 720 285" />
+            <path class="story-path" d="M790 285 C900 340, 955 435, 1040 410" />
+          </svg>
+
           <button
-            class="inline-flex items-center justify-center bg-coral hover:bg-[#CD5005] text-white font-roboto font-semibold text-[16px] px-8 py-4 rounded-[20px] shadow-button transition-transform duration-150 hover:scale-[1.03]"
-            @click="jumpToSection(selectedItem.targetId)">
-            {{ selectedItem.buttonText }}
+            v-for="(item, index) in storyItems"
+            :key="item.title"
+            type="button"
+            class="story-node group absolute flex w-[245px] -translate-x-1/2 -translate-y-1/2 flex-col items-center text-center outline-none"
+            :class="selectedItem?.title === item.title ? 'is-selected' : ''"
+            :style="{
+              left: `${(item.cx / 1200) * 100}%`,
+              top: `${(item.cy / 620) * 100}%`,
+              transitionDelay: `${index * 160}ms`,
+            }"
+            @click="selectItem(item)"
+          >
+            <span class="mb-4 flex items-center gap-3 self-start text-left">
+              <span
+                class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full font-roboto text-[14px] font-extrabold shadow-sm transition duration-300"
+                :class="selectedItem?.title === item.title ? 'bg-[#DF6951] text-white shadow-[0_0_0_6px_rgba(223,105,81,0.18)]' : 'bg-white text-[#031635]'"
+              >
+                {{ item.chapter }}
+              </span>
+              <span
+                class="font-volkhov text-[19px] font-bold leading-none transition-colors"
+                :class="selectedItem?.title === item.title ? 'text-white drop-shadow-[0_0_10px_rgba(223,105,81,0.75)]' : 'text-[#DF6951] group-hover:text-white'"
+              >
+                {{ item.title }}
+              </span>
+            </span>
+
+            <span
+              class="flex h-[196px] w-[196px] items-center justify-center rounded-full bg-[#B5DCFF99] transition duration-300 group-hover:scale-[1.03]"
+              :class="selectedItem?.title === item.title ? 'scale-[1.08] ring-[6px] ring-[#DF6951] ring-offset-4 ring-offset-[#27475b] shadow-[0_0_34px_rgba(223,105,81,0.46)]' : 'shadow-none'"
+            >
+              <span
+                class="flex h-[132px] w-[132px] items-center justify-center rounded-full bg-[#0D1C2E]/15 shadow-[0_12px_18px_rgba(0,0,0,0.26)] transition duration-300"
+                :class="selectedItem?.title === item.title ? 'ring-2 ring-white' : ''"
+              >
+                <img
+                  :src="item.img"
+                  :alt="item.title"
+                  class="h-[118px] w-[118px] rounded-full object-cover"
+                />
+              </span>
+            </span>
+
+            <span
+              class="mt-6 block font-volkhov text-[24px] font-bold leading-none transition-colors"
+              :class="selectedItem?.title === item.title ? 'text-white' : 'text-[#B6C6EF]'"
+            >
+              {{ item.metricValue }}
+            </span>
+            <span class="mt-2 block font-roboto text-[13px] font-bold uppercase tracking-[0.06em] text-white">
+              {{ item.metricLabel }}
+            </span>
           </button>
         </div>
-      </transition>
+
+        <!-- Tablet and mobile journey -->
+        <div class="story-reveal mt-12 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:hidden">
+          <button
+            v-for="item in storyItems"
+            :key="item.title"
+            type="button"
+            class="group flex flex-col items-center rounded-[8px] px-4 py-2 text-center outline-none"
+            @click="selectItem(item)"
+          >
+            <span class="mb-4 flex items-center gap-3">
+              <span
+                class="flex h-8 w-8 items-center justify-center rounded-full font-roboto text-[14px] font-extrabold transition duration-300"
+                :class="selectedItem?.title === item.title ? 'bg-[#DF6951] text-white shadow-[0_0_0_6px_rgba(223,105,81,0.18)]' : 'bg-white text-[#031635]'"
+              >
+                {{ item.chapter }}
+              </span>
+              <span
+                class="font-volkhov text-[20px] font-bold"
+                :class="selectedItem?.title === item.title ? 'text-[#DF6951]' : 'text-white group-hover:text-[#DF6951]'"
+              >
+                {{ item.title }}
+              </span>
+            </span>
+
+            <span
+              class="flex h-[180px] w-[180px] items-center justify-center rounded-full bg-[#B5DCFF99] transition duration-300 group-hover:scale-[1.03]"
+              :class="selectedItem?.title === item.title ? 'scale-[1.06] ring-[5px] ring-[#DF6951] ring-offset-4 ring-offset-[#1f394d] shadow-[0_0_30px_rgba(223,105,81,0.42)]' : ''"
+            >
+              <img :src="item.img" :alt="item.title" class="h-[122px] w-[122px] rounded-full object-cover shadow-lg" />
+            </span>
+
+            <span class="mt-5 font-volkhov text-[24px] font-bold leading-none text-[#B6C6EF]">
+              {{ item.metricValue }}
+            </span>
+            <span class="mt-2 font-roboto text-[12px] font-bold uppercase tracking-[0.06em] text-white">
+              {{ item.metricLabel }}
+            </span>
+          </button>
+        </div>
+      </div>
     </div>
+
+    <!-- Bottom chapter panel -->
+    <transition name="fade-slide">
+      <div
+        v-if="selectedItem"
+        ref="detailRef"
+        class="w-full bg-[#D5E3FC]/85"
+      >
+        <div class="mx-auto grid w-full max-w-[1280px] gap-8 px-5 py-9 sm:px-8 lg:grid-cols-[130px_minmax(0,1fr)_250px] lg:items-center lg:px-11">
+          <div class="flex items-center gap-7">
+            <p class="font-volkhov text-[58px] font-bold leading-none text-black lg:text-[64px]">
+              {{ selectedItem.chapter }}
+            </p>
+            <div class="h-[76px] w-px bg-black" />
+          </div>
+
+          <div>
+            <p class="font-roboto text-[13px] font-extrabold uppercase tracking-[0.14em] text-black underline">
+              {{ selectedItem.eyebrow }}
+            </p>
+            <h2 class="mt-3 font-volkhov text-[30px] font-bold leading-tight text-black lg:text-[34px]">
+              {{ selectedItem.headline }}
+            </h2>
+            <p class="mt-4 max-w-[680px] font-roboto text-[16px] leading-7 text-black">
+              {{ selectedItem.description }}
+            </p>
+          </div>
+
+          <button
+            class="inline-flex h-[64px] w-full items-center justify-center gap-3 rounded-none bg-[#396477] px-8 font-roboto text-[13px] font-extrabold uppercase tracking-[0.08em] text-black shadow-[0_10px_18px_rgba(0,0,0,0.12)] transition hover:bg-[#31576a] focus:outline-none focus:ring-2 focus:ring-[#031635] focus:ring-offset-2 lg:justify-center"
+            @click="jumpToSection(selectedItem.targetId)"
+          >
+            {{ selectedItem.buttonText }}
+            <ArrowRight class="h-5 w-5" :stroke-width="2" />
+          </button>
+        </div>
+      </div>
+    </transition>
   </section>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { ArrowRight } from 'lucide-vue-next'
+import { nextTick, onMounted, ref } from 'vue'
 
 const storyRef = ref<HTMLElement | null>(null)
+const detailRef = ref<HTMLElement | null>(null)
 
 interface StoryItem {
+  chapter: string
   title: string
   img: string
   cx: number
   cy: number
+  metricValue: string
+  metricLabel: string
+  eyebrow: string
+  headline: string
   description: string
   targetId: string
   buttonText: string
@@ -97,43 +190,83 @@ interface StoryItem {
 
 const storyItems: StoryItem[] = [
   {
+    chapter: '01',
     title: 'Where it happens',
     img: '/images/learn-more/subject-26-1.webp',
-    cx: 80, cy: 160,
+    cx: 120,
+    cy: 365,
+    metricValue: '1 in 6',
+    metricLabel: 'Vic households',
+    eyebrow: 'Around us . Victoria',
+    headline: "It's happening right here.",
     description: 'Every region in Victoria tells a different story. Discover how different areas are dealing with food insecurity and the community efforts stepping up to help.',
     targetId: 'region-map',
-    buttonText: 'View Region Map'
+    buttonText: 'Jump to chapter 1',
   },
   {
+    chapter: '02',
     title: 'Who it affects',
     img: '/images/learn-more/subject-33-1.webp',
-    cx: 380, cy: 200,
+    cx: 440,
+    cy: 500,
+    metricValue: '312k',
+    metricLabel: 'Children . 2024',
+    eyebrow: 'Families . Children',
+    headline: 'The families behind the numbers.',
     description: 'Food insecurity does not discriminate by age. See how varying demographics and especially children are affected across the state.',
     targetId: 'children-age-groups',
-    buttonText: 'Explore Demographics'
+    buttonText: 'Jump to chapter 2',
   },
   {
+    chapter: '03',
     title: 'The Impact',
     img: '/images/learn-more/subject-31-1.webp',
-    cx: 680, cy: 20,
+    cx: 735,
+    cy: 230,
+    metricValue: '3.2x',
+    metricLabel: 'Risk of anxiety',
+    eyebrow: 'Long term . The impact',
+    headline: 'The effects run deeper.',
     description: 'The effects run deeper than skipped meals. Learn about the profound behavioral and psychological impacts this crisis leaves on individuals.',
     targetId: 'behavioural-impact',
-    buttonText: 'Understand The Impact'
+    buttonText: 'Jump to chapter 3',
   },
   {
+    chapter: '04',
     title: 'Finding Support',
     img: '/images/learn-more/subject-30-1.webp',
-    cx: 980, cy: 180,
-    description: 'There are tangible ways to make a difference. Find out the next steps you can take to access support or contribute to helping others.',
+    cx: 1035,
+    cy: 395,
+    metricValue: '5 min',
+    metricLabel: 'Action plan',
+    eyebrow: 'Next steps . Finding support',
+    headline: 'A five-minute action plan.',
+    description: 'Three direct routes: food banks open now, affordable grocery shopping, and family nutrition guides.',
     targetId: 'next-steps',
-    buttonText: 'See Next Steps'
+    buttonText: 'Jump to chapter 4',
   },
 ]
 
-const selectedItem = ref<StoryItem | null>(null)
+const selectedItem = ref<StoryItem | null>(storyItems[0])
 
-function selectItem(item: StoryItem) {
+async function selectItem(item: StoryItem) {
   selectedItem.value = item
+  await nextTick()
+  scrollToDetailPanel()
+}
+
+function scrollToDetailPanel() {
+  const el = detailRef.value
+  if (!el) return
+
+  const rect = el.getBoundingClientRect()
+  const absoluteTop = rect.top + window.pageYOffset
+  const panelFitsInViewport = rect.height <= window.innerHeight
+  const top = panelFitsInViewport
+    ? absoluteTop + rect.height - window.innerHeight
+    : absoluteTop - 80
+
+  window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' })
 }
 
 function jumpToSection(targetId: string) {
@@ -164,8 +297,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.story-reveal,
-.story-node {
+.story-reveal {
   opacity: 0;
   transform: translateY(28px);
   transition:
@@ -173,21 +305,34 @@ onMounted(() => {
     transform 700ms ease;
 }
 
-.story-reveal.is-visible,
-.story-node.is-visible {
+.story-reveal.is-visible {
   opacity: 1;
   transform: translateY(0);
 }
 
+.story-node {
+  opacity: 1;
+  transform: translate(-50%, -50%);
+  transition: transform 220ms ease;
+}
+
+.story-node.is-visible {
+  opacity: 1;
+  transform: translate(-50%, -50%);
+}
+
+.story-node.is-selected {
+  z-index: 5;
+}
+
 .story-path {
   fill: none;
-  stroke: rgba(255, 255, 255, 0.2);
+  stroke: rgba(255, 255, 255, 0.84);
   stroke-width: 2;
   stroke-linecap: round;
   vector-effect: non-scaling-stroke;
-
-  stroke-dasharray: 10 10;
-  stroke-dashoffset: 600;
+  stroke-dasharray: 9 13;
+  stroke-dashoffset: 720;
   transition: stroke-dashoffset 1600ms ease;
 }
 
@@ -195,7 +340,6 @@ onMounted(() => {
   stroke-dashoffset: 0;
 }
 
-/* Transitions for bottom details block */
 .fade-slide-enter-active,
 .fade-slide-leave-active {
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
