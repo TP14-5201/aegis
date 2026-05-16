@@ -1,6 +1,6 @@
 <template>
-  <section class="w-full bg-white py-8 lg:py-12">
-    <div class="mx-auto min-h-[1240px] w-full max-w-[1280px] px-4 sm:px-6 lg:px-4">
+  <section class="section-large bg-white">
+    <div class="section-inner pb-16 lg:min-h-0">
       <div class="flex items-center gap-4">
         <span class="font-volkhov text-[42px] font-bold leading-none text-[#DF6951]">01</span>
         <p class="font-roboto text-[18px] font-bold uppercase tracking-[0.12em] text-[#434656]">
@@ -24,7 +24,7 @@
             type="text"
             placeholder="Mount Alexander"
             class="h-[50px] w-full rounded-[6px] border border-[#C3C5D9] bg-white px-5 pl-12 font-roboto text-[14px]
-                   text-[#131B2E] shadow-sm outline-none transition placeholder:text-[#6B7280]
+                   text-[#131B2E] region-card-shadow outline-none transition placeholder:text-[#6B7280]
                    focus:border-[#0052FF] focus:ring-2 focus:ring-[#B5DCFF99]"
             @input="filterLgas"
             @focus="showDropdown = filteredLgas.length > 0"
@@ -68,8 +68,8 @@
         </button>
       </div>
 
-      <div class="mt-6 grid grid-cols-1 gap-x-5 gap-y-7 lg:grid-cols-[230px_minmax(0,1fr)]">
-        <aside class="space-y-6 lg:row-span-2">
+      <div class="mt-6 grid grid-cols-1 gap-x-5 gap-y-4 lg:grid-cols-[230px_minmax(0,1fr)]">
+        <aside class="flex h-full flex-col justify-between lg:row-span-2">
           <div>
             <p class="mb-5 font-roboto text-[12px] font-bold uppercase tracking-[0.14em] text-[#434656]">
               Headline Data
@@ -78,7 +78,7 @@
               <button
                 v-for="m in metrics"
                 :key="m.key"
-                class="group flex h-[90px] w-full items-center gap-4 rounded-[8px] px-6 text-left shadow-card transition duration-200 hover:-translate-y-0.5"
+                class="group flex h-[90px] w-full items-center gap-4 rounded-[8px] px-6 text-left region-card-shadow transition duration-200 hover:-translate-y-0.5"
                 :class="currentMetric === m.key ? 'ring-2 ring-[#131B2E]/20' : ''"
                 :style="{ backgroundColor: m.color }"
                 @click="setMetric(m.key)"
@@ -105,12 +105,10 @@
               Why? - Barriers
             </p>
             <div class="space-y-3">
-              <button
+              <div
                 v-for="reason in barrierMetrics"
                 :key="reason.key"
-                class="flex min-h-[78px] w-full items-center gap-4 rounded-[8px] border bg-white px-6 text-left shadow-card transition duration-200 hover:-translate-y-0.5"
-                :class="currentMetric === reason.key ? 'border-[#131B2E] ring-2 ring-[#B5DCFF99]' : 'border-[#C3C5D9]'"
-                @click="setMetric(reason.key)"
+                class="flex h-[66px] w-full items-center gap-3 rounded-[6px] border border-[#C3C5D9] bg-white px-4 text-left region-card-shadow"
               >
                 <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-[6px] bg-[#B5DCFF99] text-[#131B2E]">
                   <component :is="reason.icon" class="h-4 w-4" :stroke-width="2" />
@@ -123,12 +121,12 @@
                     {{ reason.label }}
                   </span>
                 </span>
-              </button>
+              </div>
             </div>
           </div>
         </aside>
 
-        <div class="relative h-[420px] w-full overflow-hidden rounded-[10px] border border-[#C3C5D9] bg-[#B5DCFF99] shadow-sm sm:h-[520px] lg:h-[622px]">
+        <div class="relative h-[420px] w-full overflow-hidden rounded-[10px] border border-[#C3C5D9] bg-[#B5DCFF99] shadow-sm sm:h-[520px] lg:h-[520px]">
           <div
             v-if="isMapLoading"
             class="absolute inset-0 z-20 flex flex-col items-center justify-center gap-4 bg-white/90 backdrop-blur-sm"
@@ -176,8 +174,8 @@
           </p>
         </div>
 
-        <div class="grid gap-5 lg:col-start-2 lg:grid-cols-[minmax(0,1fr)_230px_255px]">
-          <div class="rounded-[8px] border border-[#C3C5D9] bg-white px-7 py-7 shadow-card">
+        <div class="grid gap-0 lg:col-start-2 lg:grid-cols-[minmax(0,1fr)_200px_250px]">
+          <div class="rounded-l-[8px] rounded-r-none border border-r-0 border-[#C3C5D9] bg-white px-7 py-7 shadow-card">
             <div v-if="isStatsLoading" class="animate-pulse space-y-4">
               <div class="h-3 w-32 rounded bg-[#C3C5D9]" />
               <div class="h-7 w-56 rounded bg-[#C3C5D9]" />
@@ -197,7 +195,7 @@
             </div>
           </div>
 
-          <div class="flex min-h-[160px] flex-col items-center justify-center rounded-[8px] border border-[#131B2E] bg-[#B5DCFF54] px-5 py-6 text-center">
+          <div class="flex min-h-[160px] flex-col items-center justify-center rounded-l-none rounded-r-[8px] border border-[#131B2E] bg-[#B5DCFF54] px-5 py-6 text-center">
             <p class="font-roboto text-[12px] font-bold uppercase tracking-[0.08em] text-[#434656]">
               {{ selectedMetricLabel }}
             </p>
@@ -206,7 +204,7 @@
             </p>
           </div>
 
-          <div class="flex min-h-[160px] flex-col justify-between rounded-[8px] border border-[#131B2E] bg-white px-6 py-7 shadow-sm">
+          <div class="ml-4 flex min-h-[160px] flex-col justify-between rounded-[8px] border border-[#131B2E] bg-white px-6 py-7 region-card-shadow">
             <p class="font-roboto text-[18px] leading-7 text-black">
               Need food now? Find the nearest open site today.
             </p>
@@ -219,35 +217,70 @@
           </div>
         </div>
       </div>
+    </div>
 
-      <div class="mt-10 pt-6 text-[11px] text-[#6B7280]">
-        <p class="mb-3 font-bold uppercase tracking-widest text-[#434656]">Data Resources Used</p>
-        <div class="flex flex-wrap gap-x-8 gap-y-3">
+    <div class="mt-5 w-full border-t border-[#C3C5D9] bg-[#D5E3FC]">
+      <div class="section-inner py-4 text-left text-[11px] text-[#6B7280]">
+        <p class="mb-3 font-bold uppercase tracking-widest text-[#434656]">
+          Data Resources Used
+        </p>
+
+        <div class="flex flex-wrap items-center gap-x-8 gap-y-3">
           <span class="flex items-center gap-2">
             <span class="font-semibold text-[#434656]">Food Insecurity:</span>
-            <a href="https://vahi.vic.gov.au/reports/victorian-population-health-survey-2023" target="_blank" rel="noopener" class="underline decoration-[#C3C5D9] underline-offset-2 hover:text-[#0052FF]">
+            <a
+              href="https://vahi.vic.gov.au/reports/victorian-population-health-survey-2023"
+              target="_blank"
+              rel="noopener"
+              class="underline decoration-[#C3C5D9] underline-offset-2 hover:text-[#0052FF]"
+            >
               VAHI (2023 Survey)
             </a>
           </span>
+
           <span class="flex items-center gap-2">
             <span class="font-semibold text-[#434656]">Emergency Services:</span>
-            <a href="https://data.melbourne.vic.gov.au/explore/dataset/free-and-cheap-support-services-with-opening-hours-public-transport-and-parking-/table/" target="_blank" rel="noopener" class="underline decoration-[#C3C5D9] underline-offset-2 hover:text-[#0052FF]">
+
+            <a
+              href="https://data.melbourne.vic.gov.au/explore/dataset/free-and-cheap-support-services-with-opening-hours-public-transport-and-parking-/table/"
+              target="_blank"
+              rel="noopener"
+              class="underline decoration-[#C3C5D9] underline-offset-2 hover:text-[#0052FF]"
+            >
               data.melbourne.vic.gov.au
             </a>
+
             <span class="opacity-30">&amp;</span>
-            <a href="https://data.gov.au/data/dataset/emergency-relief-provider-outlets/resource/0e32d958-3796-4dca-8312-489ef7a610f6" target="_blank" rel="noopener" class="underline decoration-[#C3C5D9] underline-offset-2 hover:text-[#0052FF]">
+
+            <a
+              href="https://data.gov.au/data/dataset/emergency-relief-provider-outlets/resource/0e32d958-3796-4dca-8312-489ef7a610f6"
+              target="_blank"
+              rel="noopener"
+              class="underline decoration-[#C3C5D9] underline-offset-2 hover:text-[#0052FF]"
+            >
               data.gov.au
             </a>
           </span>
+
           <span class="flex items-center gap-2">
             <span class="font-semibold text-[#434656]">Population by LGA:</span>
-            <a href="https://digital.atlas.gov.au/datasets/digitalatlas::abs-population-and-people-data-by-region-lga-november-2025/about" target="_blank" rel="noopener" class="underline decoration-[#C3C5D9] underline-offset-2 hover:text-[#0052FF]">
+
+            <a
+              href="https://digital.atlas.gov.au/datasets/digitalatlas::abs-population-and-people-data-by-region-lga-november-2025/about"
+              target="_blank"
+              rel="noopener"
+              class="underline decoration-[#C3C5D9] underline-offset-2 hover:text-[#0052FF]"
+            >
               ABS (Nov 2025)
             </a>
           </span>
         </div>
       </div>
     </div>
+
+    <!-- Spacer for hidden top navigation -->
+    <div class="h-[86px] w-full bg-white" />
+
   </section>
 </template>
 
@@ -352,7 +385,7 @@ const barrierMetrics = [
   },
 ]
 
-const barrierKeys = new Set(barrierMetrics.map(m => m.key))
+const barrierKeys = new Set()
 
 function getMetricDefinition(key) {
   return [...metrics, ...barrierMetrics].find(m => m.key === key) || metrics[0]
@@ -886,6 +919,10 @@ onBeforeUnmount(() => {
 
 :deep(.mapboxgl-popup-tip) {
   display: none;
+}
+
+.region-card-shadow {
+  box-shadow: 0 12px 28px rgba(19, 27, 46, 0.12);
 }
 
 .picto-fade {
