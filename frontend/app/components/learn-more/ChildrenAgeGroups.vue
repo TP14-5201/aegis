@@ -1,22 +1,32 @@
 <template>
-  <section class="w-full bg-white py-12 lg:py-20 flex justify-center">
-    <div class="w-full max-w-[1280px] px-5 lg:px-12 flex flex-col items-center">
+  <section id="children-age-groups" class="bg-white pb-16 pt-8 lg:pb-20 lg:pt-10">
+    <div class="section-inner flex flex-col">
       <!-- Heading Section -->
-      <div class="w-full flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
-        <div class="flex-1">
-          <div class="flex items-center gap-4">
-            <span class="text-[#DF6951] text-[40px] md:text-[56px] font-playfair font-bold leading-none">02</span>
-            <span class="text-[#396477] text-sm md:text-base font-bold tracking-[2px] uppercase">The Children</span>
-          </div>
-          <h2 class="mt-4 text-[40px] md:text-[56px] lg:text-[64px] font-playfair font-bold text-navy leading-[1.1]">
-            What every child needs- <br />
-            <span class="italic text-[#DF6951] font-normal">at every stage of growth</span>
-          </h2>
+      <div class="w-full">
+        <div class="flex items-center gap-4">
+          <span class="font-volkhov text-[42px] font-bold leading-none text-[#DF6951]">
+            02
+          </span>
+
+          <span class="font-roboto text-[18px] font-bold uppercase tracking-[0.12em] text-[#396477]">
+            The Children
+          </span>
         </div>
-        <div class="lg:w-[300px] lg:border-l lg:border-[#C6C6CD] lg:pl-6 pt-2">
-          <p class="text-[#45464D] text-sm md:text-base leading-relaxed">
-            Nutrition needs shift as children grow. Tap a stage to see the recommended daily intake of nutrients.
-          </p>
+
+        <div class="mt-5 grid items-end gap-8 lg:grid-cols-[minmax(0,760px)_320px] lg:justify-between">
+          <h2 class="font-volkhov text-[48px] font-bold leading-[0.95] text-black sm:text-[60px] lg:text-[64px]">
+            What every child needs-
+            <br />
+            <span class="font-normal italic text-[#DF6951]">
+              at every stage of growth
+            </span>
+          </h2>
+
+          <div class="border-[#C6C6CD] lg:border-l lg:pl-6 lg:pb-2">
+            <p class="font-roboto text-[15px] leading-6 text-[#45464D]">
+              Nutrition needs shift as children grow. Tap a stage to see the recommended daily intake of nutrients.
+            </p>
+          </div>
         </div>
       </div>
 
@@ -24,10 +34,10 @@
       <div
         class="w-full bg-[#E6EEFF] rounded-[32px] px-4 sm:px-8 pt-8 pb-4 mt-12 flex flex-wrap justify-center sm:justify-between items-end gap-y-8 gap-x-4">
         <button v-for="g in ageGroups" :key="g.label"
-          class="flex flex-col items-center transition-all duration-500 group relative w-[100px] sm:w-[120px] lg:w-[160px]"
+          class="flex flex-col items-center transition-all duration-500 group relative w-[110px] sm:w-[140px] lg:w-[180px]"
           :class="selectedGroupLabel === g.label ? 'scale-110' : 'opacity-70 hover:opacity-100 hover:scale-105'"
-          @click="selectGroup(g.label)">
-          <div class="h-[100px] sm:h-[140px] lg:h-[180px] w-full flex items-end justify-center mb-3">
+          @click="selectGroup(g.label, true)">
+          <div class="h-[130px] sm:h-[170px] lg:h-[220px] w-full flex items-end justify-center mb-2">
             <img :src="g.img" class="object-contain transition-all duration-500 origin-bottom" :class="[
               selectedGroupLabel === g.label ? '' : 'grayscale group-hover:grayscale-0',
               getImageScale(g.label)
@@ -35,7 +45,7 @@
           </div>
           <div class="text-center">
             <h4
-              class="font-playfair font-bold text-[16px] sm:text-[18px] lg:text-[22px] leading-tight transition-colors duration-300"
+              class="font-roboto font-bold text-[13px] sm:text-[15px] lg:text-[17px] leading-tight transition-colors duration-300"
               :class="selectedGroupLabel === g.label ? 'text-[#396477]' : 'text-navy/60'">
               {{ getGroupName(g.label) }}
             </h4>
@@ -48,15 +58,15 @@
       </div>
 
       <!-- Main Interactive Display -->
-      <div class="w-full mt-8 flex flex-col lg:flex-row gap-8">
+      <div id="age-group-details" class="mt-8 grid w-full items-stretch gap-4 lg:grid-cols-[240px_minmax(0,1fr)]">
         <!-- LEFT: Currently Viewing Card -->
         <div
-          class="w-full lg:w-[320px] xl:w-[380px] bg-[#E6EEFF] rounded-[32px] p-8 flex flex-col relative overflow-hidden min-h-[450px]">
+          class="flex h-full min-h-[456px] w-full flex-col overflow-hidden rounded-[20px] border border-[#C6C6CD] bg-[#E6EEFF] p-6 shadow-[0_8px_18px_rgba(19,27,46,0.16)]">
           <div class="relative z-10">
             <p class="font-roboto font-bold text-[12px] tracking-[2px] text-[#396477] uppercase">
               Currently viewing
             </p>
-            <h3 class="font-playfair font-bold text-[36px] lg:text-[42px] text-navy mt-1 leading-tight">
+            <h3 class="mt-1 font-playfair text-[36px] font-bold leading-tight text-[#0D1C2E]">
               {{ getGroupName(selectedGroupLabel) }}
             </h3>
 
@@ -67,8 +77,8 @@
           </div>
 
           <!-- Silhouette -->
-          <div class="flex-1 w-full flex justify-center items-center mt-6 pointer-events-none opacity-40 z-0">
-            <div class="w-[180px] h-[160px] lg:w-[150px] lg:h-[100px]">
+          <div class="flex-1 w-full flex justify-center items-end mt-6 pointer-events-none opacity-40 z-0">
+            <div class="w-[240px] h-[220px] lg:w-[260px] lg:h-[240px]">
               <transition name="logo-fade" mode="out-in" @after-enter="onLogoEnter">
                 <div :key="selectedGroupLabel" class="relative w-full h-full flex justify-center items-center">
                   <div class="absolute inset-0 w-full h-full" :style="{
@@ -99,16 +109,16 @@
 
           <transition name="slide-fade" mode="out-in">
             <div v-if="!pending" :key="selectedGroupLabel"
-              class="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6 w-full">
+              class="grid h-full w-full grid-cols-1 gap-5 md:grid-cols-2 md:grid-rows-3">
               <div v-for="(nutrient, index) in selectedGroupNutrients" :key="nutrient.id"
-                class="bg-white border border-[#C6C6CD] rounded-[24px] overflow-hidden flex h-[160px] shadow-[0px_4px_12px_rgba(0,0,0,0.05)] hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 group"
+                class="group flex min-h-[140px] overflow-hidden rounded-[18px] border border-[#C6C6CD] bg-white shadow-[0_8px_18px_rgba(19,27,46,0.16)] transition-all duration-300 hover:-translate-y-1"
                 :style="{ animationDelay: `${index * 100}ms` }">
-                <div class="p-5 flex-1 flex flex-col justify-center">
-                  <h4 class="font-playfair text-[18px] lg:text-[20px] text-[#396477]">
+                <div class="flex flex-1 flex-col justify-center p-6">
+                  <h4 class="font-playfair font-semibold text-[18px] text-[#396477]">
                     {{ nutrient.nutrient }}
                   </h4>
                   <p
-                    class="font-playfair font-bold text-[32px] lg:text-[38px] text-navy mt-1 leading-none tracking-tight">
+                    class="mt-1 font-playfair text-[32px] font-bold leading-none tracking-tight text-[#0D1C2E]">
                     {{ extractValue(nutrient.goal) }}
                   </p>
                   <p class="font-roboto text-[11px] lg:text-[12px] text-[#45464D] mt-3 line-clamp-2 leading-snug pr-2">
@@ -117,7 +127,7 @@
                 </div>
 
                 <!-- Right Side Image Placeholder -->
-                <div class="w-[40%] bg-gray-100 h-full overflow-hidden shrink-0">
+                <div class="h-full w-[42%] shrink-0 overflow-hidden bg-gray-100">
                   <img :src="getNutrientImage(nutrient.nutrient)"
                     class="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity group-hover:scale-105 duration-500"
                     alt="Nutrient placeholder" />
@@ -130,7 +140,7 @@
 
       <!-- Bottom Banner -->
       <div
-        class="w-full mt-12 border border-[#C6C6CD] rounded-[20px] p-6 lg:p-8 flex flex-col lg:flex-row justify-between items-center gap-6">
+        class="mt-5 flex w-full flex-col items-center justify-between gap-5 rounded-[16px] border border-[#131B2E] bg-white px-6 py-5 shadow-[0_8px_18px_rgba(19,27,46,0.12)] lg:flex-row">
         <div>
           <h4 class="font-playfair font-bold text-[24px] lg:text-[28px] text-navy text-center lg:text-left">Unsure what
             your child needs right now ?</h4>
@@ -140,7 +150,7 @@
         </div>
         <NuxtLink to="/nutrition-guide">
           <button
-            class="bg-black text-white px-8 py-4 rounded-[16px] font-roboto font-medium hover:bg-[#396477] transition-colors duration-300 whitespace-nowrap text-[15px]">
+            class="h-[54px] rounded-[8px] bg-black px-8 font-roboto text-[14px] font-semibold text-white transition hover:bg-[#131B2E]">
             Explore Nutrition Guide
           </button>
         </NuxtLink>
@@ -166,7 +176,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, nextTick } from 'vue'
 import { useFetch, useRuntimeConfig } from '#app'
 
 const config = useRuntimeConfig()
@@ -253,11 +263,26 @@ const selectedGroupNutrients = computed(() => {
   return macronutrientsData.value.filter(item => item.age === selectedGroupLabel.value)
 })
 
-const selectGroup = (label: string) => {
-  if (selectedGroupLabel.value === label) return
+const selectGroup = async (label: string, shouldScroll = false) => {
+  if (selectedGroupLabel.value !== label) {
+    fillTrigger.value = false
+    selectedGroupLabel.value = label
+  }
 
-  fillTrigger.value = false
-  selectedGroupLabel.value = label
+  if (shouldScroll) {
+    await nextTick()
+
+    const el = document.getElementById('age-group-details')
+    if (!el) return
+
+    const yOffset = -130
+    const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset
+
+    window.scrollTo({
+      top: Math.max(0, y),
+      behavior: 'smooth',
+    })
+  }
 }
 
 const onLogoEnter = () => {

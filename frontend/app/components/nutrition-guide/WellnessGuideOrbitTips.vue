@@ -16,8 +16,8 @@
           type="button"
           class="orbit-item"
           :class="[item.side, item.position]"
-          :style="orbitPointStyle(item, i)"
-          @click="$emit('openPopup', item)"
+          :style="orbitPointStyle(item, i, orbitItems)"
+          @click="$emit('openPopup', item.popup)"
         >
           <template v-if="item.side === 'do'">
             <span class="orbit-label">{{ item.label }}</span>
@@ -57,7 +57,7 @@
 <script setup>
 const ORBIT = { cx: 260, cy: 196, r: 156 };
 
-defineProps({
+const props = defineProps({
   orbitItems: {
     type: Array,
     required: true,
@@ -89,9 +89,13 @@ const quickTips = [
   },
 ];
 
-function orbitPointStyle(item, listIndex) {
+function orbitPointStyle(item, listIndex, orbitItems) {
   const n = 7;
-  const indexOnSide = item.side === "do" ? listIndex : listIndex - n;
+  const indexOnSide =
+    item.side === "do"
+      ? orbitItems.slice(0, listIndex).filter((x) => x.side === "do").length
+      : orbitItems.slice(0, listIndex).filter((x) => x.side === "dont").length;
+
   const inset = 15;
   const span = 180 - 2 * inset;
   const step = span / (n - 1);

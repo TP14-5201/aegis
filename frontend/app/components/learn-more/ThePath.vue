@@ -145,7 +145,7 @@
       <div
         v-if="selectedItem"
         ref="detailRef"
-        class="w-full bg-[#D5E3FC]/85"
+        class="w-full bg-[#FFFFFF]/80"
       >
         <div class="section-inner grid gap-8 py-9 lg:grid-cols-[130px_minmax(0,1fr)_250px] lg:items-center">
           <div class="flex items-center gap-7">

@@ -21,6 +21,7 @@
       :popup="activePopup"
       @close="closePopup"
     />
+    />
   </section>
 </template>
 
@@ -35,8 +36,8 @@ import WellnessHabitsPopup from "./WellnessHabitsPopup.vue";
 
 const activePopup = ref<WellnessPopup | null>(null);
 
-function onOpenPopup(item: { popup: WellnessPopup }) {
-  activePopup.value = item.popup;
+function onOpenPopup(popup: WellnessPopup) {
+  activePopup.value = popup;
 }
 
 function closePopup() {
