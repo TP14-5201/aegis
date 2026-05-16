@@ -9,11 +9,11 @@
       style="border-color: #eef4fb;"
     >
       <div>
-        <div class="font-body" style="font-weight: 700; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: #0d1c2e; opacity: 0.55;">
-          Daily check-in
+        <div class="font-body" style="color: #EF6C00; font-family: 'Plus Jakarta Sans'; font-size: 12px; font-style: normal; font-weight: 800; line-height: 15px; letter-spacing: 1.8px; text-transform: uppercase;">
+          {{ headerKicker }}
         </div>
         <h2 class="font-display mt-1" style="font-size: 22px; color: #0d1c2e; font-weight: 800; letter-spacing: -0.01em;">
-          Seven kind questions
+          {{ headerTip }}
         </h2>
       </div>
       <div class="flex items-center gap-3">
@@ -848,6 +848,51 @@ const currentQuestions = computed(() => SURVEYS[props.stage] ?? SURVEYS.newborns
 const currentQ = computed(() => currentQuestions.value[currentIndex.value])
 const progressPct = computed(() => (currentIndex.value / currentQuestions.value.length) * 100)
 const isNutritionDim = computed(() => ['vitamin', 'protein', 'carb'].includes(currentQ.value?.dimension ?? ''))
+const currentTipIndex = ref(0)
+const healthTips: Record<Question['dimension'], string[]> = {
+  mood: [
+    'Small moments of comfort help children feel safe and connected.',
+    'Naming feelings can make big emotions easier to understand.',
+    'A calm voice and steady presence can help reset a difficult moment.',
+  ],
+  rest: [
+    'A steady wind-down routine can make sleep feel easier to enter.',
+    'Dim lights and quiet play help the body prepare for rest.',
+    'Consistent sleep and wake times support better daytime energy.',
+  ],
+  exercise: [
+    'Short bursts of movement count, especially when they feel playful.',
+    'Active play helps build strength, coordination and confidence.',
+    'Outdoor movement can lift mood while giving the body useful practice.',
+  ],
+  self_discipline: [
+    'Simple routines build confidence when they are repeated gently.',
+    'Small choices help children practise independence without pressure.',
+    'Clear, predictable steps make daily tasks easier to follow.',
+  ],
+  vitamin: [
+    'Colourful fruit, vegetables and water support everyday growth.',
+    'Trying one colourful food at a time can make variety feel easier.',
+    'Whole foods often bring vitamins, fibre and hydration together.',
+  ],
+  protein: [
+    'Protein-rich foods help keep energy steady between meals.',
+    'Milk, yoghurt, eggs, beans, fish or meat can support growing bodies.',
+    'Adding protein to breakfast can help the morning feel more stable.',
+  ],
+  carb: [
+    'Whole-grain carbs can support longer-lasting focus and play.',
+    'Pairing carbs with protein or fibre can smooth out energy dips.',
+    'Steady meals and snacks help avoid big afternoon energy crashes.',
+  ],
+}
+const headerKicker = computed(() => props.phase === 'survey' ? `${currentQ.value.dimensionLabel} tip` : 'The daily moment')
+const headerTip = computed(() => {
+  if (props.phase === 'done') return 'Healthy patterns grow through small daily choices.'
+  if (props.phase !== 'survey') return 'Start with one kind habit you can repeat today.'
+  const tips = healthTips[currentQ.value.dimension]
+  return tips[currentTipIndex.value] ?? tips[0]
+})
 
 const sliderEmojis = ['😢', '😕', '😐', '🙂', '😄']
 
@@ -863,6 +908,11 @@ function resetAnswerState() {
   multiSelected.value = []
   stepperVal.value = currentQ.value?.stepperMin ?? 0
   selectedIconRating.value = null
+}
+
+function pickRandomTip() {
+  const tips = healthTips[currentQ.value.dimension]
+  currentTipIndex.value = Math.floor(Math.random() * tips.length)
 }
 
 function autoAdvanceIfNeeded() {
@@ -948,12 +998,14 @@ watch(() => props.phase, (newPhase) => {
     currentIndex.value = 0
     answersLog.value = []
     completedDimensions.value = []
+    pickRandomTip()
     resetAnswerState()
   }
 })
 
 // Reset stepper on question change
 watch(currentIndex, () => {
+  pickRandomTip()
   resetAnswerState()
 })
 
