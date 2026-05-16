@@ -848,20 +848,50 @@ const currentQuestions = computed(() => SURVEYS[props.stage] ?? SURVEYS.newborns
 const currentQ = computed(() => currentQuestions.value[currentIndex.value])
 const progressPct = computed(() => (currentIndex.value / currentQuestions.value.length) * 100)
 const isNutritionDim = computed(() => ['vitamin', 'protein', 'carb'].includes(currentQ.value?.dimension ?? ''))
-const healthTips: Record<Question['dimension'], string> = {
-  mood: 'Small moments of comfort help children feel safe and connected.',
-  rest: 'A steady wind-down routine can make sleep feel easier to enter.',
-  exercise: 'Short bursts of movement count, especially when they feel playful.',
-  self_discipline: 'Simple routines build confidence when they are repeated gently.',
-  vitamin: 'Colourful fruit, vegetables and water support everyday growth.',
-  protein: 'Protein-rich foods help keep energy steady between meals.',
-  carb: 'Whole-grain carbs can support longer-lasting focus and play.',
+const currentTipIndex = ref(0)
+const healthTips: Record<Question['dimension'], string[]> = {
+  mood: [
+    'Small moments of comfort help children feel safe and connected.',
+    'Naming feelings can make big emotions easier to understand.',
+    'A calm voice and steady presence can help reset a difficult moment.',
+  ],
+  rest: [
+    'A steady wind-down routine can make sleep feel easier to enter.',
+    'Dim lights and quiet play help the body prepare for rest.',
+    'Consistent sleep and wake times support better daytime energy.',
+  ],
+  exercise: [
+    'Short bursts of movement count, especially when they feel playful.',
+    'Active play helps build strength, coordination and confidence.',
+    'Outdoor movement can lift mood while giving the body useful practice.',
+  ],
+  self_discipline: [
+    'Simple routines build confidence when they are repeated gently.',
+    'Small choices help children practise independence without pressure.',
+    'Clear, predictable steps make daily tasks easier to follow.',
+  ],
+  vitamin: [
+    'Colourful fruit, vegetables and water support everyday growth.',
+    'Trying one colourful food at a time can make variety feel easier.',
+    'Whole foods often bring vitamins, fibre and hydration together.',
+  ],
+  protein: [
+    'Protein-rich foods help keep energy steady between meals.',
+    'Milk, yoghurt, eggs, beans, fish or meat can support growing bodies.',
+    'Adding protein to breakfast can help the morning feel more stable.',
+  ],
+  carb: [
+    'Whole-grain carbs can support longer-lasting focus and play.',
+    'Pairing carbs with protein or fibre can smooth out energy dips.',
+    'Steady meals and snacks help avoid big afternoon energy crashes.',
+  ],
 }
 const headerKicker = computed(() => props.phase === 'survey' ? `${currentQ.value.dimensionLabel} tip` : 'The daily moment')
 const headerTip = computed(() => {
   if (props.phase === 'done') return 'Healthy patterns grow through small daily choices.'
   if (props.phase !== 'survey') return 'Start with one kind habit you can repeat today.'
-  return healthTips[currentQ.value.dimension]
+  const tips = healthTips[currentQ.value.dimension]
+  return tips[currentTipIndex.value] ?? tips[0]
 })
 
 const sliderEmojis = ['😢', '😕', '😐', '🙂', '😄']
@@ -878,6 +908,11 @@ function resetAnswerState() {
   multiSelected.value = []
   stepperVal.value = currentQ.value?.stepperMin ?? 0
   selectedIconRating.value = null
+}
+
+function pickRandomTip() {
+  const tips = healthTips[currentQ.value.dimension]
+  currentTipIndex.value = Math.floor(Math.random() * tips.length)
 }
 
 function autoAdvanceIfNeeded() {
@@ -963,12 +998,14 @@ watch(() => props.phase, (newPhase) => {
     currentIndex.value = 0
     answersLog.value = []
     completedDimensions.value = []
+    pickRandomTip()
     resetAnswerState()
   }
 })
 
 // Reset stepper on question change
 watch(currentIndex, () => {
+  pickRandomTip()
   resetAnswerState()
 })
 
