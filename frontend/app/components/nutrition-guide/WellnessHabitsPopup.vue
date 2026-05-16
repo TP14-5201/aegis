@@ -3,11 +3,12 @@
     <div v-if="popup" class="popup-overlay" @click.self="emit('close')">
       <div
         class="wellness-popup-card"
-        :class="popup.category === 'DO'
-          ? 'wellness-popup--do'
-          : 'wellness-popup--dont'"
+        :class="
+          popup.category === 'DO'
+            ? 'wellness-popup--do'
+            : 'wellness-popup--dont'
+        "
       >
-        <!-- CLOSE BUTTON OUTSIDE FRAME -->
         <button
           type="button"
           class="popup-close"
@@ -26,9 +27,10 @@
           </svg>
         </button>
 
-        <!-- BLACK FRAME -->
+        <!-- Framed content: header through note (sources sit below border) -->
         <div class="popup-frame">
           <p
+            v-if="popup.showCategory !== false"
             class="popup-category"
             :class="
               popup.category === 'DO'
@@ -41,23 +43,17 @@
 
           <h3 class="popup-title">
             <span class="popup-title-lead">{{ titleParts.lead }}</span>
-
             <template v-if="titleParts.rest">
-              <span class="popup-title-sep">:</span>
-
-              <span class="popup-title-rest">
-                {{ titleParts.rest }}
-              </span>
+              <span class="popup-title-sep">&nbsp;:</span>
+              <span class="popup-title-rest">{{ titleParts.rest }}</span>
             </template>
           </h3>
 
-          <p class="popup-subtitle">
-            {{ popup.subtitle }}
-          </p>
+          <p class="popup-subtitle">{{ popup.subtitle }}</p>
 
           <p
             v-for="(para, idx) in popup.intro"
-            :key="idx"
+            :key="`intro-${idx}`"
             class="popup-intro"
           >
             {{ para }}
@@ -73,49 +69,48 @@
               alt=""
               class="popup-alert-svg"
             />
-
             <p
               class="popup-alert-text"
               v-html="popup.alertHtml || popup.alert"
             />
           </div>
 
-          <div
-            v-if="popup.table"
-            class="popup-table-wrap"
-          >
-            <h4
-              v-if="popup.tableTitle"
-              class="popup-table-title"
-            >
-              {{ popup.tableTitle }}
-            </h4>
+          <p v-if="popup.tableTitle" class="popup-table-title">
+            {{ popup.tableTitle }}
+          </p>
 
+          <div v-if="popup.table" class="popup-table-wrap">
             <table
               class="popup-table"
               :class="{
-                'popup-table--compare':
-                  popup.tableVariant === 'compare'
+                'popup-table--compare': popup.tableVariant === 'compare',
               }"
             >
               <thead>
                 <tr>
                   <th
                     v-for="(h, ti) in popup.table.headers"
-                    :key="ti"
+                    :key="`th-${ti}`"
                   >
-                    {{ h }}
+                    <span
+                      v-if="popup.table.headerHtml?.[ti]"
+                      v-html="popup.table.headerHtml[ti]"
+                    />
+                    <template v-else>{{ h }}</template>
                   </th>
                 </tr>
               </thead>
-
               <tbody>
                 <tr>
                   <td
                     v-for="(v, vi) in popup.table.values"
-                    :key="vi"
+                    :key="`td-${vi}`"
                   >
-                    {{ v }}
+                    <span
+                      v-if="popup.table.valueHtml?.[vi]"
+                      v-html="popup.table.valueHtml[vi]"
+                    />
+                    <template v-else>{{ v }}</template>
                   </td>
                 </tr>
               </tbody>
@@ -129,11 +124,10 @@
             <h4 class="popup-common-chips-heading">
               {{ popup.commonTitle }}
             </h4>
-
             <div class="popup-common-chips" role="list">
               <div
                 v-for="(c, ci) in commonChipItems"
-                :key="ci"
+                :key="`chip-${ci}`"
                 class="popup-common-chip"
                 role="listitem"
               >
@@ -143,16 +137,12 @@
                   :src="c.iconSrc"
                   alt=""
                 />
-
                 <span
                   v-else
                   class="popup-common-chip-glyph"
                   aria-hidden="true"
                 />
-
-                <span class="popup-common-chip-label">
-                  {{ c.label }}
-                </span>
+                <span class="popup-common-chip-label">{{ c.label }}</span>
               </div>
             </div>
           </div>
@@ -161,60 +151,42 @@
             v-else-if="popup.commonTitle && popup.commonSources?.length"
             class="popup-common popup-common--list"
           >
-            <h4 class="popup-common-title">
-              {{ popup.commonTitle }}
-            </h4>
-
+            <h4 class="popup-common-title">{{ popup.commonTitle }}</h4>
             <ul>
               <li
                 v-for="(s, si) in popup.commonSources"
-                :key="si"
+                :key="`src-${si}`"
               >
                 {{ s }}
               </li>
             </ul>
           </div>
-
           <div class="popup-body-split">
             <div class="popup-tips-column">
               <div
                 v-for="(t, ti) in popup.tips"
-                :key="ti"
+                :key="`tip-${ti}`"
                 class="popup-tip-line"
               >
-                <span class="popup-tip-label">
-                  {{ t.label }}:
-                </span>
-
+                <span class="popup-tip-label">{{ t.label }}:</span>
                 {{ t.text }}
               </div>
             </div>
-
-            <div class="popup-image-column">
+            <div v-if="popup.imageSrc" class="popup-image-column">
               <img
                 :src="popup.imageSrc"
-                :alt="popup.imageAlt"
+                :alt="popup.imageAlt ?? ''"
                 class="popup-hero-img"
               />
             </div>
           </div>
 
-          <!-- NOTE / SERVING INSIDE FRAME -->
-          <p
-            v-if="popup.note"
-            class="popup-note-foot"
-          >
-            ({{ popup.note }})
-          </p>
+          <p v-if="popup.note" class="popup-note-foot">({{ popup.note }})</p>
         </div>
 
-        <!-- SOURCES OUTSIDE FRAME -->
         <p class="popup-sources-line">
-          <span class="popup-sources-prefix">
-            Sources:
-          </span>
-
-          {{ popup.sources.join(" · ") }}
+          <span class="popup-sources-prefix">Sources:</span>
+          {{ popup.sources.join(" . ") }}
         </p>
       </div>
     </div>
@@ -277,27 +249,43 @@ function splitPopupTitle(title: string) {
 }
 
 .wellness-popup-card {
+  --wp-width: 724px;
+  --wp-height: 526px;
+  --wp-blue-lead: #2e6ce7;
+  --wp-blue-sub: #1457a9;
+  --wp-text: #000000;
+  --wp-muted: #818181;
+  --wp-border: #000000;
+  --wp-table-border: #000000;
+  --wp-alert-bg: #eceff3;
+
+  --wp-title-size: 16px;
+  --wp-subtitle-size: 12px;
+  --wp-body-size: 14px;
+  --wp-sources-size: 10px;
+
   position: relative;
-  width: min(920px, 96vw);
+  width: min(var(--wp-width), 96vw);
   max-height: min(92vh, 1200px);
   overflow-y: auto;
   background: #fff;
   border: none;
-  border-radius: 4px;
-  padding: 48px 52px 18px;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18);
+  border-radius: 0;
+  padding: 30px 34px 12px;
+  box-shadow: none;
 }
 
 .popup-frame {
-  border: 1.5px solid #111;
+  border: 1px solid var(--wp-border);
   background: #fff;
-  padding: 18px 20px 20px;
+  padding: 18px;
+  margin-bottom: 10px;
 }
 
 .popup-close {
   position: absolute;
-  top: 12px;
-  right: 12px;
+  top: 8px;
+  right: 8px;
   z-index: 2;
   display: grid;
   place-items: center;
@@ -341,69 +329,71 @@ function splitPopupTitle(title: string) {
 }
 
 .popup-title {
-  margin: 0 0 10px;
+  margin: 0 0 4px;
   font-weight: 400;
-  line-height: 1.2;
-  color: #0d1c2e;
+  line-height: normal;
+  color: var(--wp-text);
 }
 
 .popup-title-lead {
   font-family: "Plus Jakarta Sans", sans-serif;
-  font-size: clamp(22px, 2.4vw, 30px);
-  font-weight: 800;
-  color: #1e40af;
+  font-size: var(--wp-title-size);
+  font-weight: 700;
+  color: var(--wp-blue-lead);
   text-transform: uppercase;
-  letter-spacing: 0.02em;
-}
-
-.wellness-popup--do .popup-title-lead,
-.wellness-popup--do .popup-subtitle,
-.wellness-popup--do .popup-tip-label {
-  color: #0369a1;
+  letter-spacing: 0;
 }
 
 .popup-title-sep {
-  font-family: "Plus Jakarta Sans", sans-serif;
-  font-weight: 800;
-  color: #1e40af;
-  margin: 0 2px;
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: var(--wp-title-size);
+  font-style: italic;
+  font-weight: 600;
+  color: var(--wp-text);
 }
 
 .popup-title-rest {
   font-family: "Playfair Display", Georgia, serif;
-  font-size: clamp(20px, 2.1vw, 28px);
+  font-size: var(--wp-title-size);
   font-style: italic;
-  font-weight: 500;
-  color: #111;
+  font-weight: 600;
+  color: var(--wp-text);
 }
 
 .popup-subtitle {
-  margin: 0 0 18px;
+  margin: 0 0 14px;
   font-family: "Plus Jakarta Sans", sans-serif;
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 1.45;
-  letter-spacing: 0.04em;
+  font-size: var(--wp-subtitle-size);
+  font-weight: 600;
+  line-height: normal;
+  letter-spacing: 0;
   text-transform: uppercase;
-  color: #1e40af;
+  color: var(--wp-blue-sub);
 }
 
 .popup-intro {
   margin: 0 0 12px;
   font-family: "Plus Jakarta Sans", sans-serif;
-  font-size: 15px;
-  line-height: 1.55;
-  color: #1a1d24;
+  font-size: var(--wp-body-size);
+  font-weight: 400;
+  line-height: 1.35;
+  color: var(--wp-text);
+}
+
+.popup-intro:has(+ .popup-table-wrap),
+.popup-intro:has(+ .popup-table-title) {
+  margin-bottom: 6px;
 }
 
 .popup-alert-wellness {
   display: flex;
   gap: 14px;
   align-items: flex-start;
-  margin: 0 0 20px;
+  margin: 0 0 16px;
   padding: 16px 18px;
   border-radius: 10px;
-  background: #eceff3;
+  background: var(--wp-alert-bg);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .popup-alert-svg {
@@ -417,9 +407,9 @@ function splitPopupTitle(title: string) {
 .popup-alert-text {
   margin: 0;
   font-family: "Plus Jakarta Sans", sans-serif;
-  font-size: 14px;
-  line-height: 1.5;
-  color: #1a1d24;
+  font-size: var(--wp-body-size);
+  line-height: normal;
+  color: var(--wp-text);
 }
 
 .popup-alert-text :deep(.alert-red) {
@@ -433,42 +423,54 @@ function splitPopupTitle(title: string) {
 }
 
 .popup-alert-text :deep(.alert-blue) {
-  color: #2563eb;
+  color: var(--wp-blue-lead);
   font-weight: 500;
 }
 
-.popup-table-wrap {
-  margin: 0 0 22px;
+.popup-table-title {
+  margin: 0 0 12px;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: var(--wp-body-size);
+  font-weight: 400;
+  line-height: normal;
+  color: var(--wp-text);
 }
 
-.popup-table-title {
-  margin: 0 0 10px;
-  font-family: "Playfair Display", Georgia, serif;
-  font-size: 17px;
-  font-weight: 600;
-  color: #0d1c2e;
+.popup-table-wrap {
+  margin: 0 auto 16px;
+  width: 80%;
+  max-width: 560px;
 }
 
 .popup-table {
   width: 100%;
-  border-collapse: collapse;
+  margin: 0 auto;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid var(--wp-table-border);
+  border-radius: 4px;
+  overflow: hidden;
   font-family: "Plus Jakarta Sans", sans-serif;
-  font-size: 13px;
-  line-height: 1.45;
-  color: #1a1d24;
+  font-size: var(--wp-body-size);
+  line-height: normal;
+  color: var(--wp-text);
 }
 
 .popup-table th,
 .popup-table td {
-  border: 1px solid #0d1c2e;
-  padding: 12px 14px;
-  vertical-align: top;
+  border: 1px solid var(--wp-table-border);
+  padding: 10px 12px;
+  vertical-align: middle;
   text-align: center;
+}
+
+.popup-table:not(.popup-table--compare) thead th {
+  font-weight: 700;
 }
 
 .popup-table--compare thead th:nth-child(1) {
   background: #d62828;
-  color: #ffffff;
+  color: #fff;
   border-color: #9f1d1d;
   font-weight: 800;
   text-transform: uppercase;
@@ -477,43 +479,44 @@ function splitPopupTitle(title: string) {
 
 .popup-table--compare thead th:nth-child(2) {
   background: #2a9d5b;
-  color: #ffffff;
+  color: #fff;
   border-color: #1f6f40;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
 
-.popup-table tbody td {
-  text-align: left;
+.popup-table--compare tbody td {
+  text-align: center;
+  font-size: 13px;
 }
 
 .popup-common--list {
-  margin: 0 0 20px;
+  margin: 0 0 16px;
 }
 
 .popup-common-title,
 .popup-common-chips-heading {
   margin: 0 0 12px;
   font-family: "Plus Jakarta Sans", sans-serif;
-  font-size: 13px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
+  font-size: var(--wp-body-size);
+  font-weight: 700;
+  letter-spacing: 0;
   text-transform: uppercase;
-  color: #1e40af;
+  color: var(--wp-blue-lead);
 }
 
 .popup-common--list ul {
   margin: 0;
   padding-left: 20px;
   font-family: "Plus Jakarta Sans", sans-serif;
-  font-size: 14px;
-  line-height: 1.5;
-  color: #1a1d24;
+  font-size: var(--wp-body-size);
+  line-height: normal;
+  color: var(--wp-text);
 }
 
 .popup-common-chips-block {
-  margin: 0 0 24px;
+  margin: 0 0 16px;
 }
 
 .popup-common-chips {
@@ -523,24 +526,34 @@ function splitPopupTitle(title: string) {
 }
 
 .popup-common-chip {
-  flex: 1 1 120px;
-  min-width: 100px;
-  max-width: 160px;
+  box-sizing: border-box;
+  flex: 0 0 118px;
+  width: 118px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
   padding: 12px 10px 14px;
-  border: 1px solid #0d1c2e;
-  border-radius: 8px;
+  border: 1px solid var(--wp-border);
+  border-radius: 4px;
   background: #fff;
   text-align: center;
+  box-shadow: none;
+  outline: none;
+}
+
+.popup-common-chip:focus,
+.popup-common-chip:focus-visible {
+  outline: none;
+  border: 1px solid var(--wp-border);
 }
 
 .popup-common-chip-icon {
   width: 22px;
   height: 22px;
   object-fit: contain;
+  border: none;
+  outline: none;
 }
 
 .popup-common-chip-glyph {
@@ -549,119 +562,89 @@ function splitPopupTitle(title: string) {
 
 .popup-common-chip-label {
   font-family: "Plus Jakarta Sans", sans-serif;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 500;
-  line-height: 1.15;
-  color: #111;
+  line-height: 1.2;
+  color: var(--wp-text);
 }
 
 .popup-body-split {
   display: grid;
-  grid-template-columns: 1fr minmax(200px, 42%);
-  gap: 28px 32px;
-  align-items: start;
-  margin-top: 8px;
+  grid-template-columns: minmax(260px, 48%) 1fr;
+  gap: 24px;
+  align-items: center;
+  margin: 6px 0 0;
 }
 
 .popup-tips-column {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
 
 .popup-tip-line {
   font-family: "Plus Jakarta Sans", sans-serif;
-  font-size: 14px;
-  line-height: 1.55;
-  color: #1a1d24;
+  font-size: var(--wp-body-size);
+  line-height: normal;
+  color: var(--wp-text);
 }
 
 .popup-tip-label {
-  font-weight: 800;
-  color: #1e40af;
+  font-weight: 700;
+  color: var(--wp-blue-lead);
 }
 
 .popup-image-column {
   position: relative;
-  background: transparent;
-  padding: 0;
-  border: none;
-  box-shadow: none;
 }
 
 .popup-hero-img {
   width: 100%;
+  max-height: 215px;
   display: block;
-  border-radius: 0;
-  object-fit: contain;
-  background: transparent;
-  border: none;
-  box-shadow: none;
-}
-
-.popup-footer-bar {
-  display: none;
+  object-fit: cover;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
 .popup-note-foot {
-  margin: 18px 0 0;
+  margin: 10px 0 0;
   font-family: "Plus Jakarta Sans", sans-serif;
-  font-size: 12px;
+  font-size: 10px;
   font-style: italic;
-  line-height: 1.45;
-  color: #64748b;
-}
-
-.popup-note-foot--empty {
-  display: none;
+  line-height: 13px;
+  color: var(--wp-text);
 }
 
 .popup-sources-line {
-  margin: 8px 4px 0 auto;
+  margin: 0 0 0 auto;
+  max-width: 100%;
   font-family: "Plus Jakarta Sans", sans-serif;
-  font-size: 12px;
+  font-size: var(--wp-sources-size);
+  font-weight: 300;
   font-style: italic;
-  line-height: 1.45;
-  color: #64748b;
+  line-height: normal;
+  color: var(--wp-muted);
   text-align: right;
 }
 
 .popup-sources-prefix {
-  font-weight: 700;
-  margin-right: 4px;
+  font-weight: 600;
+  font-style: italic;
 }
 
 @media (max-width: 720px) {
   .wellness-popup-card {
-    padding: 40px 20px 18px;
+    padding: 40px 20px 12px;
     max-height: 94vh;
-  }
-
-  .popup-frame {
-    padding: 18px;
   }
 
   .popup-body-split {
     grid-template-columns: 1fr;
+    align-items: start;
   }
 
   .popup-sources-line {
     text-align: left;
-    flex-basis: 100%;
-  }
-}
-
-@media (max-width: 480px) {
-  .popup-title-lead {
-    font-size: 20px;
-  }
-
-  .popup-title-rest {
-    font-size: 19px;
-  }
-
-  .popup-hero-img {
-    max-height: 220px;
   }
 }
 </style>
