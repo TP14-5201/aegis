@@ -121,6 +121,13 @@ Copy the example `.env` and fill in the required values:
 ```bash
 # backend/.env
 DATABASE_URL=postgresql://[YOUR_USERNAME]:[YOUR_PASSWORD]@localhost:5432/postgres
+LOGIN_PASSWORD_HASH=[YOUR_BCRYPT_PASSWORD_HASH]
+```
+
+To set your own local login password, generate a bcrypt hash and add the printed value to `LOGIN_PASSWORD_HASH` in `backend/.env`:
+
+```bash
+conda run -n aegis python -c "import bcrypt, getpass; print(bcrypt.hashpw(getpass.getpass('Password: ').encode('utf-8'), bcrypt.gensalt()).decode('utf-8'))"
 ```
 
 **Seed the database:**

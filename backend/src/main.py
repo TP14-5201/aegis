@@ -6,6 +6,7 @@ from typing import List, Optional
 import math
 from datetime import datetime
 
+import bcrypt
 import httpx
 from fastapi import Depends, FastAPI, HTTPException, Query
 from pydantic import BaseModel
@@ -95,11 +96,32 @@ def health() -> dict:
 class _LoginRequest(BaseModel):
     password: str
 
-_DEMO_PASSWORD = "password123"
+
+_LOGIN_PASSWORD_HASH_ENV = "LOGIN_PASSWORD_HASH"
+
+
+def _get_login_password_hash() -> str:
+    print( os.getenv(_LOGIN_PASSWORD_HASH_ENV, "").strip())
+    return os.getenv(_LOGIN_PASSWORD_HASH_ENV, "").strip()
+
 
 @app.post("/auth/login")
 def auth_login(body: _LoginRequest):
-    if body.password == _DEMO_PASSWORD:
+    password_hash = _get_login_password_hash()
+    if not password_hash:
+        logger.error("%s is not configured", _LOGIN_PASSWORD_HASH_ENV)
+        raise HTTPException(status_code=503, detail="Login is not configured")
+
+    try:
+        is_valid = bcrypt.checkpw(
+            body.password.encode("utf-8"),
+            password_hash.encode("utf-8"),
+        )
+    except ValueError:
+        logger.error("%s is not a valid bcrypt hash", _LOGIN_PASSWORD_HASH_ENV)
+        raise HTTPException(status_code=503, detail="Login is not configured")
+
+    if is_valid:
         return {"success": True}
     raise HTTPException(status_code=401, detail="Incorrect password")
 
