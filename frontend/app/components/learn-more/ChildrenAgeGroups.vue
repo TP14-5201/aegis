@@ -128,7 +128,7 @@
 
                 <!-- Right Side Image Placeholder -->
                 <div class="h-full w-[42%] shrink-0 overflow-hidden bg-gray-100">
-                  <img :src="getNutrientImage(nutrient.nutrient)"
+                  <img :src="getNutrientImage(nutrient.nutrient, selectedGroupLabel)"
                     class="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity group-hover:scale-105 duration-500"
                     alt="Nutrient placeholder" />
                 </div>
@@ -202,7 +202,50 @@ const ageImageMap: Record<string, string> = {
   '7-12 months': '/images/learn-more/children-infant.webp',
   '1-3 years': '/images/learn-more/children-toddler.webp',
   '4-8 years': '/images/learn-more/children-preschool.webp',
-  '9-13 years': '/images/learn-more/children-school-age.webp'
+  '9-13 years': '/images/learn-more/children-school-age.webp',
+}
+
+const nutrientImageMap: Record<string, Record<string, string>> = {
+  '0-6 months': {
+    carbohydrate: '/images/learn-more/macro/nb-1.webp',
+    energy: '/images/learn-more/macro/nb-2.webp',
+    protein: '/images/learn-more/macro/nb-3.webp',
+    fibre: '/images/learn-more/macro/nb-4.webp',
+    fat: '/images/learn-more/macro/nb-5.webp',
+    fluid: '/images/learn-more/macro/nb-6.webp',
+  },
+  '7-12 months': {
+    carbohydrate: '/images/learn-more/macro/in-1.webp',
+    energy: '/images/learn-more/macro/in-2.webp',
+    protein: '/images/learn-more/macro/in-3.webp',
+    fibre: '/images/learn-more/macro/in-4.webp',
+    fat: '/images/learn-more/macro/in-5.webp',
+    fluid: '/images/learn-more/macro/in-6.webp',
+  },
+  '1-3 years': {
+    carbohydrate: '/images/learn-more/macro/td-1.webp',
+    energy: '/images/learn-more/macro/td-2.webp',
+    protein: '/images/learn-more/macro/td-3.webp',
+    fibre: '/images/learn-more/macro/td-4.webp',
+    fat: '/images/learn-more/macro/td-5.webp',
+    fluid: '/images/learn-more/macro/td-6.webp',
+  },
+  '4-8 years': {
+    carbohydrate: '/images/learn-more/macro/yc-1.webp',
+    energy: '/images/learn-more/macro/yc-2.webp',
+    protein: '/images/learn-more/macro/yc-3.webp',
+    fibre: '/images/learn-more/macro/yc-4.webp',
+    fat: '/images/learn-more/macro/yc-5.webp',
+    fluid: '/images/learn-more/macro/yc-6.webp',
+  },
+  '9-13 years': {
+    carbohydrate: '/images/learn-more/macro/pt-1.webp',
+    energy: '/images/learn-more/macro/pt-2.webp',
+    protein: '/images/learn-more/macro/pt-3.webp',
+    fibre: '/images/learn-more/macro/pt-4.webp',
+    fat: '/images/learn-more/macro/pt-5.webp',
+    fluid: '/images/learn-more/macro/pt-6.webp',
+  },
 }
 
 const ageOrder = ['0-6 months', '7-12 months', '1-3 years', '4-8 years', '9-13 years']
@@ -304,16 +347,22 @@ const extractValue = (goal: string | undefined) => {
 }
 
 // Generate real images based on nutrient name
-const getNutrientImage = (nutrient: string) => {
+const getNutrientKey = (nutrient: string) => {
   const n = (nutrient || '').toLowerCase()
 
-  if (n.includes('energy')) return '/images/learn-more/energy.webp'
-  if (n.includes('protein')) return '/images/learn-more/protein.webp'
-  if (n.includes('fibre') || n.includes('fiber')) return '/images/learn-more/fibre.webp'
-  if (n.includes('fluid')) return '/images/learn-more/fluid.webp'
-  if (n.includes('fat')) return '/images/learn-more/fat.webp'
-  if (n.includes('carbohydrate')) return '/images/learn-more/carbohydrate.webp'
+  if (n.includes('carbohydrate')) return 'carbohydrate'
+  if (n.includes('energy')) return 'energy'
+  if (n.includes('protein')) return 'protein'
+  if (n.includes('fibre') || n.includes('fiber')) return 'fibre'
+  if (n.includes('fat')) return 'fat'
+  if (n.includes('fluid')) return 'fluid'
 
+  return 'carbohydrate'
+}
+
+const getNutrientImage = (nutrient: string, age = selectedGroupLabel.value) => {
+  const key = getNutrientKey(nutrient)
+  return nutrientImageMap[age]?.[key] || '/images/learn-more/macro/carbohydrate.webp'
 }
 </script>
 
