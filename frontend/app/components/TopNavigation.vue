@@ -47,6 +47,7 @@
         <NuxtLink to="/food-banks" class="nav-link">Find Food Banks</NuxtLink>
         <NuxtLink to="/get-food" class="nav-link">Get Food</NuxtLink>
         <NuxtLink to="/nutrition-guide" class="nav-link">Nutrition Guide</NuxtLink>
+        <NuxtLink to="/health-tracking" class="nav-link">Health Tracking</NuxtLink>
         <NuxtLink to="/learn-more" class="nav-link">Know more</NuxtLink>
       </nav>
 
@@ -97,6 +98,7 @@
         <NuxtLink to="/food-banks" class="mobile-link">Find Food Banks</NuxtLink>
         <NuxtLink to="/get-food" class="mobile-link">Get Food</NuxtLink>
         <NuxtLink to="/nutrition-guide" class="mobile-link">Nutrition Guide</NuxtLink>
+        <NuxtLink to="/health-tracking" class="mobile-link">Health Tracking</NuxtLink>
         <NuxtLink to="/learn-more" class="mobile-link">Know more</NuxtLink>
 
         <NuxtLink
