@@ -16,25 +16,23 @@
       <!-- Hero section -->
       <section class="max-w-[1200px] mx-auto px-6 lg:px-10 pt-14 lg:pt-18 pb-8 text-center">
         <div
-          class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full mb-5"
-          style="background:#0d1c2e; color:#dce9ff;"
+          class="inline-flex items-center gap-2 mb-5"
         >
-          <span style="font-weight:700; font-size:11px; letter-spacing:0.15em; text-transform:uppercase; font-family:'Plus Jakarta Sans', sans-serif;">
-            Daily check-in - 60 seconds
+          <span style="color:#EF6C00; font-family:'Plus Jakarta Sans', sans-serif; font-size:20px; font-style:normal; font-weight:700; line-height:15px; letter-spacing:1.8px; text-transform:uppercase;">
+            DAILY CHECK-IN . 60 SEC
           </span>
         </div>
         <h1
-          class="font-display max-w-3xl mx-auto"
-          style="font-size:clamp(36px,5vw,58px); line-height:1.06; color:#0d1c2e; font-weight:800; letter-spacing:-0.025em;"
+          class="max-w-[1200px] mx-auto px-6 lg:px-10 pt-18 lg:pt-0 pb-8 text-center"
+          style="color:#142741; text-align:center; font-family:'Playfair Display'; font-size:64px; font-style:normal; font-weight:800; line-height:67.2px; letter-spacing:-1.6px;"
         >
-          Track your health,
-          <em style="font-style:italic;"> grow together</em>.
+          A gentle place to care for <span style="color:#EF6C00;">your family</span>
         </h1>
         <p
-          class="font-body mt-4 max-w-xl mx-auto"
-          style="font-size:16px; line-height:1.6; color:#0d1c2e; opacity:0.72; font-weight:500;"
+          class="mt-4 mx-auto"
+          style="width:576px; max-width:100%; flex-shrink:0; color:#142741; text-align:center; font-family:'Plus Jakarta Sans'; font-size:17px; font-style:normal; font-weight:500; line-height:27.2px;"
         >
-          Seven gentle habit questions in under a minute. Watch your virtual companion grow alongside the small things you already do.
+          Track seven kind habits - with a focus on real, daily nutrition - in under a minute. Watch your little companion grow alongside the small things you already do.
         </p>
       </section>
 
