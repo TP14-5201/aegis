@@ -9,11 +9,11 @@
       style="border-color: #eef4fb;"
     >
       <div>
-        <div class="font-body" style="font-weight: 700; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: #0d1c2e; opacity: 0.55;">
-          Daily check-in
+        <div class="font-body" style="color: #EF6C00; font-family: 'Plus Jakarta Sans'; font-size: 12px; font-style: normal; font-weight: 800; line-height: 15px; letter-spacing: 1.8px; text-transform: uppercase;">
+          {{ headerKicker }}
         </div>
         <h2 class="font-display mt-1" style="font-size: 22px; color: #0d1c2e; font-weight: 800; letter-spacing: -0.01em;">
-          Seven kind questions
+          {{ headerTip }}
         </h2>
       </div>
       <div class="flex items-center gap-3">
@@ -848,6 +848,21 @@ const currentQuestions = computed(() => SURVEYS[props.stage] ?? SURVEYS.newborns
 const currentQ = computed(() => currentQuestions.value[currentIndex.value])
 const progressPct = computed(() => (currentIndex.value / currentQuestions.value.length) * 100)
 const isNutritionDim = computed(() => ['vitamin', 'protein', 'carb'].includes(currentQ.value?.dimension ?? ''))
+const healthTips: Record<Question['dimension'], string> = {
+  mood: 'Small moments of comfort help children feel safe and connected.',
+  rest: 'A steady wind-down routine can make sleep feel easier to enter.',
+  exercise: 'Short bursts of movement count, especially when they feel playful.',
+  self_discipline: 'Simple routines build confidence when they are repeated gently.',
+  vitamin: 'Colourful fruit, vegetables and water support everyday growth.',
+  protein: 'Protein-rich foods help keep energy steady between meals.',
+  carb: 'Whole-grain carbs can support longer-lasting focus and play.',
+}
+const headerKicker = computed(() => props.phase === 'survey' ? `${currentQ.value.dimensionLabel} tip` : 'The daily moment')
+const headerTip = computed(() => {
+  if (props.phase === 'done') return 'Healthy patterns grow through small daily choices.'
+  if (props.phase !== 'survey') return 'Start with one kind habit you can repeat today.'
+  return healthTips[currentQ.value.dimension]
+})
 
 const sliderEmojis = ['😢', '😕', '😐', '🙂', '😄']
 
