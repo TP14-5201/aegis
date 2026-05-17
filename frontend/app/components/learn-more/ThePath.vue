@@ -3,9 +3,9 @@
     <div class="w-full bg-[linear-gradient(106deg,#131B2E_0%,#396477_100%)]">
       <div class="section-inner pb-12 pt-16 lg:min-h-[940px] lg:pb-0 lg:pt-20">
         <div class="story-reveal max-w-[520px] pt-0">
-          <h1 class="font-volkhov text-[48px] font-bold leading-[0.95] tracking-normal text-white sm:text-[64px] lg:text-[72px]">
+          <h1 class="font-volkhov text-[48px] font-semibold leading-[0.95] tracking-normal text-white sm:text-[64px] lg:text-[72px]">
             Follow the
-            <span class="font-normal italic text-[#DF6951]">path</span>
+            <span class="italic text-[#DF6951]">path</span>
           </h1>
 
           <p class="mt-10 max-w-[500px] font-roboto text-[16px] leading-7 text-white/90 lg:text-[18px]">

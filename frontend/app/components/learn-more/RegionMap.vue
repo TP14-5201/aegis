@@ -1,21 +1,43 @@
 <template>
   <section class="section-large bg-white">
     <div class="section-inner pb-16 lg:min-h-0">
-      <div class="flex items-center gap-4">
-        <span class="font-volkhov text-[42px] font-bold leading-none text-[#DF6951]">01</span>
-        <p class="font-roboto text-[18px] font-bold uppercase tracking-[0.12em] text-[#434656]">
-          Around Us . Victoria
-        </p>
+      <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8">
+        <!-- Left Content -->
+        <div class="max-w-[760px]">
+          <div class="flex items-center gap-4">
+            <span class="text-[#DF6951] text-5xl lg:text-6xl font-playfair font-bold">
+              01
+            </span>
+
+            <h2
+              class="text-[#3D687C] font-bold uppercase tracking-widest text-[14px] lg:text-[16px]"
+            >
+              Around us . Victoria
+            </h2>
+          </div>
+
+          <h3
+            class="mt-4 font-playfair font-bold text-black text-[56px] leading-[1.05]"
+          >
+            It's happening
+            <span class="text-[#DF6951] italic font-playfair font-normal">
+              right here.
+            </span>
+          </h3>
+        </div>
+
+        <!-- Right Paragraph -->
+        <div
+          class="lg:w-[460px] border-l border-[#C6C6CD] pl-6 mt-6 lg:mb-0"
+        >
+          <p class="text-black text-[16px]">
+            Every region in Victoria tells a different story. Click a category on
+            the left to know more about the regions affected. Click any region to
+            read its story on the right.
+          </p>
+        </div>
       </div>
 
-      <h2 class="mt-5 font-volkhov text-[42px] font-bold leading-[0.95] text-black sm:text-[56px] lg:text-[64px]">
-        It's happening
-        <span class="font-normal italic text-[#DF6951]">right here.</span>
-      </h2>
-      <p class="mt-5 max-w-[720px] font-roboto text-[16px] leading-7 text-[#434656]">
-        Every region in Victoria tells a different story. Click a category on the left - the
-        map recolours to that data layer. Click any region to read its story on the right.
-      </p>
 
       <div class="mt-7 flex flex-col gap-3 lg:flex-row">
         <div class="relative flex-1">

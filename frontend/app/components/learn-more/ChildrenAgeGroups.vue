@@ -14,7 +14,7 @@
         </div>
 
         <div class="mt-5 grid items-end gap-8 lg:grid-cols-[minmax(0,760px)_320px] lg:justify-between">
-          <h2 class="font-volkhov text-[48px] font-bold leading-[0.95] text-black sm:text-[60px] lg:text-[64px]">
+          <h2 class="font-volkhov text-[48px] font-semibold leading-[0.95] text-black sm:text-[60px] lg:text-[64px]">
             What every child needs-
             <br />
             <span class="font-normal italic text-[#DF6951]">
@@ -22,8 +22,10 @@
             </span>
           </h2>
 
-          <div class="border-[#C6C6CD] lg:border-l lg:pl-6 lg:pb-2">
-            <p class="font-roboto text-[15px] leading-6 text-[#45464D]">
+          <div
+            class="border-l border-[#C6C6CD] pl-6 mt-6 lg:mb-0 lg:-ml-16"
+          >
+            <p class="text-black text-[16px]">
               Nutrition needs shift as children grow. Tap a stage to see the recommended daily intake of nutrients.
             </p>
           </div>
