@@ -1,20 +1,20 @@
 <template>
   <section class="w-full bg-white py-12 lg:py-20">
-    <div class="max-w-8xl mx-auto px-5 lg:px-12">
+    <div class="section-inner">
       <!-- Header Area -->
-      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8 mb-12">
+      <div class="mt-5 grid items-end gap-8 lg:grid-cols-[minmax(0,800px)_300px] lg:justify-between mb-14">
         <div class="flex-1">
           <div class="flex items-center gap-4 mb-4">
-            <span class="text-[36px] lg:text-[48px] font-volkhov text-[#cd5005] font-bold leading-none">04</span>
+            <span class="font-volkhov text-[48px] font-bold leading-none text-[#DF6951] lg:text-[60px]">04</span>
             <span
-              class="text-[14px] lg:text-[16px] font-roboto text-[#396477] uppercase tracking-[0.1em] font-semibold">FINDING
+              class="font-body text-[14px] font-semibold uppercase tracking-[0.18em] text-[#3D687C] lg:text-[16px]">FINDING
               SUPPORT. NEXT ACTION</span>
           </div>
-          <h2 class="font-volkhov text-black text-[36px] lg:text-[56px] leading-tight font-bold">
+          <h2 class="mt-5 font-volkhov text-[48px] font-semibold leading-[0.95] text-black sm:text-[60px] lg:text-[64px]">
             Ready to take <span class="text-[#cd5005] italic font-normal">the next step?</span>
           </h2>
         </div>
-        <div class="flex-1 lg:max-w-md lg:border-l-2 lg:border-gray-200 lg:pl-8">
+        <div class="border-l border-[#C6C6CD] pl-7 pb-1">
           <p class="font-roboto text-gray-700 text-[16px] lg:text-[18px] leading-relaxed">
             Three direct routes - pick the one closest to where you are right now.
           </p>
