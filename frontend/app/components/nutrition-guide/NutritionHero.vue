@@ -1,319 +1,287 @@
 <template>
-  <section class="nutrition-hero">
-    <!-- TEXT -->
-    <div class="hero-copy">
-      <h1>
-        Your family’s health,
-        <span>made simple</span>
-      </h1>
+  <section class="nutrition-hero-section">
+    <div class="nutrition-hero-inner">
+      <!-- HERO CARD -->
+      <div class="hero-card">
+        <div class="hero-copy">
+          <h1>
+            Your family’s health,
+            <span>made simple</span>
+          </h1>
 
-      <p>
-        Feeding a family well on a tight budget is hard. These guides are here
-        to make it a little easier — showing you what food does for your child's
-        body and help you learn a little more about food.
-      </p>
-    </div>
-
-    <!-- GRID -->
-    <div class="hero-grid">
-      <!-- LEFT BIG CARD -->
-      <a href="#body-map" class="hero-main-card">
-        <img
-          src="/images/nutritionhero/nutritionhero-head.png"
-          alt="Interactive body map"
-        />
-
-        <div class="main-content">
-          <h2>Interactive Body Map</h2>
-          <p>See how foods power each body part</p>
-          <span class="explore-btn">Explore</span>
+          <p>
+            Feeding a family well on a tight budget is hard. These guides are
+            here to make it a little easier — showing you what food does for
+            your child’s body and helping you learn a little more about food.
+          </p>
         </div>
-      </a>
 
-      <!-- TOP RIGHT -->
-      <a href="#food-guide" class="hero-side-card">
-        <img
-          src="/images/nutritionhero/nutritionhero-plate.png"
-          alt="Smart nutrition guide"
-        />
-
-        <div class="side-content">
-          <div>
-            <h2>Smart Nutrition Guide</h2>
-            <p>What's really in everyday foods</p>
-          </div>
-
-          <span class="explore-btn">Explore</span>
+        <div class="hero-image-wrap">
+          <img src="/images/nutrition-guide/nh-1.webp" alt="Healthy food bowl" class="hero-image" />
         </div>
-      </a>
+      </div>
 
-      <!-- BOTTOM RIGHT -->
-      <a href="#wellness-guide" class="hero-side-card">
-        <img
-          src="/images/nutritionhero/nutritionhero-tips.png"
-          alt="Wellness tips"
-        />
+      <!-- QUICK ACCESS CARDS -->
+      <div class="quick-access-grid">
+        <article class="quick-card">
+          <img src="/images/nutrition-guide/nh-2.webp" alt="Body map icon" class="quick-icon" />
 
-        <div class="side-content tips-content">
-          <div>
-            <h2>Wellness Tips Bubble</h2>
-            <p>Quick advice that fits your day</p>
-          </div>
+          <h3>Interactive Body Map</h3>
 
-          <span class="explore-btn">Explore</span>
-        </div>
-      </a>
+          <p>
+            See how foods power each body part, from brain to bones.
+          </p>
+
+          <a href="#body-map" class="quick-btn">
+            Explore Map
+          </a>
+        </article>
+
+        <article class="quick-card">
+          <img src="/images/nutrition-guide/nh-3.webp" alt="Food guide icon" class="quick-icon" />
+
+          <h3>Smart Nutrition Guide</h3>
+
+          <p>
+            What's really inside everyday foods for you and your family.
+          </p>
+
+          <a href="#food-guide" class="quick-btn">
+            Explore Guide
+          </a>
+        </article>
+
+        <article class="quick-card">
+          <img src="/images/nutrition-guide/nh-4.webp" alt="Wellness icon" class="quick-icon" />
+
+          <h3>Wellness Tips</h3>
+
+          <p>
+            Quick, bite-sized advice that fits your busy family day.
+          </p>
+
+          <a href="#wellness-guide" class="quick-btn">
+            Explore Tips
+          </a>
+        </article>
+      </div>
     </div>
   </section>
 </template>
 
 <style scoped>
-/* CONTAINER */
-.nutrition-hero {
-  width: min(1360px, calc(100% - 96px));
-  margin: 0 auto;
-  padding: 120px 0 60px;
+.nutrition-hero-section {
+  position: relative;
+  width: 100%;
+  margin-top: -72px;
+  padding: 128px 0 44px;
+  overflow: hidden;
+  background: linear-gradient(180deg,
+      #f8f9ff 0%,
+      #eef3ff 45%,
+      #e6eeff 100%);
 }
 
-/* TEXT */
+.nutrition-hero-inner {
+  width: min(1120px, calc(100% - 120px));
+  margin: 0 auto;
+}
+
+/* HERO */
+.hero-card {
+  display: grid;
+  grid-template-columns: 1.04fr 1fr;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #e6eeff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.hero-copy {
+  min-height: 390px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 54px 56px;
+}
+
 .hero-copy h1 {
   margin: 0;
-  font-family: Volkhov, Georgia, serif;
-  font-size: clamp(42px, 5vw, 64px);
-  line-height: 1.1;
-  color: #07192f;
+  color: #181e4b;
+  font-family: 'Playfair Display', serif;
+  font-size: 46px;
   font-weight: 700;
+  line-height: 1.12;
+  letter-spacing: -0.7px;
 }
 
 .hero-copy h1 span {
-  color: #e94f12;
+  display: block;
+  color: #396477;
 }
 
 .hero-copy p {
-  max-width: 1200px;
-  margin: 20px 0 48px;
-  font-size: clamp(18px, 1.6vw, 22px);
-  line-height: 1.6;
-  color: #333;
+  max-width: 520px;
+  margin: 22px 0 0;
+  color: #45464d;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.62;
 }
 
-/* GRID */
-.hero-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1fr 1fr;
-  gap: 40px;
+.hero-image-wrap {
+  min-height: 390px;
 }
 
-/* CARD BASE */
-.hero-main-card,
-.hero-side-card {
-  position: relative;
-  overflow: hidden;
-  display: block;
-  text-decoration: none;
-  color: white;
-
-  transition: transform 0.35s ease, box-shadow 0.35s ease;
-}
-
-/* LEFT BIG CARD */
-.hero-main-card {
-  grid-row: 1 / span 2;
-  min-height: 520px;
-}
-
-/* RIGHT CARDS */
-.hero-side-card {
-  min-height: 240px;
-}
-
-/* IMAGES */
-.hero-main-card img,
-.hero-side-card img {
+.hero-image {
   width: 100%;
   height: 100%;
+  display: block;
   object-fit: cover;
-
-  transition: transform 0.6s ease;
 }
 
-/* OVERLAY */
-.hero-main-card::after,
-.hero-side-card::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: rgba(7, 25, 47, 0.35);
-
-  transition: background 0.35s ease;
+/* QUICK ACCESS */
+.quick-access-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-top: 28px;
 }
 
-/* LEFT CONTENT */
-.main-content {
-  position: absolute;
-  left: 32px;
-  bottom: 32px;
-  z-index: 2;
-  color: white;
-
-  transition: transform 0.35s ease;
+.quick-card {
+  min-height: 224px;
+  padding: 28px 30px;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
 }
 
-.main-content h2 {
-  margin: 0;
-  font-family: Volkhov, Georgia, serif;
-  font-size: clamp(30px, 3vw, 40px);
-  line-height: 1.1;
-}
-
-.main-content p {
-  margin: 10px 0 18px;
-  font-size: clamp(16px, 1.4vw, 20px);
-}
-
-/* RIGHT CONTENT */
-.side-content {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;   
-
-  padding: 28px;
-}
-
-.side-content h2 {
-  margin: 0;
-  font-family: Volkhov, Georgia, serif;
-  font-size: clamp(28px, 2.5vw, 42px);
-  line-height: 1.1;
-}
-
-.side-content p {
-  margin: 8px 0 0;
-  font-size: clamp(15px, 1.4vw, 20px);
-}
-
-/* BOTTOM RIGHT ALIGNMENT */
-.tips-content {
-  align-items: flex-end;
-}
-
-/* BUTTON */
-.explore-btn {
-  background: #e6f4ff; /* light blue fill */
-  color: #07192f;      /* navy text */
-
-  padding: 10px 16px;
-  border-radius: 999px;
-
-  font-weight: 800;
-  text-transform: uppercase;
-  font-size: 12px;
-  letter-spacing: 0.08em;
-
-  transition: all 0.25s ease;
-  cursor: pointer;
-}
-
-/* =========================
-   ✨ HOVER ANIMATIONS
-   ========================= */
-
-/* CARD LIFT */
-.hero-main-card:hover,
-.hero-side-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 30px 80px rgba(7, 25, 47, 0.25);
-}
-
-/* IMAGE ZOOM */
-.hero-main-card:hover img,
-.hero-side-card:hover img {
-  transform: scale(1.06);
-}
-
-/* DARKER OVERLAY */
-.hero-main-card:hover::after,
-.hero-side-card:hover::after {
-  background: rgba(7, 25, 47, 0.5);
-}
-
-/* TEXT LIFT */
-.hero-main-card:hover .main-content,
-.hero-side-card:hover .side-content {
+.quick-card:hover {
   transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(24, 30, 75, 0.12);
 }
 
-/* BUTTON LIFT */
-.hero-main-card:hover .explore-btn,
-.hero-side-card:hover .explore-btn {
-  transform: translateY(-2px) scale(1.05);
-  box-shadow: 0 6px 20px rgba(0, 122, 255, 0.25);
+.quick-icon {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  display: block;
 }
 
-/* BUTTON HOVER */
-.explore-btn:hover {
-  background: #cfe9ff; /* slightly deeper blue */
-  color: #07192f;
+.quick-card h3 {
+  margin: 18px 0 0;
+  color: #181e4b;
+  font-family: 'Playfair Display', serif;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.32;
 }
 
-/* =========================
-   📱 TABLET
-   ========================= */
+.quick-card p {
+  max-width: 300px;
+  margin: 10px 0 0;
+  color: #45464d;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.48;
+}
+
+.quick-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  margin-top: 16px;
+  padding: 0 24px;
+  border-radius: 8px;
+  background: #000000;
+  color: #ffffff;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  text-decoration: none;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.quick-btn:hover {
+  background: #181e4b;
+  transform: translateY(-1px);
+}
+
+/* TABLET */
 @media (max-width: 1024px) {
-  .nutrition-hero {
-    width: calc(100% - 48px);
+  .nutrition-hero-section {
+    margin-top: -72px;
+    padding-top: 108px;
   }
 
-  .hero-grid {
+  .nutrition-hero-inner {
+    width: min(100% - 72px, 920px);
+  }
+
+  .hero-card {
     grid-template-columns: 1fr;
   }
 
-  .hero-main-card {
-    grid-row: auto;
-    min-height: 420px;
+  .hero-copy {
+    min-height: auto;
+    padding: 44px 36px;
+  }
+
+  .hero-image-wrap {
+    height: 340px;
+    min-height: 340px;
+  }
+
+  .quick-access-grid {
+    grid-template-columns: 1fr;
   }
 }
 
-/* =========================
-   📱 MOBILE
-   ========================= */
+/* DESKTOP NAV HEIGHT */
+@media (min-width: 1024px) {
+  .nutrition-hero-section {
+    margin-top: -100px;
+    padding-top: 148px;
+    padding-bottom: 84px;
+  }
+}
+
+/* MOBILE */
 @media (max-width: 640px) {
-  .nutrition-hero {
-    width: calc(100% - 32px);
-    padding: 60px 0 40px;
+  .nutrition-hero-inner {
+    width: calc(100% - 40px);
+  }
+
+  .hero-copy {
+    padding: 36px 24px;
+  }
+
+  .hero-copy h1 {
+    font-size: 36px;
+    line-height: 1.15;
   }
 
   .hero-copy p {
-    margin-bottom: 32px;
+    font-size: 15px;
+    line-height: 1.55;
   }
 
-  .hero-main-card {
-    min-height: 300px;
+  .hero-image-wrap {
+    height: 280px;
+    min-height: 280px;
   }
 
-  .hero-side-card {
-    min-height: 200px;
-  }
-
-  .main-content {
-    left: 20px;
-    bottom: 20px;
-  }
-
-  .side-content {
-    padding: 20px;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-
-  .explore-btn {
-    align-self: flex-start;
+  .quick-card {
+    padding: 26px 24px;
   }
 }
 </style>

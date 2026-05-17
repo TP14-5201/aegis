@@ -1,74 +1,180 @@
 <template>
-  <section class="w-full bg-sky-tint pt-16 lg:pt-24 pb-12 lg:pb-16 overflow-hidden">
-    <div class="max-w-8xl mx-auto px-5 lg:px-12">
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
-        <!-- Image frame -->
-        <div class="order-2 lg:order-1 flex items-center justify-center">
-          <div class="relative w-full max-w-[620px]">
-  
-            <!-- photo -->
-            <img
-              class="relative z-10 w-full h-auto object-contain"
-              src="/images/landing/landing-4.png"
-              alt="A child eating a meal"
-              loading="lazy"
-            />
+  <section class="section-large relative overflow-hidden bg-chere-slate">
+    <div class="marquee-wrap">
+      <div class="marquee-track">
+        <span class="marquee-text">NUTRITION FIRST&nbsp;&nbsp;&nbsp;</span>
+        <span class="marquee-text">NUTRITION FIRST&nbsp;&nbsp;&nbsp;</span>
+        <span class="marquee-text">NUTRITION FIRST&nbsp;&nbsp;&nbsp;</span>
+      </div>
+    </div>
+
+    <div class="section-inner family-inner relative z-10 grid items-center gap-12 lg:grid-cols-2">
+      <div>
+        <h2 class="font-display text-[44px] font-semibold leading-[54px] text-white lg:text-[64px] lg:leading-[64px]">
+          Is Your Family Eating Right ?
+        </h2>
+
+        <div class="mt-6 flex flex-col gap-6">
+          <div v-for="item in nutritionItems" :key="item.number" class="nutrition-row">
+            <div class="number-badge">
+              {{ item.number }}
+            </div>
+
+            <div>
+              <h3 class="font-display text-[24px] font-semibold leading-8 text-white">
+                {{ item.title }}
+              </h3>
+              <p class="mt-1 max-w-[540px] font-body text-[16px] leading-6 text-white/80">
+                {{ item.text }}
+              </p>
+            </div>
           </div>
         </div>
 
-        <!-- Text -->
-        <div class="order-1 lg:order-2 flex flex-col gap-5 lg:gap-7 lg:pl-4">
-          <!-- small gradient line -->
-          <div class="flex justify-start lg:justify-end">
-            <div class="h-[6px] w-[90px] bg-gradient-to-r from-sky to-coral" />
-          </div>
+        <NuxtLink to="/nutrition-guide" class="btn-blue start-learning-button">
+          Start Learning
+        </NuxtLink>
+      </div>
 
-          <h2
-            class="font-volkhov font-bold text-navy
-                   text-[36px] sm:text-[48px] lg:text-[64px] leading-[1.05]
-                   lg:text-right"
-          >
-            Is your family<br />eating right?
-          </h2>
-
-          <p
-            class="font-roboto font-bold text-coral
-                   text-[24px] lg:text-[30px] leading-tight
-                   lg:text-right"
-          >
-            Empowered Learning
-          </p>
-
-          <p
-            class="font-roboto text-[17px] lg:text-[20px] leading-[1.5]
-                   text-black max-w-xl lg:ml-auto lg:text-right"
-          >
-            Access bite-sized guides on kids' nutrition - from growth and sleep to
-            health conditions and food sensitivities. Every meal counts.
-          </p>
-
-          <div class="mt-2 lg:mt-4 flex lg:justify-end">
-            <NuxtLink
-              to="/nutrition-guide"
-              class="group inline-flex items-center justify-center gap-3
-                    bg-sky rounded-[20px]
-                    h-[64px] lg:h-[76px] px-8 lg:px-12
-                    font-roboto font-extrabold text-black
-                    text-[18px] lg:text-[24px]
-                    shadow-[0_12px_28px_rgba(68,154,196,0.22)]
-                    transition-transform duration-300 ease-out
-                    hover:-translate-y-1
-                    active:translate-y-0"
-            >
-              Start Learning
-              <span class="transition-transform duration-300 group-hover:translate-x-1">
-              </span>
-            </NuxtLink>
-          </div>
-        </div>
+      <div class="nutrition-image-wrap">
+        <img src="/images/landing/landing-4.webp" alt="Nutritious food bowl" class="nutrition-image" />
       </div>
     </div>
   </section>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+const nutritionItems = [
+  {
+    number: 1,
+    title: 'Growth and Development',
+    text: "Understand how nutrition fuels your child's brain, bones and energy at every stage of childhood.",
+  },
+  {
+    number: 2,
+    title: 'Health conditions and Food Sensitivities',
+    text: 'Bite-sized guides tailored to common food allergies, intolerance, and dietary needs in kids.',
+  },
+  {
+    number: 3,
+    title: 'Simple Meal Planning',
+    text: "Affordable, nutritious meal ideas that meet your family's daily needs - without breaking the bank.",
+  },
+]
+</script>
+
+<style scoped>
+.family-inner {
+  min-height: theme('minHeight.section-lg');
+}
+
+.nutrition-row {
+  display: flex;
+  gap: 16px;
+  border-bottom: 1px solid #ffffff33;
+  padding-bottom: 16px;
+}
+
+.number-badge {
+  display: flex;
+  height: 48px;
+  width: 48px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: #ffffff33;
+  font-family: theme('fontFamily.body');
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.start-learning-button {
+  margin-top: 32px;
+}
+
+.marquee-wrap {
+  pointer-events: none;
+  position: absolute;
+  right: 8%;
+  top: 50%;
+  z-index: 0;
+  width: 760px;
+  height: 760px;
+  overflow: visible;
+  opacity: 0.035;
+  transform: translateY(-50%) rotate(90deg);
+}
+
+.marquee-track {
+  display: flex;
+  width: max-content;
+  white-space: nowrap;
+  animation: marquee-scroll 22s linear infinite;
+}
+
+.marquee-text {
+  flex-shrink: 0;
+  color: #ffffff;
+  font-family: theme('fontFamily.display');
+  font-size: clamp(150px, 16vw, 240px);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -2px;
+}
+
+@keyframes marquee-scroll {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-33.333%);
+  }
+}
+
+.nutrition-image-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nutrition-image {
+  width: clamp(440px, 40vw, 560px);
+  height: clamp(440px, 40vw, 560px);
+  border-radius: 9999px;
+  object-fit: cover;
+  transform: translateX(24px);
+}
+
+@media (max-width: 1024px) {
+  .family-inner {
+    min-height: auto;
+  }
+
+  .nutrition-image {
+    transform: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .marquee-wrap {
+    left: 0;
+    bottom: -10px;
+    height: 90px;
+    transform: none;
+  }
+
+  .marquee-text {
+    font-size: 96px;
+    line-height: 120px;
+  }
+
+  .nutrition-image {
+    width: 100%;
+    height: auto;
+    max-width: 420px;
+  }
+}
+</style>

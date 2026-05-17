@@ -1,65 +1,76 @@
 <template>
-  <section class="w-full bg-sky-tint py-12 lg:py-20">
-    <div class="max-w-8xl mx-auto px-5 lg:px-12">
-      <h2
-        class="font-volkhov font-bold text-navy
-               text-[30px] sm:text-[36px] lg:text-[48px] leading-tight"
-      >
-        Ready to take the next step?
-      </h2>
-
-      <p class="mt-3 font-roboto font-bold text-coral text-[20px] lg:text-[28px]">
-        Here is where to start
-      </p>
-
-      <div class="mt-10 lg:mt-14 grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
-        <article
-          v-for="card in cards"
-          :key="card.title"
-          class="rounded-[30px] bg-white p-6 lg:p-8 shadow-card flex flex-col h-full transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
-        >
-          <h3 class="font-roboto font-bold text-black text-[22px] lg:text-[28px] leading-tight">
-            {{ card.title }}
-          </h3>
-
-          <p class="mt-3 lg:mt-4 font-roboto text-[15px] lg:text-[16px] text-black leading-relaxed flex-grow">
-            {{ card.desc }}
+  <section class="w-full bg-white pt-10 pb-20 lg:pt-12 lg:pb-32">
+    <div class="section-inner">
+      <!-- Header Area -->
+      <div class="mt-3 grid items-end gap-8 lg:grid-cols-[minmax(0,800px)_300px] lg:justify-between mb-14">
+        <div class="flex-1">
+          <div class="flex items-center gap-4 mb-4">
+            <span class="font-volkhov text-[48px] font-bold leading-none text-[#DF6951] lg:text-[60px]">04</span>
+            <span
+              class="font-body text-[14px] font-semibold uppercase tracking-[0.18em] text-[#3D687C] lg:text-[16px]">FINDING
+              SUPPORT. NEXT ACTION</span>
+          </div>
+          <h2 class="mt-5 font-volkhov text-[48px] font-semibold leading-[0.95] text-black sm:text-[60px] lg:text-[64px]">
+            Ready to take <span class="text-[#cd5005] italic font-normal">the next step?</span>
+          </h2>
+        </div>
+        <div class="border-l border-[#C6C6CD] pl-7 pb-1">
+          <p class="font-roboto text-gray-700 text-[16px] lg:text-[18px] leading-relaxed">
+            Three direct routes - pick the one closest to where you are right now.
           </p>
+        </div>
+      </div>
 
-          <NuxtLink
-            :to="card.to"
-            class="mt-6 lg:mt-8 inline-flex h-[58px] lg:h-[70px] items-center justify-center rounded-[20px]
-                   bg-navy px-6 text-center font-roboto text-[14px] lg:text-[15px] font-bold text-white
-                   shadow-[0_12px_28px_rgba(20,45,76,0.18)]
-                   transition-all duration-300 ease-out
-                   hover:-translate-y-1 hover:bg-navy-deep hover:shadow-[0_16px_34px_rgba(20,45,76,0.25)]
-                   active:translate-y-0"
-          >
-            {{ card.ctaLabel }}
-          </NuxtLink>
-        </article>
+      <!-- Main Card -->
+      <div class="w-full bg-[#292D3E] rounded-[32px] p-6 sm:p-8 lg:px-14 lg:py-10 relative shadow-soft">
+        <div class="flex flex-col relative">
+          <!-- Vertical Line -->
+          <div class="absolute left-[29.5px] top-[40px] bottom-[40px] w-[1px] bg-coral/40 hidden md:block"></div>
+
+          <!-- Items -->
+          <div v-for="(item, index) in steps" :key="index"
+            class="relative flex flex-col md:flex-row md:items-center gap-6 md:gap-10 py-8 border-b border-white/10 last:border-0">
+            <!-- Number Circle -->
+            <div
+              class="w-[60px] h-[60px] rounded-full border border-[#FFB59F] flex items-center justify-center shrink-0 bg-[#292D3E] z-10 relative mx-auto md:mx-0">
+              <span class="text-[#FFDBD1] font-volkhov font-bold text-[20px]">0{{ index + 1 }}</span>
+            </div>
+
+            <!-- Text Content -->
+            <div class="flex-1 text-center md:text-left">
+              <h3 class="text-[#EEF0FF] font-volkhov font-bold text-[22px] lg:text-[26px] mb-2">{{ item.title }}</h3>
+              <p class="text-[#DCE2F9] font-roboto text-[15px] lg:text-[16px]">{{ item.desc }}</p>
+            </div>
+
+            <!-- Button -->
+            <NuxtLink :to="item.to"
+              class="shrink-0 bg-white hover:bg-[#F8F9FF] text-[#96432A] font-roboto font-bold text-[15px] py-4 px-6 lg:px-8 rounded-[12px] transition-transform duration-300 hover:scale-[1.03] inline-block text-center shadow-button w-full md:w-auto min-w-[240px]">
+              {{ item.ctaLabel }}
+            </NuxtLink>
+          </div>
+        </div>
       </div>
     </div>
   </section>
 </template>
 
 <script setup lang="ts">
-const cards = [
+const steps = [
   {
-    title: 'Find Food Banks near me',
-    desc:  'Find free food support open right now.',
-    to:    '/food-banks',
+    title: 'Find Food Banks near me.',
+    desc: 'Free food support open right now within 5 km of you.',
+    to: '/food-banks',
     ctaLabel: 'Find Nearby Food Banks',
   },
   {
-    title: 'Find groceries at best prices',
+    title: 'Find groceries with nutritional values',
     desc: "Tell us your needs and we'll find you the right groceries.",
     to: '/get-food',
     ctaLabel: 'Explore Groceries',
   },
   {
-    title: 'Know more about nutrition',
-    desc: "Simple guides for your family's health.",
+    title: 'Know more about nutrition.',
+    desc: "Simple guides for your family's health",
     to: '/nutrition-guide',
     ctaLabel: 'Learn about Nutrition',
   },

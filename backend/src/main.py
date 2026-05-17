@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 import json
+import os
 from typing import List, Optional
 import math
 from datetime import datetime
 
+import bcrypt
+import httpx
 from fastapi import Depends, FastAPI, HTTPException, Query
 from pydantic import BaseModel
 from fastapi.responses import JSONResponse
@@ -12,15 +15,40 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from src.core.logging import logger
 from src.database import Base, engine, get_db
-from src.models import LgaPopulation, FoodInsecurity, VicLgaBoundary, SupportService, DietIndicator, HealthOutcome, LowCostDiet, LowCostDietHealthOutcome, RecommendedMacronutrientsIntake
-from src.schemas import NearbyServiceOut, FoodInsecurityRegion, LgaStatsOut, DietIndicatorOut, HealthOutcomeOut, LowCostDietOut, LowCostDietHealthOutcomeOut, RecommendedMacronutrientsIntakeOut
-from src.services.nearby_search import DEFAULT_KEYWORDS, find_nearby_support_services
+from src.models import (
+    DietIndicator,
+    FoodInaccessibilityReasons,
+    FoodInsecurity,
+    HealthOutcome,
+    LgaPopulation,
+    LowCostDiet,
+    LowCostDietHealthOutcome,
+    RecommendedMacronutrientsIntake,
+    SupportService,
+    VicLgaBoundary,
+)
+from src.schemas import (
+    DietIndicatorOut,
+    FoodInsecurityRegion,
+    HealthOutcomeOut,
+    IngredientSubstitutesOut,
+    LgaFoodInaccessibilityReasonsOut,
+    LgaStatsOut,
+    LowCostDietHealthOutcomeOut,
+    LowCostDietOut,
+    NearbyServiceOut,
+    RecommendedMacronutrientsIntakeOut,
+)
+from src.services.ingredient_substitution import engine as substitution_engine, SubstituteResult
+from src.services import recommendation_service
+from src.services import personalisation_service
+from src.services.nearby_search import DEFAULT_KEYWORDS, find_nearby_support_services, search_support_service_suburbs
+from src.services.gtfsr import fetch_vehicle_positions, fetch_trip_updates
 from src.utils.opening_hours import is_open_now, _now_in_tz
 
 from sqlalchemy import func, Integer, case, distinct, Numeric
 from sqlalchemy.orm import Session
 from geoalchemy2.functions import ST_AsGeoJSON
-
 
 app = FastAPI(title="Aegis Support Services API", version="0.1.0")
 
@@ -33,8 +61,8 @@ ALLOWED_ORIGINS = [
     "https://cherebowl-underdevelopment.vercel.app",
     "https://cherebowl-dev.vercel.app",
     # Archived version
-    "https://cherebowl-v1.vercel.app"
-    "https://cherebowl-v2.vercel.app"
+    "https://cherebowl-v1.vercel.app",
+    "https://cherebowl-v2.vercel.app",
 ]
 
 app.add_middleware(
@@ -47,8 +75,16 @@ app.add_middleware(
 
 @app.on_event("startup")
 def on_startup() -> None:
-    # Ensure tables exist; seeding is handled elsewhere
     Base.metadata.create_all(bind=engine)
+    db = next(get_db())
+    try:
+        recommendation_service.warm_percentiles(db)
+    except Exception as exc:
+        logger.warning("Could not warm nutrient percentiles at startup: %s", exc)
+    try:
+        substitution_engine.load_index(db)
+    except Exception as exc:
+        logger.warning("Could not load substitution index at startup: %s", exc)
     logger.info("API startup complete; database ready.")
 
 
@@ -60,11 +96,32 @@ def health() -> dict:
 class _LoginRequest(BaseModel):
     password: str
 
-_DEMO_PASSWORD = "password123"
+
+_LOGIN_PASSWORD_HASH_ENV = "LOGIN_PASSWORD_HASH"
+
+
+def _get_login_password_hash() -> str:
+    print( os.getenv(_LOGIN_PASSWORD_HASH_ENV, "").strip())
+    return os.getenv(_LOGIN_PASSWORD_HASH_ENV, "").strip()
+
 
 @app.post("/auth/login")
 def auth_login(body: _LoginRequest):
-    if body.password == _DEMO_PASSWORD:
+    password_hash = _get_login_password_hash()
+    if not password_hash:
+        logger.error("%s is not configured", _LOGIN_PASSWORD_HASH_ENV)
+        raise HTTPException(status_code=503, detail="Login is not configured")
+
+    try:
+        is_valid = bcrypt.checkpw(
+            body.password.encode("utf-8"),
+            password_hash.encode("utf-8"),
+        )
+    except ValueError:
+        logger.error("%s is not a valid bcrypt hash", _LOGIN_PASSWORD_HASH_ENV)
+        raise HTTPException(status_code=503, detail="Login is not configured")
+
+    if is_valid:
         return {"success": True}
     raise HTTPException(status_code=401, detail="Incorrect password")
 
@@ -75,10 +132,11 @@ def get_lga_boundaries(db: Session = Depends(get_db)) -> dict:
     try:
         rows = (
             db.query(
+                VicLgaBoundary.lga_pid,
                 VicLgaBoundary.lga_name,
                 ST_AsGeoJSON(VicLgaBoundary.geometry).label("geojson"),
             )
-            .distinct(VicLgaBoundary.lga_name)
+            .distinct(VicLgaBoundary.lga_pid)
             .all()
         )
 
@@ -90,7 +148,7 @@ def get_lga_boundaries(db: Session = Depends(get_db)) -> dict:
             features.append(
                 {
                     "type": "Feature",
-                    "properties": {"lga_name": row.lga_name},
+                    "properties": {"lga_name": row.lga_name, "lga_pid": row.lga_pid},
                     "geometry": geometry,
                 }
             )
@@ -112,7 +170,7 @@ def get_lga_boundaries(db: Session = Depends(get_db)) -> dict:
 
 @app.get("/lga/stats", response_model=List[LgaStatsOut])
 def get_lga_stats(db: Session = Depends(get_db)) -> List[dict]:
-    """Return population, gendered food insecurity averages, and emergency service counts per LGA."""
+    """Return population, combined food insecurity percentage, and emergency service counts per LGA."""
     try:
         men_pct = func.coalesce(
             func.round(
@@ -150,8 +208,7 @@ def get_lga_stats(db: Session = Depends(get_db)) -> List[dict]:
                 LgaPopulation.lga_pid,
                 LgaPopulation.lga_name,
                 LgaPopulation.pop_2024_total,
-                men_pct.label("men_pct"),
-                women_pct.label("women_pct"),
+                (men_pct + women_pct).label("food_insecurity_pct"),
                 emergency_services_count.label("emergency_services_count"),
             )
             .outerjoin(FoodInsecurity, FoodInsecurity.lga_pid == LgaPopulation.lga_pid)
@@ -162,9 +219,9 @@ def get_lga_stats(db: Session = Depends(get_db)) -> List[dict]:
 
         return [
             {
+                "lga_pid": row.lga_pid,
                 "lga_name": row.lga_name,
-                "men_pct": float(row.men_pct),
-                "women_pct": float(row.women_pct),
+                "food_insecurity_pct": float(row.food_insecurity_pct),
                 "pop_2024_total": row.pop_2024_total,
                 "emergency_services_count": int(row.emergency_services_count),
             }
@@ -173,6 +230,51 @@ def get_lga_stats(db: Session = Depends(get_db)) -> List[dict]:
     except Exception as exc:
         logger.exception("Failed to fetch LGA stats: %s", exc)
         raise HTTPException(status_code=500, detail="Internal error fetching LGA stats")
+
+
+def _unknown_if_missing(value):
+    if value is None:
+        return "Unknown"
+    try:
+        if math.isnan(value):
+            return "Unknown"
+    except TypeError:
+        pass
+    return value
+
+
+@app.get("/lga/food-inaccessibility-reasons", response_model=List[LgaFoodInaccessibilityReasonsOut])
+def get_lga_food_inaccessibility_reasons(db: Session = Depends(get_db)) -> List[dict]:
+    """Return food inaccessibility reason percentages by LGA."""
+    try:
+        rows = (
+            db.query(
+                FoodInaccessibilityReasons.lga_pid,
+                FoodInaccessibilityReasons.limited_variety,
+                FoodInaccessibilityReasons.too_expensive,
+                FoodInaccessibilityReasons.wrong_quality,
+                FoodInaccessibilityReasons.transport_gap,
+            )
+            .order_by(FoodInaccessibilityReasons.lga_pid)
+            .all()
+        )
+
+        return [
+            {
+                "lga_pid": row.lga_pid,
+                "limited_variety": _unknown_if_missing(row.limited_variety),
+                "too_expensive": _unknown_if_missing(row.too_expensive),
+                "wrong_quality": _unknown_if_missing(row.wrong_quality),
+                "transport_gap": _unknown_if_missing(row.transport_gap),
+            }
+            for row in rows
+        ]
+    except Exception as exc:
+        logger.exception("Failed to fetch LGA food inaccessibility reasons: %s", exc)
+        raise HTTPException(
+            status_code=500,
+            detail="Internal error fetching LGA food inaccessibility reasons",
+        )
 
 
 @app.get("/services", response_model=List[NearbyServiceOut])
@@ -224,7 +326,6 @@ def get_all_services(
     except Exception as exc:
         logger.exception("Failed to fetch all services: %s", exc)
         raise HTTPException(status_code=500, detail="Internal error fetching services")
-
 
 @app.get("/nearby", response_model=List[NearbyServiceOut])
 def get_nearby_services(
@@ -417,3 +518,230 @@ def get_all_macronutrient_goals(db: Session = Depends(get_db)):
             status_code=500,
             detail="Internal error fetching recommended macronutrients"
         )
+
+
+# ---------------------------------------------------------------------------
+# Ingredient Substitution
+# ---------------------------------------------------------------------------
+
+def _result_to_dict(result: SubstituteResult) -> dict:
+    """Serialise a SubstituteResult dataclass into a JSON-serialisable dict."""
+
+    def _slot(s):
+        if s is None:
+            return None
+        return {
+            "ingredient_code": s.ingredient_code,
+            "product_name": s.product_name,
+            "sub_category": s.sub_category,
+            "health_benefits": s.health_benefits,
+            "retail_price": s.retail_price,
+            "nutrition_grade": s.nutrition_grade,
+            "proteins_100g": s.proteins_100g,
+            "fat_100g": s.fat_100g,
+            "carbohydrates_100g": s.carbohydrates_100g,
+            "energy_100g": s.energy_100g,
+            "similarity_score": s.similarity_score,
+            "objective_score": s.objective_score,
+        }
+
+    return {
+        "query_code": result.query_code,
+        "query_name": result.query_name,
+        "budget": _slot(result.budget),
+        "nutrition": _slot(result.nutrition),
+        "balanced": _slot(result.balanced),
+        "error": result.error,
+    }
+
+
+@app.get(
+    "/ingredients/{ingredient_code}/substitutes",
+    response_model=IngredientSubstitutesOut,
+    summary="Smart Ingredient Switch",
+    description=(
+        "Return three curated substitutes for a given ingredient: "
+        "Budget (cheapest), Nutrition (highest Nutri-Score / protein), "
+        "and Balanced (best price-to-nutrition ratio)."
+    ),
+    tags=["ingredients"],
+)
+def get_ingredient_substitutes(
+    ingredient_code: str,
+    db: Session = Depends(get_db),
+) -> dict:
+    """
+    Two-stage retrieval-ranking:
+    1. FAISS ANN (K=50) filtered by functional food role.
+    2. Three deterministic scorers for Budget / Nutrition / Balanced.
+    """
+    try:
+        result = substitution_engine.get_substitutes(ingredient_code, db)
+        return _result_to_dict(result)
+    except Exception as exc:
+        logger.exception("Substitution engine error for '%s': %s", ingredient_code, exc)
+        raise HTTPException(
+            status_code=500,
+            detail="Internal error generating ingredient substitutes",
+        )
+
+
+# ---------------------------------------------------------------------------
+# Weather — proxied from backend so the API key never reaches the browser
+# ---------------------------------------------------------------------------
+
+_OPENWEATHER_KEY = os.getenv("OPENWEATHER_API_KEY", "")
+
+@app.get("/weather")
+async def get_weather(lat: float = Query(...), lon: float = Query(...)):
+    if not _OPENWEATHER_KEY:
+        raise HTTPException(status_code=503, detail="Weather service not configured")
+    url = (
+        f"https://api.openweathermap.org/data/2.5/weather"
+        f"?lat={lat}&lon={lon}&appid={_OPENWEATHER_KEY}&units=metric"
+    )
+    async with httpx.AsyncClient(timeout=8) as client:
+        try:
+            r = await client.get(url)
+            r.raise_for_status()
+        except httpx.HTTPStatusError as exc:
+            raise HTTPException(status_code=502, detail=f"OpenWeather error: {exc.response.status_code}")
+        except Exception as exc:
+            logger.exception("Weather fetch failed: %s", exc)
+            raise HTTPException(status_code=502, detail="Could not fetch weather data")
+    data = r.json()
+    return {
+        "temp": round(data["main"]["temp"]),
+        "feels_like": round(data["main"]["feels_like"]),
+        "rain_mm": round(data.get("rain", {}).get("1h", 0), 1),
+        "wind_kph": round(data["wind"]["speed"] * 3.6, 1),
+        "description": data["weather"][0]["description"].capitalize(),
+        "icon": data["weather"][0]["icon"],
+    }
+
+
+# ---------------------------------------------------------------------------
+# GTFSR — real-time vehicle positions + trip updates (proxied from backend
+# so the API key never reaches the browser)
+# ---------------------------------------------------------------------------
+
+@app.get("/gtfsr/vehicles")
+async def gtfsr_vehicles(route_ids: Optional[str] = None):
+    """Return live vehicle positions, optionally filtered by comma-separated route IDs."""
+    try:
+        vehicles = await fetch_vehicle_positions()
+        if route_ids:
+            ids = set(route_ids.split(","))
+            vehicles = [v for v in vehicles if v.get("route_id") in ids]
+        return vehicles
+    except Exception as exc:
+        logger.exception("GTFSR vehicle positions error: %s", exc)
+        raise HTTPException(status_code=502, detail="Could not fetch vehicle positions from GTFSR feed")
+
+
+@app.get("/gtfsr/trip-update")
+async def gtfsr_trip_update(trip_id: str, mode: str = "train"):
+    """Return real-time stop_time_updates for a specific trip.
+    mode: train | tram | bus | vline
+    """
+    try:
+        updates = await fetch_trip_updates(trip_id, mode=mode)
+        return updates
+    except Exception as exc:
+        logger.exception("GTFSR trip update error for trip %s: %s", trip_id, exc)
+        raise HTTPException(status_code=502, detail="Could not fetch trip updates from GTFSR feed")
+
+
+# ---------------------------------------------------------------------------
+# Recommendations — value-based ingredient ranking
+# ---------------------------------------------------------------------------
+
+class RecommendationRequest(BaseModel):
+    budget: float
+    people: int
+    days: int
+    description: Optional[str] = None
+    dietary_goal: Optional[str] = None
+    dietary_needs: List[str] = []
+
+
+class ScoredIngredient(BaseModel):
+    ingredient_code: str
+    product_name: str
+    sub_category: str
+    retail_price: float
+    health_score: float
+    rec_score: float
+    nutrient_badges: List[str] = []
+
+
+class RecommendationResponse(BaseModel):
+    ingredients: List[ScoredIngredient]
+    budget_per_dish_per_person: float
+
+
+@app.post(
+    "/recommendations",
+    response_model=RecommendationResponse,
+    summary="Budget-aware ingredient recommendations",
+    tags=["recommendations"],
+)
+def get_recommendations(
+    body: RecommendationRequest,
+    bag_size: int = Query(default=15, ge=5, le=40),
+    db: Session = Depends(get_db),
+) -> dict:
+    """
+    Score all ingredients for the user's planner profile and return globally
+    ranked top items (up to bag_size, max 3 per sub_category), ranked by
+    rec_score (or final_score when a description is provided).
+
+    rec_score = 0.50 × affordability + 0.30 × health + 0.20 × nutrient_density.
+    Dietary incompatibility and prices above budget/5 are hard-vetoed to 0.
+    health_score is returned normalised to [0, 1].
+    """
+    description = body.description and body.description.strip()
+    dietary_goal = body.dietary_goal and body.dietary_goal.strip()
+    combined_text = " ".join(filter(None, [description, dietary_goal])) or None
+
+    if combined_text:
+        preferences = personalisation_service.extract_preferences(combined_text)
+        scored = recommendation_service.score_ingredients_with_preferences(
+            db=db,
+            budget=body.budget,
+            people=body.people,
+            days=body.days,
+            dietary_needs=body.dietary_needs,
+            preferences=preferences,
+            description=combined_text,
+        )
+        score_col = "final_score"
+    else:
+        scored = recommendation_service.score_ingredients(
+            db=db,
+            budget=body.budget,
+            people=body.people,
+            days=body.days,
+            dietary_needs=body.dietary_needs,
+        )
+        score_col = "rec_score"
+
+    bdpp = body.budget / max(body.people, 1) / max(body.days, 1) / 3
+
+    viable = scored[scored[score_col] > 0]
+    top = recommendation_service.select_bag(viable, bag_size=bag_size, max_per_category=3, score_col=score_col)
+
+    ingredients = [
+        {
+            "ingredient_code": row["ingredient_code"],
+            "product_name":    row["product_name"],
+            "sub_category":    row["sub_category"] or "",
+            "retail_price":    float(row["retail_price"]),
+            "health_score":    float(row["final_health_score"] or 0.0) / 100.0,
+            "rec_score":       float(row[score_col]),
+            "nutrient_badges": row["nutrient_badges"],
+        }
+        for _, row in top.iterrows()
+    ]
+
+    return {"ingredients": ingredients, "budget_per_dish_per_person": bdpp}

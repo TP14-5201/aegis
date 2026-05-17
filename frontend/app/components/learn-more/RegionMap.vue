@@ -1,51 +1,67 @@
 <template>
-  <section class="w-full bg-white py-12 lg:py-20">
-    <div class="max-w-8xl mx-auto px-5 lg:px-12">
-      <!-- Section heading -->
-      <p
-        class="font-roboto font-bold text-coral text-[16px] lg:text-[20px] tracking-[2px] uppercase"
-      >
-        Around Us
-      </p>
-      <h2
-        class="mt-3 font-volkhov font-bold text-navy
-               text-[28px] sm:text-[36px] lg:text-[48px] leading-tight"
-      >
-        It's happening right here
-      </h2>
-      <p class="mt-4 font-roboto text-[16px] lg:text-[20px] text-black max-w-4xl leading-relaxed">
-        Every region in Victoria tells a different story. Click yours to see the
-        full picture — food insecurity rates, people affected, and the food banks
-        trying to help.
-      </p>
+  <section class="section-large bg-white">
+    <div class="section-inner pb-16 lg:min-h-0">
+      <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8">
+        <!-- Left Content -->
+        <div class="max-w-[760px]">
+          <div class="flex items-center gap-4">
+            <span class="text-[#DF6951] text-5xl lg:text-6xl font-playfair font-bold">
+              01
+            </span>
 
-      <!-- Search row -->
-      <div class="mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4">
-        <div class="relative flex-1 sm:flex-[2]">
+            <h2
+              class="text-[#3D687C] font-bold uppercase tracking-widest text-[14px] lg:text-[16px]"
+            >
+              Around us . Victoria
+            </h2>
+          </div>
+
+          <h3
+            class="mt-4 font-playfair font-bold text-black text-[56px] leading-[1.05]"
+          >
+            It's happening
+            <span class="text-[#DF6951] italic font-playfair font-normal">
+              right here.
+            </span>
+          </h3>
+        </div>
+
+        <!-- Right Paragraph -->
+        <div
+          class="lg:w-[460px] border-l border-[#C6C6CD] pl-6 mt-6 lg:mb-0"
+        >
+          <p class="text-black text-[16px]">
+            Every region in Victoria tells a different story. Click a category on
+            the left to know more about the regions affected. Click any region to
+            read its story on the right.
+          </p>
+        </div>
+      </div>
+
+
+      <div class="mt-7 flex flex-col gap-3 lg:flex-row">
+        <div class="relative flex-1">
           <input
             v-model="searchQuery"
             type="text"
-            placeholder="Enter your LGA (e.g. Melbourne)"
-            class="w-full h-[52px] bg-white border border-gray-300 rounded-[14px] px-5 pl-12
-                   text-navy placeholder-gray-400 font-roboto text-[15px]
-                   focus:outline-none focus:border-sky-active focus:ring-2 focus:ring-sky-active/20"
+            placeholder="Mount Alexander"
+            class="h-[50px] w-full rounded-[6px] border border-[#C3C5D9] bg-white px-5 pl-12 font-roboto text-[14px]
+                   text-[#131B2E] region-card-shadow outline-none transition placeholder:text-[#6B7280]
+                   focus:border-[#0052FF] focus:ring-2 focus:ring-[#B5DCFF99]"
             @input="filterLgas"
             @focus="showDropdown = filteredLgas.length > 0"
             @blur="onSearchBlur"
           />
-          <!-- Search icon -->
-          <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" stroke-linecap="round" />
-          </svg>
-          <!-- Autocomplete dropdown -->
+          <Search class="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#434656]" :stroke-width="2" />
+
           <ul
             v-if="showDropdown && filteredLgas.length"
-            class="absolute z-30 w-full bg-white border border-gray-200 rounded-[14px] mt-2 max-h-60 overflow-y-auto shadow-card"
+            class="absolute z-30 mt-2 max-h-60 w-full overflow-y-auto rounded-[8px] border border-[#C3C5D9] bg-white shadow-card"
           >
             <li
               v-for="lga in filteredLgas"
               :key="lga"
-              class="px-5 py-3 text-navy hover:bg-sky-tint cursor-pointer font-roboto text-[15px]"
+              class="cursor-pointer px-5 py-3 font-roboto text-[15px] text-[#131B2E] hover:bg-[#B5DCFF54]"
               @mousedown.prevent="selectLgaFromSearch(lga)"
             >
               {{ lga }}
@@ -54,234 +70,239 @@
         </div>
 
         <button
-          class="h-[52px] flex items-center justify-center gap-2 px-5 sm:px-6
-                 bg-white border border-gray-300 rounded-[14px]
-                 text-navy font-roboto font-semibold text-[14px]
-                 hover:bg-sky-tint transition-colors disabled:opacity-50"
+          class="flex h-[46px] items-center justify-center gap-2 rounded-[6px] bg-[#B5DCFF99] px-6
+                 font-roboto text-[13px] font-semibold text-[#131B2E] transition hover:bg-[#B5DCFF] disabled:opacity-60 lg:h-[44px]"
           :disabled="isLoadingLocation"
           @click="useMyLocation"
         >
-          <span v-if="isLoadingLocation" class="inline-block w-4 h-4 border-2 border-navy border-t-transparent rounded-full animate-spin" />
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="12" r="3" stroke="navy" stroke-width="2"/>
-            <path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="navy" stroke-width="2" stroke-linecap="round"/>
-          </svg>
+          <span v-if="isLoadingLocation" class="inline-block h-4 w-4 animate-spin rounded-full border-2 border-[#131B2E] border-t-transparent" />
+          <LocateFixed v-else class="h-4 w-4" :stroke-width="2" />
           Use My Location
         </button>
 
         <button
-          v-if="selectedLgaName"
-          class="h-[52px] flex items-center justify-center gap-2 px-5 sm:px-6
-                 bg-navy hover:bg-navy-deep rounded-[14px]
-                 text-white font-roboto font-semibold text-[14px] transition-colors"
+          class="flex h-[46px] items-center justify-center rounded-[6px] bg-black px-7
+                 font-roboto text-[13px] font-semibold text-white transition hover:bg-[#131B2E] disabled:cursor-not-allowed disabled:opacity-50 lg:h-[44px]"
+          :disabled="!selectedLgaName"
           @click="resetMap"
         >
-          Reset Map
+          Reset
         </button>
       </div>
 
-      <!-- Metric toggle pills (cherebowl style) -->
-      <div class="mt-6 flex flex-wrap gap-3">
-        <button
-          v-for="m in metrics"
-          :key="m.key"
-          class="px-5 lg:px-6 h-11 rounded-[20px] shadow-nav
-                 font-roboto font-semibold text-[14px] lg:text-[15px]
-                 text-white whitespace-nowrap transition-transform duration-150 hover:scale-[1.03]"
-          :class="currentMetric === m.key ? 'ring-4 ring-offset-2' : 'opacity-90'"
-          :style="{
-            backgroundColor: m.color,
-            '--tw-ring-color': m.color + '55',
-          }"
-          @click="setMetric(m.key)"
-        >
-          {{ m.label }}
-        </button>
-      </div>
+      <div class="mt-6 grid grid-cols-1 gap-x-5 gap-y-4 lg:grid-cols-[230px_minmax(0,1fr)]">
+        <aside class="flex h-full flex-col justify-between lg:row-span-2">
+          <div>
+            <p class="mb-5 font-roboto text-[12px] font-bold uppercase tracking-[0.14em] text-[#434656]">
+              Headline Data
+            </p>
+            <div class="space-y-4">
+              <button
+                v-for="m in metrics"
+                :key="m.key"
+                class="group flex h-[90px] w-full items-center gap-4 rounded-[8px] px-6 text-left region-card-shadow transition duration-200 hover:-translate-y-0.5"
+                :class="currentMetric === m.key ? 'ring-2 ring-[#131B2E]/20' : ''"
+                :style="{ backgroundColor: m.color }"
+                @click="setMetric(m.key)"
+              >
+                <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-[4px] bg-white/20 text-white">
+                  <component :is="m.icon" class="h-5 w-5" :stroke-width="2" />
+                </span>
+                <span>
+                  <span class="block font-roboto text-[12px] font-bold uppercase leading-tight tracking-[0.08em] text-white">
+                    {{ m.eyebrow }}
+                  </span>
+                  <span class="block font-volkhov text-[18px] font-bold leading-tight text-white">
+                    {{ m.label }}
+                  </span>
+                </span>
+              </button>
+            </div>
+          </div>
 
-      <!-- Map + stat cards layout -->
-      <div class="mt-8 lg:mt-10 grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-6 lg:gap-8">
-        <!-- Map container -->
-        <div class="relative w-full h-[420px] sm:h-[500px] lg:h-[700px] bg-[#E8EEF4] rounded-[20px] overflow-hidden border border-gray-200 shadow-card">
-          <!-- Loading overlay -->
+          <div class="h-px bg-[#C3C5D9]" />
+
+          <div>
+            <p class="mb-5 font-roboto text-[12px] font-bold uppercase tracking-[0.14em] text-[#434656]">
+              Why? - Barriers
+            </p>
+            <div class="space-y-3">
+              <div
+                v-for="reason in barrierMetrics"
+                :key="reason.key"
+                class="flex h-[66px] w-full items-center gap-3 rounded-[6px] border border-[#C3C5D9] bg-white px-4 text-left region-card-shadow"
+              >
+                <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-[6px] bg-[#B5DCFF99] text-[#131B2E]">
+                  <component :is="reason.icon" class="h-4 w-4" :stroke-width="2" />
+                </span>
+                <span>
+                  <span class="block font-roboto text-[11px] font-bold uppercase tracking-[0.08em] text-[#434656]">
+                    {{ reason.eyebrow }}
+                  </span>
+                  <span class="block font-roboto text-[13px] font-extrabold leading-tight text-[#131B2E]">
+                    {{ reason.label }}
+                  </span>
+                </span>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <div class="relative h-[420px] w-full overflow-hidden rounded-[10px] border border-[#C3C5D9] bg-[#B5DCFF99] shadow-sm sm:h-[520px] lg:h-[520px]">
           <div
             v-if="isMapLoading"
-            class="absolute inset-0 z-10 bg-white/95 backdrop-blur-sm flex flex-col items-center justify-center gap-4"
+            class="absolute inset-0 z-20 flex flex-col items-center justify-center gap-4 bg-white/90 backdrop-blur-sm"
           >
-            <div class="relative w-14 h-14">
-              <div class="absolute inset-0 border-[3px] border-sky rounded-full" />
-              <div class="absolute inset-0 border-[3px] border-t-sky-active rounded-full animate-spin" />
+            <div class="relative h-14 w-14">
+              <div class="absolute inset-0 rounded-full border-[3px] border-[#B5DCFF99]" />
+              <div class="absolute inset-0 animate-spin rounded-full border-[3px] border-t-[#0052FF]" />
             </div>
-            <p class="font-roboto font-bold text-navy">Mapping Victoria…</p>
+            <p class="font-roboto font-bold text-[#131B2E]">Mapping Victoria...</p>
           </div>
 
-          <div ref="mapEl" class="w-full h-full" />
+          <div ref="mapEl" class="h-full w-full" />
 
-          <!-- Map legend -->
-          <div class="absolute bottom-4 left-4 bg-white p-4 rounded-[14px] shadow-card border border-gray-200">
-            <h4 class="font-roboto text-xs font-bold text-navy mb-3 uppercase tracking-wider">
+          <div class="absolute left-4 top-4 z-10 rounded-[6px] bg-white/90 px-5 py-4 shadow-sm">
+            <p class="font-roboto text-[10px] font-bold uppercase tracking-[0.12em] text-[#434656]">Layer</p>
+            <p class="font-volkhov text-[18px] font-bold leading-tight text-[#131B2E]">{{ currentLayerTitle }}</p>
+          </div>
+
+          <div class="absolute right-4 top-4 z-10 flex flex-col overflow-hidden rounded-[6px] border border-[#C3C5D9] bg-white shadow-sm">
+            <button class="flex h-10 w-10 items-center justify-center border-b border-[#C3C5D9] text-[#131B2E] hover:bg-[#B5DCFF54]" aria-label="Zoom in" @click="zoomMapIn">
+              <Plus class="h-4 w-4" :stroke-width="2.5" />
+            </button>
+            <button class="flex h-10 w-10 items-center justify-center border-b border-[#C3C5D9] text-[#131B2E] hover:bg-[#B5DCFF54]" aria-label="Zoom out" @click="zoomMapOut">
+              <Minus class="h-4 w-4" :stroke-width="2.5" />
+            </button>
+            <button class="flex h-10 w-10 items-center justify-center text-[#131B2E] hover:bg-[#B5DCFF54]" aria-label="Reset map view" @click="resetMap">
+              <Home class="h-4 w-4" :stroke-width="2" />
+            </button>
+          </div>
+
+          <div class="absolute bottom-5 left-4 z-10 rounded-[6px] bg-white/90 p-4 shadow-sm">
+            <h4 class="mb-3 font-roboto text-[12px] font-bold uppercase tracking-[0.08em] text-[#434656]">
               {{ legendTitle }}
             </h4>
-            <div class="flex flex-col gap-2 text-[13px] font-medium text-ash">
-              <div class="flex items-center gap-2">
-                <span class="w-3.5 h-3.5 rounded-full" :style="{ backgroundColor: legendColors[0] }" />
-                Low
-              </div>
-              <div class="flex items-center gap-2">
-                <span class="w-3.5 h-3.5 rounded-full" :style="{ backgroundColor: legendColors[1] }" />
-                Medium
-              </div>
-              <div class="flex items-center gap-2">
-                <span class="w-3.5 h-3.5 rounded-full" :style="{ backgroundColor: legendColors[2] }" />
-                High
+            <div class="flex flex-col gap-2 font-roboto text-[12px] font-semibold text-[#434656]">
+              <div v-for="item in legendItems" :key="item.label" class="flex items-center gap-2">
+                <span class="h-3 w-3" :style="{ backgroundColor: item.color }" />
+                {{ item.label }}
               </div>
             </div>
           </div>
+
+          <p class="absolute bottom-5 right-5 z-10 rounded bg-white/30 px-2 py-1 font-roboto text-[9px] text-[#434656]">
+            Mapbox - Victoria LGA boundaries
+          </p>
         </div>
 
-        <!-- Stat cards (cherebowl visual style) -->
-        <div class="flex flex-col gap-5">
-          <!-- Skeleton shimmer while stats are loading -->
-          <div v-if="isStatsLoading" class="flex flex-col gap-5">
-            <div class="rounded-[20px] bg-[#d9d9d94a] shadow-nav p-5 lg:p-6 animate-pulse">
-              <div class="h-4 w-1/2 bg-gray-200 rounded mx-auto mb-3" />
-              <div class="h-10 w-2/3 bg-gray-200 rounded mx-auto mb-2" />
-              <div class="h-3 w-1/3 bg-gray-200 rounded mx-auto" />
+        <div class="grid gap-0 lg:col-start-2 lg:grid-cols-[minmax(0,1fr)_200px_250px]">
+          <div class="rounded-l-[8px] rounded-r-none border border-r-0 border-[#C3C5D9] bg-white px-7 py-7 shadow-card">
+            <div v-if="isStatsLoading" class="animate-pulse space-y-4">
+              <div class="h-3 w-32 rounded bg-[#C3C5D9]" />
+              <div class="h-7 w-56 rounded bg-[#C3C5D9]" />
+              <div class="h-4 w-full rounded bg-[#C3C5D9]" />
+              <div class="h-4 w-2/3 rounded bg-[#C3C5D9]" />
             </div>
-            <div class="rounded-[20px] bg-[#d9d9d94a] shadow-nav p-5 lg:p-6 animate-pulse">
-              <div class="h-4 w-1/2 bg-gray-200 rounded mx-auto mb-3" />
-              <div class="h-10 w-2/3 bg-gray-200 rounded mx-auto mb-4" />
-              <div class="space-y-2">
-                <div class="h-3 w-full bg-gray-200 rounded" />
-                <div class="h-3 w-full bg-gray-200 rounded" />
-              </div>
-            </div>
-            <div class="rounded-[20px] bg-[#d9d9d94a] shadow-nav p-5 lg:p-6 animate-pulse">
-              <div class="h-4 w-1/2 bg-gray-200 rounded mx-auto mb-3" />
-              <div class="h-10 w-2/3 bg-gray-200 rounded mx-auto mb-2" />
-              <div class="h-3 w-1/3 bg-gray-200 rounded mx-auto" />
+            <div v-else :class="['picto-fade', pictogramVisible ? 'picto-in' : 'picto-out']">
+              <p class="font-roboto text-[11px] font-bold uppercase tracking-[0.12em] text-[#434656]">
+                Now Viewing
+              </p>
+              <h3 class="mt-2 font-volkhov text-[24px] font-bold leading-tight text-[#DF6951]">
+                {{ selectedLgaStat?.lga_name || 'Select a region' }}
+              </h3>
+              <p class="mt-7 font-roboto text-[15px] leading-6 text-[#434656]">
+                {{ selectedStory }}
+              </p>
             </div>
           </div>
 
-          <!-- Empty state (stats loaded, no LGA selected) -->
-          <div
-            v-else-if="!selectedLgaStat"
-            class="flex flex-col items-center justify-center text-center p-8 bg-sky-tint/40 rounded-[20px] border border-dashed border-sky min-h-[200px]"
-          >
-            <p class="font-roboto text-ash text-[16px] leading-relaxed">
-              Select a region on the map or search above to view local statistics.
+          <div class="flex min-h-[160px] flex-col items-center justify-center rounded-l-none rounded-r-[8px] border border-[#131B2E] bg-[#B5DCFF54] px-5 py-6 text-center">
+            <p class="font-roboto text-[12px] font-bold uppercase tracking-[0.08em] text-[#434656]">
+              {{ selectedMetricLabel }}
+            </p>
+            <p class="mt-5 font-volkhov text-[50px] font-bold leading-none text-[#DF6951]">
+              {{ selectedMetricDisplay }}<span v-if="selectedMetricSuffix" class="font-normal">{{ selectedMetricSuffix }}</span>
             </p>
           </div>
 
-          <template v-else>
-            <!-- Food insecurity -->
-            <div class="rounded-[20px] bg-[#d9d9d94a] shadow-nav p-5 lg:p-6 text-center">
-              <p class="font-roboto font-bold text-black text-[14px] lg:text-[16px] tracking-wider uppercase">
-                Food Insecurity
-              </p>
-              <p class="mt-2 font-roboto font-extrabold text-black text-[36px] lg:text-[48px] leading-none">
-                {{ displayFoodInsecurity }}%
-              </p>
-              <p class="mt-2 font-roboto text-ash text-[14px] lg:text-[16px]">
-                in {{ selectedLgaStat.lga_name }}
-              </p>
-            </div>
-
-            <!-- People affected (with men/women gauges) -->
-            <div class="rounded-[20px] bg-[#d9d9d94a] shadow-nav p-5 lg:p-6">
-              <p class="font-roboto font-bold text-black text-[14px] lg:text-[16px] tracking-wider uppercase text-center">
-                People Affected
-              </p>
-              <p class="mt-2 font-roboto font-extrabold text-black text-[32px] lg:text-[40px] leading-none text-center">
-                {{ displayPeopleAffected.toLocaleString() }}
-              </p>
-
-              <div class="mt-4 space-y-3" :class="['picto-fade', pictogramVisible ? 'picto-in' : 'picto-out']">
-                <!-- Men row -->
-                <div>
-                  <div class="flex justify-between font-roboto text-[12px] font-bold text-navy mb-1 px-1">
-                    <span>MEN</span>
-                    <span>{{ menNeedRatio }}/10</span>
-                  </div>
-                  <div class="flex gap-1 justify-center">
-                    <svg
-                      v-for="n in 10"
-                      :key="'m' + n"
-                      class="w-5 h-5 fill-current transition-colors"
-                      :class="n <= menNeedRatio ? 'text-navy' : 'text-gray-300'"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M12 2C10.62 2 9.5 3.12 9.5 4.5C9.5 5.88 10.62 7 12 7C13.38 7 14.5 5.88 14.5 4.5C14.5 3.12 13.38 2 12 2ZM12 9C9.33 9 4 10.34 4 13V22H8V16H16V22H20V13C20 10.34 14.67 9 12 9Z" />
-                    </svg>
-                  </div>
-                </div>
-
-                <!-- Women row -->
-                <div>
-                  <div class="flex justify-between font-roboto text-[12px] font-bold text-coral mb-1 px-1">
-                    <span>WOMEN</span>
-                    <span>{{ womenNeedRatio }}/10</span>
-                  </div>
-                  <div class="flex gap-1 justify-center">
-                    <svg
-                      v-for="n in 10"
-                      :key="'w' + n"
-                      class="w-5 h-5 fill-current transition-colors"
-                      :class="n <= womenNeedRatio ? 'text-coral' : 'text-gray-300'"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M12 2C10.62 2 9.5 3.12 9.5 4.5C9.5 5.88 10.62 7 12 7C13.38 7 14.5 5.88 14.5 4.5C14.5 3.12 13.38 2 12 2ZM12 9C9.33 9 4 10.34 4 13V22H8V16H16V22H20V13C20 10.34 14.67 9 12 9Z" />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Food banks -->
-            <div class="rounded-[20px] bg-[#d9d9d94a] shadow-nav p-5 lg:p-6 text-center">
-              <p class="font-roboto font-bold text-black text-[14px] lg:text-[16px] tracking-wider uppercase">
-                Food Banks
-              </p>
-              <p class="mt-2 font-roboto font-extrabold text-black text-[36px] lg:text-[48px] leading-none">
-                {{ displayFoodBanks }}
-              </p>
-              <p class="mt-2 font-roboto text-ash text-[14px] lg:text-[16px]">
-                in {{ selectedLgaStat.lga_name }}
-              </p>
-            </div>
-          </template>
+          <div class="ml-4 flex min-h-[160px] flex-col justify-between rounded-[8px] border border-[#131B2E] bg-white px-6 py-7 region-card-shadow">
+            <p class="font-roboto text-[18px] leading-7 text-black">
+              Need food now? Find the nearest open site today.
+            </p>
+            <NuxtLink
+              to="/food-banks"
+              class="mt-5 flex h-[58px] items-center justify-center rounded-[6px] bg-black px-5 font-roboto text-[16px] font-semibold text-white transition hover:bg-[#131B2E]"
+            >
+              View Food Banks
+            </NuxtLink>
+          </div>
         </div>
       </div>
+    </div>
 
-      <!-- Data resources -->
-      <div class="mt-10 lg:mt-12 pt-6 border-t border-gray-200 text-[11px] text-ash">
-        <p class="font-bold uppercase tracking-widest mb-3 text-navy/60">Data Resources Used</p>
-        <div class="flex flex-wrap gap-x-8 gap-y-3">
+    <div class="mt-5 w-full border-t border-[#C3C5D9] bg-[#D5E3FC]">
+      <div class="section-inner py-4 text-left text-[11px] text-[#6B7280]">
+        <p class="mb-3 font-bold uppercase tracking-widest text-[#434656]">
+          Data Resources Used
+        </p>
+
+        <div class="flex flex-wrap items-center gap-x-8 gap-y-3">
           <span class="flex items-center gap-2">
-            <span class="font-semibold text-navy/70">Food Insecurity:</span>
-            <a href="https://vahi.vic.gov.au/reports/victorian-population-health-survey-2023" target="_blank" rel="noopener" class="hover:text-sky-active underline decoration-gray-300 underline-offset-2">
+            <span class="font-semibold text-[#434656]">Food Insecurity:</span>
+            <a
+              href="https://vahi.vic.gov.au/reports/victorian-population-health-survey-2023"
+              target="_blank"
+              rel="noopener"
+              class="underline decoration-[#C3C5D9] underline-offset-2 hover:text-[#0052FF]"
+            >
               VAHI (2023 Survey)
             </a>
           </span>
+
           <span class="flex items-center gap-2">
-            <span class="font-semibold text-navy/70">Emergency Services:</span>
-            <a href="https://data.melbourne.vic.gov.au/explore/dataset/free-and-cheap-support-services-with-opening-hours-public-transport-and-parking-/table/" target="_blank" rel="noopener" class="hover:text-sky-active underline decoration-gray-300 underline-offset-2">
+            <span class="font-semibold text-[#434656]">Emergency Services:</span>
+
+            <a
+              href="https://data.melbourne.vic.gov.au/explore/dataset/free-and-cheap-support-services-with-opening-hours-public-transport-and-parking-/table/"
+              target="_blank"
+              rel="noopener"
+              class="underline decoration-[#C3C5D9] underline-offset-2 hover:text-[#0052FF]"
+            >
               data.melbourne.vic.gov.au
             </a>
+
             <span class="opacity-30">&amp;</span>
-            <a href="https://data.gov.au/data/dataset/emergency-relief-provider-outlets/resource/0e32d958-3796-4dca-8312-489ef7a610f6" target="_blank" rel="noopener" class="hover:text-sky-active underline decoration-gray-300 underline-offset-2">
+
+            <a
+              href="https://data.gov.au/data/dataset/emergency-relief-provider-outlets/resource/0e32d958-3796-4dca-8312-489ef7a610f6"
+              target="_blank"
+              rel="noopener"
+              class="underline decoration-[#C3C5D9] underline-offset-2 hover:text-[#0052FF]"
+            >
               data.gov.au
             </a>
           </span>
+
           <span class="flex items-center gap-2">
-            <span class="font-semibold text-navy/70">Population by LGA:</span>
-            <a href="https://digital.atlas.gov.au/datasets/digitalatlas::abs-population-and-people-data-by-region-lga-november-2025/about" target="_blank" rel="noopener" class="hover:text-sky-active underline decoration-gray-300 underline-offset-2">
+            <span class="font-semibold text-[#434656]">Population by LGA:</span>
+
+            <a
+              href="https://digital.atlas.gov.au/datasets/digitalatlas::abs-population-and-people-data-by-region-lga-november-2025/about"
+              target="_blank"
+              rel="noopener"
+              class="underline decoration-[#C3C5D9] underline-offset-2 hover:text-[#0052FF]"
+            >
               ABS (Nov 2025)
             </a>
           </span>
         </div>
       </div>
     </div>
+
+    <!-- Spacer for hidden top navigation -->
+    <div class="h-[86px] w-full bg-white" />
+
   </section>
 </template>
 
@@ -291,11 +312,24 @@ import mapboxgl from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import { point } from '@turf/helpers'
 import booleanPointInPolygon from '@turf/boolean-point-in-polygon'
+import {
+  BadgeDollarSign,
+  BarChart3,
+  ClipboardX,
+  Home,
+  LocateFixed,
+  Minus,
+  Plus,
+  Search,
+  Store,
+  Truck,
+  UsersRound,
+  WheatOff,
+} from 'lucide-vue-next'
 
 const config = useRuntimeConfig()
 const API_URL = config.public.apiBase || 'http://127.0.0.1:8000'
 
-// ── Refs / state ──────────────────────────────────────────────────────────
 const mapEl = ref(null)
 let mapInstance = null
 let lgaGeojson = null
@@ -303,6 +337,7 @@ let hoveredLgaId = null
 let tooltipPopup = null
 
 const lgaStats = ref([])
+const reasonStats = ref([])
 const selectedLgaName = ref(null)
 const currentMetric = ref('foodInsecurity')
 
@@ -314,60 +349,138 @@ const isLoadingLocation = ref(false)
 const isMapLoading = ref(true)
 const isStatsLoading = ref(true)
 
-// ── Metric definitions (cherebowl palette) ────────────────────────────────
 const metrics = [
-  { key: 'foodInsecurity', label: 'Food Insecurity', color: '#df6951' },  // coral
-  { key: 'foodBanks',       label: 'Food Banks',       color: '#0d400d' },
-  { key: 'peopleAffected',  label: 'People Affected',  color: '#6b88ff' },
+  {
+    key: 'foodInsecurity',
+    eyebrow: 'Food Insecurity',
+    label: 'Rate %',
+    layerLabel: 'Food Insecurity',
+    color: '#DF6951',
+    icon: BarChart3,
+  },
+  {
+    key: 'peopleAffected',
+    eyebrow: 'People Affected',
+    label: 'Adults',
+    layerLabel: 'People Affected',
+    color: '#5F805F',
+    icon: UsersRound,
+  },
+  {
+    key: 'foodBanks',
+    eyebrow: 'Food Banks',
+    label: 'Active sites',
+    layerLabel: 'Food Banks',
+    color: '#B995E5',
+    icon: Store,
+  },
 ]
+
+const barrierMetrics = [
+  {
+    key: 'limited_variety',
+    eyebrow: 'Reason 01',
+    label: 'Limited variety',
+    layerLabel: 'Limited Variety',
+    icon: WheatOff,
+  },
+  {
+    key: 'too_expensive',
+    eyebrow: 'Reason 02',
+    label: 'Too expensive',
+    layerLabel: 'Too Expensive',
+    icon: BadgeDollarSign,
+  },
+  {
+    key: 'wrong_quality',
+    eyebrow: 'Reason 03',
+    label: 'Wrong quality',
+    layerLabel: 'Wrong Quality',
+    icon: ClipboardX,
+  },
+  {
+    key: 'transport_gap',
+    eyebrow: 'Reason 04',
+    label: 'Transport gap',
+    layerLabel: 'Transport Gap',
+    icon: Truck,
+  },
+]
+
+const barrierKeys = new Set()
+
+function getMetricDefinition(key) {
+  return [...metrics, ...barrierMetrics].find(m => m.key === key) || metrics[0]
+}
 
 function setMetric(key) {
   if (currentMetric.value === key) return
   currentMetric.value = key
 }
 
-// ── Search handlers ───────────────────────────────────────────────────────
 function filterLgas() {
   const q = searchQuery.value.trim().toLowerCase()
-  if (!q) { filteredLgas.value = []; showDropdown.value = false; return }
+  if (!q) {
+    filteredLgas.value = []
+    showDropdown.value = false
+    return
+  }
   filteredLgas.value = searchIndex.value.filter(l => l.toLowerCase().includes(q)).slice(0, 12)
   showDropdown.value = filteredLgas.value.length > 0
 }
+
 function selectLgaFromSearch(lga) {
   searchQuery.value = lga
   showDropdown.value = false
   selectLga(lga)
 }
+
 function onSearchBlur() {
-  // Delay so click-on-dropdown registers before close
   setTimeout(() => { showDropdown.value = false }, 150)
 }
 
-// ── Map selection ─────────────────────────────────────────────────────────
 function getFeatureBounds(feature) {
   const bounds = new mapboxgl.LngLatBounds()
   const coords = feature.geometry.type === 'Polygon' ? [feature.geometry.coordinates] : feature.geometry.coordinates
   coords.forEach(polygon => polygon.forEach(ring => ring.forEach(c => bounds.extend(c))))
   return bounds
 }
+
+function normalizeLgaName(name) {
+  return String(name || '')
+    .toLowerCase()
+    .replace(/\s*\(vic\.\)\s*/g, '')
+    .replace(/\s*\((?:c|s|rc|b|shire|city)\)\s*/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
 function selectLga(lgaName) {
-  if (selectedLgaName.value === lgaName) { resetMap(); return }
+  if (selectedLgaName.value === lgaName) {
+    resetMap()
+    return
+  }
   selectedLgaName.value = lgaName
   if (mapInstance && mapInstance.isStyleLoaded() && lgaGeojson) {
-    const feature = lgaGeojson.features.find(f => f.properties.lga_name === lgaName)
+    const lgaKey = normalizeLgaName(lgaName)
+    const feature = lgaGeojson.features.find(f => f.properties.lga_name === lgaName || f.properties.lga_key === lgaKey)
     if (feature) {
       mapInstance.fitBounds(getFeatureBounds(feature), {
-        padding: 60, maxZoom: 10, duration: 1000, essential: true,
+        padding: 60,
+        maxZoom: 10,
+        duration: 1000,
+        essential: true,
       })
     }
     mapInstance.setPaintProperty('lga-fills', 'fill-opacity', [
       'case',
-      ['==', ['get', 'lga_name'], lgaName], 1.0,
+      ['==', ['get', 'lga_key'], lgaKey], 1.0,
       ['boolean', ['feature-state', 'hover'], false], 1.0,
       0.3,
     ])
   }
 }
+
 function resetMap() {
   selectedLgaName.value = null
   searchQuery.value = ''
@@ -386,9 +499,19 @@ function resetMap() {
   }
 }
 
-// ── Geolocation ───────────────────────────────────────────────────────────
+function zoomMapIn() {
+  if (mapInstance) mapInstance.zoomIn({ duration: 300 })
+}
+
+function zoomMapOut() {
+  if (mapInstance) mapInstance.zoomOut({ duration: 300 })
+}
+
 function useMyLocation() {
-  if (!navigator.geolocation) { alert('Geolocation not supported.'); return }
+  if (!navigator.geolocation) {
+    alert('Geolocation not supported.')
+    return
+  }
   isLoadingLocation.value = true
   navigator.geolocation.getCurrentPosition(
     (position) => {
@@ -413,34 +536,53 @@ function useMyLocation() {
   )
 }
 
-// ── Stats / count-up ──────────────────────────────────────────────────────
 const statsMap = computed(() => {
   const m = {}
-  lgaStats.value.forEach(s => { m[s.lga_name] = s })
+  lgaStats.value.forEach((s) => {
+    if (s.lga_pid) m[s.lga_pid] = s
+    m[s.lga_name] = s
+    m[s.lga_key] = s
+  })
   return m
 })
+
+const reasonStatsMap = computed(() => {
+  const m = {}
+  reasonStats.value.forEach((s) => {
+    if (s.lga_pid) m[s.lga_pid] = s
+    if (s.lga_name) m[s.lga_name] = s
+    if (s.lga_key) m[s.lga_key] = s
+  })
+  return m
+})
+
 const selectedLgaStat = computed(() => {
   if (!selectedLgaName.value) return null
-  return statsMap.value[selectedLgaName.value] || null
+  return statsMap.value[selectedLgaName.value] || statsMap.value[normalizeLgaName(selectedLgaName.value)] || null
 })
+
 const foodInsecurityStat = computed(() => {
   if (!selectedLgaStat.value) return 0
-  return Math.round((selectedLgaStat.value.men_pct + selectedLgaStat.value.women_pct) / 2)
+  return Math.round(selectedLgaStat.value.food_insecurity_pct)
 })
+
 const peopleAffectedStat = computed(() => {
   if (!selectedLgaStat.value) return 0
-  const totalPct = (selectedLgaStat.value.men_pct + selectedLgaStat.value.women_pct) / 2
+  const totalPct = selectedLgaStat.value.food_insecurity_pct
   return Math.round((selectedLgaStat.value.pop_2024_total * totalPct) / 100)
 })
+
 const menNeedRatio = computed(() => {
   if (!selectedLgaStat.value) return 0
-  return Math.max(1, Math.min(10, Math.round(selectedLgaStat.value.men_pct / 10)))
+  return Math.max(1, Math.min(10, Math.round(selectedLgaStat.value.food_insecurity_pct / 10)))
 })
+
 const womenNeedRatio = computed(() => {
   if (!selectedLgaStat.value) return 0
-  return Math.max(1, Math.min(10, Math.round(selectedLgaStat.value.women_pct / 10)))
+  return Math.max(1, Math.min(10, Math.round(selectedLgaStat.value.food_insecurity_pct / 10)))
 })
-const foodBanksStat = computed(() => selectedLgaStat.value?.emergency_services_count ?? 0)
+
+const foodBanksStat = computed(() => getFoodBankSites(selectedLgaStat.value))
 
 function useCountUp(targetRef, duration = 700) {
   const display = ref(targetRef.value ?? 0)
@@ -461,48 +603,154 @@ function useCountUp(targetRef, duration = 700) {
   })
   return display
 }
+
 const displayFoodInsecurity = useCountUp(foodInsecurityStat)
 const displayPeopleAffected = useCountUp(peopleAffectedStat)
 const displayFoodBanks = useCountUp(foodBanksStat)
 
-// Pictogram fade on LGA change
+const selectedMetricValue = computed(() => {
+  if (!selectedLgaStat.value) return 0
+  return Math.round(getMetricValue(selectedLgaStat.value, currentMetric.value) ?? 0)
+})
+
+const displaySelectedMetric = useCountUp(selectedMetricValue)
+
+const selectedMetricDisplay = computed(() => displaySelectedMetric.value.toLocaleString())
+
+const selectedMetricSuffix = computed(() => {
+  if (currentMetric.value === 'foodBanks' || currentMetric.value === 'peopleAffected') return ''
+  return '%'
+})
+
+const selectedMetricLabel = computed(() => {
+  if (currentMetric.value === 'foodInsecurity') return 'Food Insecurity Rate'
+  return getMetricDefinition(currentMetric.value).layerLabel
+})
+
+const selectedStory = computed(() => {
+  if (!selectedLgaStat.value) {
+    return 'Select a region on the map or search above to view local statistics.'
+  }
+
+  const name = selectedLgaStat.value.lga_name
+  if (currentMetric.value === 'foodBanks') {
+    return `In ${name}, ${displayFoodBanks.value.toLocaleString()} active food bank sites are listed for people seeking food relief.`
+  }
+  if (currentMetric.value === 'peopleAffected') {
+    return `In ${name}, roughly ${displayPeopleAffected.value.toLocaleString()} adults are estimated to have experienced food insecurity over the past year.`
+  }
+  if (barrierKeys.has(currentMetric.value)) {
+    const value = getMetricValue(selectedLgaStat.value, currentMetric.value)
+    if (value == null) {
+      return `Barrier data for ${name} will appear here once the inaccessibility reasons API is available.`
+    }
+    return `In ${name}, roughly ${Math.round(value)}% of adults report "${getMetricDefinition(currentMetric.value).label.toLowerCase()}" as a barrier to food access.`
+  }
+  return `In ${name}, roughly ${displayFoodInsecurity.value}% of adults report going without enough food at some point over the past year.`
+})
+
 const pictogramVisible = ref(true)
 watch(selectedLgaName, () => {
   pictogramVisible.value = false
   setTimeout(() => { pictogramVisible.value = true }, 280)
 })
 
-// ── Legend / colour ramp ──────────────────────────────────────────────────
+const currentLayerTitle = computed(() => getMetricDefinition(currentMetric.value).layerLabel)
+
 const legendTitle = computed(() => {
-  if (currentMetric.value === 'foodInsecurity') return 'Food Insecurity'
-  if (currentMetric.value === 'foodBanks') return 'Food Banks'
-  return 'People Affected'
+  if (barrierKeys.has(currentMetric.value)) return 'Food Barriers'
+  return currentLayerTitle.value
 })
-const legendColors = computed(() => {
-  if (currentMetric.value === 'foodInsecurity') return ['#FED7AA', '#F97316', '#C2410C']
-  if (currentMetric.value === 'foodBanks')      return ['#BBF7D0', '#22C55E', '#15803D']
-  return                                                 ['#BAE6FD', '#0EA5E9', '#0369A1']
+
+const paletteByMetric = {
+  foodInsecurity: ['#FCE0D8', '#F4B5A6', '#EB8A75', '#DF6951', '#A83F2D'],
+  peopleAffected: ['#E4EFE4', '#BFD2BF', '#92B092', '#5F805F', 'rgba(5, 52, 5, 0.66)'],
+  foodBanks: ['#EFE4FA', '#D8BFF1', '#C49DE8', '#B995E5', 'rgba(84, 0, 195, 0.37)'],
+  barrier: ['#EAF5FF', 'rgba(181, 220, 255, 0.6)', '#7EBEFF', '#0052FF', '#001452'],
+}
+
+function paletteForMetric(key) {
+  if (key === 'foodBanks') return paletteByMetric.foodBanks
+  if (key === 'peopleAffected') return paletteByMetric.peopleAffected
+  if (barrierKeys.has(key)) return paletteByMetric.barrier
+  return paletteByMetric.foodInsecurity
+}
+
+const legendItems = computed(() => {
+  const palette = paletteForMetric(currentMetric.value)
+  if (currentMetric.value === 'foodBanks') {
+    return ['0-2', '3-5', '6-9', '10-14', '15+'].map((label, i) => ({ label, color: palette[i] }))
+  }
+  if (currentMetric.value === 'peopleAffected') {
+    return ['<5k', '5-15k', '15-30k', '30-60k', '>60k'].map((label, i) => ({ label, color: palette[i] }))
+  }
+  if (barrierKeys.has(currentMetric.value)) {
+    return ['<20%', '20-35%', '35-50%', '50-65%', '>65%'].map((label, i) => ({ label, color: palette[i] }))
+  }
+  return ['<6%', '6-8%', '8-10%', '10-12%', '>12%'].map((label, i) => ({ label, color: palette[i] }))
 })
+
+const legendColors = computed(() => legendItems.value.map(item => item.color))
+
+function getMetricValue(stat, key) {
+  if (!stat) return null
+  if (key === 'foodInsecurity') return stat.food_insecurity_pct
+  if (key === 'foodBanks') return getFoodBankSites(stat)
+  if (key === 'peopleAffected') return stat.pop_2024_total * stat.food_insecurity_pct / 100
+  if (barrierKeys.has(key)) {
+    const reason = reasonStatsMap.value[stat.lga_pid] || reasonStatsMap.value[stat.lga_name] || reasonStatsMap.value[stat.lga_key]
+    const value = reason?.[key]
+    return Number.isFinite(value) ? value : null
+  }
+  return null
+}
+
+function colorForMetricValue(key, value) {
+  if (value == null || Number.isNaN(value)) return '#C3C5D9'
+  const palette = paletteForMetric(key)
+
+  if (key === 'foodBanks') {
+    if (value <= 2) return palette[0]
+    if (value <= 5) return palette[1]
+    if (value <= 9) return palette[2]
+    if (value <= 14) return palette[3]
+    return palette[4]
+  }
+
+  if (key === 'peopleAffected') {
+    if (value < 5000) return palette[0]
+    if (value < 15000) return palette[1]
+    if (value < 30000) return palette[2]
+    if (value < 60000) return palette[3]
+    return palette[4]
+  }
+
+  if (barrierKeys.has(key)) {
+    if (value < 20) return palette[0]
+    if (value < 35) return palette[1]
+    if (value < 50) return palette[2]
+    if (value < 65) return palette[3]
+    return palette[4]
+  }
+
+  if (value < 6) return palette[0]
+  if (value < 8) return palette[1]
+  if (value < 10) return palette[2]
+  if (value < 12) return palette[3]
+  return palette[4]
+}
+
 function getFillColorExpression() {
-  if (!lgaStats.value.length) return '#cccccc'
-  const expr = ['match', ['get', 'lga_name']]
+  if (!lgaStats.value.length) return '#C3C5D9'
+  const expr = ['match', ['get', 'lga_key']]
   lgaStats.value.forEach(stat => {
-    let color = '#cccccc'
-    if (currentMetric.value === 'foodInsecurity') {
-      const v = (stat.men_pct + stat.women_pct) / 2
-      color = v < 5 ? legendColors.value[0] : v < 10 ? legendColors.value[1] : legendColors.value[2]
-    } else if (currentMetric.value === 'foodBanks') {
-      const v = stat.emergency_services_count
-      color = v <= 2 ? legendColors.value[0] : v <= 5 ? legendColors.value[1] : legendColors.value[2]
-    } else {
-      const v = (stat.pop_2024_total * (stat.men_pct + stat.women_pct) / 200)
-      color = v < 5000 ? legendColors.value[0] : v < 15000 ? legendColors.value[1] : legendColors.value[2]
-    }
-    expr.push(stat.lga_name, color)
+    const color = colorForMetricValue(currentMetric.value, getMetricValue(stat, currentMetric.value))
+    expr.push(stat.lga_key, color)
   })
-  expr.push('#cccccc')
+  expr.push('#C3C5D9')
   return expr
 }
+
 watch(currentMetric, () => {
   if (mapInstance && mapInstance.isStyleLoaded() && mapInstance.getSource('lga')) {
     mapInstance.setPaintProperty('lga-fills', 'fill-color', [
@@ -513,7 +761,66 @@ watch(currentMetric, () => {
   }
 })
 
-// ── Init ──────────────────────────────────────────────────────────────────
+watch(reasonStats, () => {
+  if (mapInstance && mapInstance.isStyleLoaded() && mapInstance.getSource('lga') && barrierKeys.has(currentMetric.value)) {
+    mapInstance.setPaintProperty('lga-fills', 'fill-color', [
+      'case',
+      ['boolean', ['feature-state', 'hover'], false], '#FFFFFF',
+      getFillColorExpression(),
+    ])
+  }
+})
+
+function normalizeReasonRows(rows) {
+  if (!Array.isArray(rows)) return []
+  return rows.map(row => ({
+    lga_pid: row.lga_pid,
+    lga_name: row.lga_name ?? row.lga ?? row.name,
+    lga_key: normalizeLgaName(row.lga_name ?? row.lga ?? row.name),
+    limited_variety: toOptionalNumber(row.limited_variety ?? row.limitedVariety ?? row.variety),
+    too_expensive: toOptionalNumber(row.too_expensive ?? row.tooExpensive ?? row.expensive),
+    wrong_quality: toOptionalNumber(row.wrong_quality ?? row.wrongQuality ?? row.quality),
+    transport_gap: toOptionalNumber(row.transport_gap ?? row.transportGap ?? row.transport),
+  })).filter(row => row.lga_pid || row.lga_name)
+}
+
+function normalizeStatsRows(rows) {
+  if (!Array.isArray(rows)) return []
+  return rows.map(row => ({
+    ...row,
+    lga_pid: row.lga_pid,
+    lga_key: normalizeLgaName(row.lga_name),
+    food_insecurity_pct: Number(row.food_insecurity_pct ?? row.foodInsecurityPct ?? row.food_insecurity_rate ?? 0),
+    pop_2024_total: Number(row.pop_2024_total ?? 0),
+    food_bank_sites: getFoodBankSites(row),
+  }))
+}
+
+function getFoodBankSites(stat) {
+  if (!stat) return 0
+  return toOptionalNumber(
+    stat.food_bank_sites
+    ?? stat.emergency_services_count
+    ?? stat.foodBanks
+    ?? stat.food_banks
+    ?? stat.food_banks_count
+    ?? stat.active_food_bank_sites
+    ?? stat.support_services_count
+  ) ?? 0
+}
+
+function toOptionalNumber(value) {
+  if (value == null || value === '') return null
+  const numberValue = Number(value)
+  return Number.isFinite(numberValue) ? numberValue : null
+}
+
+async function fetchJsonIfOk(url) {
+  const response = await fetch(url)
+  if (!response.ok) return []
+  return response.json()
+}
+
 onMounted(async () => {
   const token = config.public.mapboxToken
   if (!token) {
@@ -521,27 +828,34 @@ onMounted(async () => {
     isMapLoading.value = false
   }
 
-  // Fetch /lga/stats and /lga/boundaries in parallel, and initialise the map at the same time
-  const [statsResult, boundariesResult] = await Promise.allSettled([
+  const [statsResult, boundariesResult, reasonsResult] = await Promise.allSettled([
     fetch(`${API_URL}/lga/stats`).then(r => r.json()),
     fetch(`${API_URL}/lga/boundaries`).then(r => r.json()),
+    fetchJsonIfOk(`${API_URL}/lga/food-inaccessibility-reasons`),
   ])
 
-  // Populate stats
   if (statsResult.status === 'fulfilled') {
-    lgaStats.value = statsResult.value
+    lgaStats.value = normalizeStatsRows(statsResult.value)
     searchIndex.value = [...new Set(lgaStats.value.map(s => s.lga_name))].sort()
   } else {
     console.error('Failed to fetch LGA stats', statsResult.reason)
   }
   isStatsLoading.value = false
 
-  // Store boundaries (ready for when the map finishes loading)
   if (boundariesResult.status === 'fulfilled') {
     lgaGeojson = boundariesResult.value
-    lgaGeojson.features.forEach((f, i) => f.id = i)
+    lgaGeojson.features.forEach((f, i) => {
+      f.id = i
+      f.properties.lga_key = normalizeLgaName(f.properties.lga_name)
+    })
   } else {
     console.error('Failed to fetch LGA boundaries', boundariesResult.reason)
+  }
+
+  if (reasonsResult.status === 'fulfilled') {
+    reasonStats.value = normalizeReasonRows(reasonsResult.value)
+  } else {
+    reasonStats.value = []
   }
 
   if (!token) return
@@ -555,12 +869,10 @@ onMounted(async () => {
     zoom: 5.5,
     scrollZoom: false,
   })
-  mapInstance.addControl(new mapboxgl.NavigationControl(), 'top-right')
   tooltipPopup = new mapboxgl.Popup({ closeButton: false, closeOnClick: false, className: 'lga-tooltip-popup' })
 
   mapInstance.on('load', () => {
     try {
-      // lgaGeojson is already fetched in parallel above – no second network request needed
       if (!lgaGeojson) {
         console.warn('LGA boundaries not available; map layers skipped.')
         return
@@ -568,15 +880,19 @@ onMounted(async () => {
 
       mapInstance.addSource('lga', { type: 'geojson', data: lgaGeojson })
       mapInstance.addLayer({
-        id: 'lga-fills', type: 'fill', source: 'lga',
+        id: 'lga-fills',
+        type: 'fill',
+        source: 'lga',
         paint: {
           'fill-color': ['case', ['boolean', ['feature-state', 'hover'], false], '#FFFFFF', getFillColorExpression()],
           'fill-opacity': ['case', ['boolean', ['feature-state', 'hover'], false], 1, 0.75],
         },
       })
       mapInstance.addLayer({
-        id: 'lga-borders', type: 'line', source: 'lga',
-        paint: { 'line-color': '#888', 'line-width': 0.6 },
+        id: 'lga-borders',
+        type: 'line',
+        source: 'lga',
+        paint: { 'line-color': '#FFFFFF', 'line-width': 0.8 },
       })
 
       mapInstance.on('mousemove', 'lga-fills', (e) => {
@@ -587,7 +903,7 @@ onMounted(async () => {
         mapInstance.getCanvas().style.cursor = 'pointer'
         const lgaName = e.features[0].properties.lga_name
         tooltipPopup.setLngLat(e.lngLat)
-          .setHTML(`<div style="color:#181e4b;font-weight:bold;">${lgaName}</div>`)
+          .setHTML(`<div style="color:#131B2E;font-weight:bold;">${lgaName}</div>`)
           .addTo(mapInstance)
       })
       mapInstance.on('mouseleave', 'lga-fills', () => {
@@ -620,11 +936,26 @@ onBeforeUnmount(() => {
   padding: 8px 12px;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  font-family: 'Roboto', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
-:deep(.mapboxgl-popup-tip) { display: none; }
 
-.picto-fade { transition: opacity 0.25s ease; }
-.picto-out  { opacity: 0; }
-.picto-in   { opacity: 1; }
+:deep(.mapboxgl-popup-tip) {
+  display: none;
+}
+
+.region-card-shadow {
+  box-shadow: 0 12px 28px rgba(19, 27, 46, 0.12);
+}
+
+.picto-fade {
+  transition: opacity 0.25s ease;
+}
+
+.picto-out {
+  opacity: 0;
+}
+
+.picto-in {
+  opacity: 1;
+}
 </style>

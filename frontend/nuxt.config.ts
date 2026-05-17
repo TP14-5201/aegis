@@ -6,8 +6,8 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
   runtimeConfig: {
     public: {
-      googleMapsKey: '',   // set via NUXT_PUBLIC_GOOGLE_MAPS_KEY in .env
-      apiBase: 'http://localhost:8000',  // set via NUXT_PUBLIC_API_BASE in .env
+      googleMapsApiKey: '',   // set via NUXT_PUBLIC_GOOGLE_MAPS_API_KEY in .env
+      apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:8000',  // set via NUXT_PUBLIC_API_BASE in .env
       mapboxToken: '',     // set via NUXT_PUBLIC_MAPBOX_TOKEN in .env
     },
   },
@@ -35,10 +35,8 @@ export default defineNuxtConfig({
           crossorigin: '',
         },
         {
-          // Loads both old (Volkhov 400/700, Roboto 300/400/500/700) and new
-          // (Roboto 800/900) weights so every component renders correctly.
           rel: 'stylesheet',
-          href: 'https://fonts.googleapis.com/css2?family=Volkhov:wght@400;700&family=Roboto:wght@300;400;500;700;800;900&display=swap',
+          href: 'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600;1,700&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,600&display=swap',
         },
       ],
     }

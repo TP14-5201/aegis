@@ -1,14 +1,46 @@
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, Float, DateTime, JSON
+from sqlalchemy import Column, Integer, String, Float, DateTime, JSON, ForeignKey, LargeBinary
+from sqlalchemy.orm import relationship
 from geoalchemy2 import Geometry
 from src.database import Base
+
+
+class LgaPopulation(Base):
+    """Moved above VicLgaBoundary because VicLgaBoundary now FKs into it."""
+    __tablename__ = "vic_lga_population"
+
+    lga_pid = Column(String, primary_key=True, index=True)
+    lga_name = Column(String)
+    pop_2024_total = Column(Integer)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    lga_boundary = relationship("VicLgaBoundary", back_populates="population", uselist=False)
+
+
+class VicLgaBoundary(Base):
+    __tablename__ = "vic_lga_boundaries"
+
+    lga_pid = Column(String, ForeignKey("vic_lga_population.lga_pid"), primary_key=True, index=True)  # FK → vic_lga_population
+    lga_name = Column(String)
+    geometry = Column(Geometry(geometry_type='MULTIPOLYGON', srid=4326))
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationship to parent population record
+    population = relationship("LgaPopulation", back_populates="lga_boundary")
+
+    # Back-references from child tables
+    support_services = relationship("SupportService", back_populates="lga")
+    food_insecurity_records = relationship("FoodInsecurity", back_populates="lga")
+    food_inaccessibility_reasons = relationship("FoodInaccessibilityReasons", back_populates="lga")
 
 
 class SupportService(Base):
     __tablename__ = "support_services"
 
     id = Column(Integer, primary_key=True, index=True)
-    lga_pid = Column(String, index=True)     # FK → vic_lga_boundaries.lga_pid
+    lga_pid = Column(String, ForeignKey("vic_lga_boundaries.lga_pid"), index=True)
     name = Column(String, index=True)
     description = Column(String)
     target_audience = Column(String)
@@ -31,6 +63,8 @@ class SupportService(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
+    lga = relationship("VicLgaBoundary", back_populates="support_services")
+
 
 class FoodInsecurity(Base):
     __tablename__ = "food_insecurity"
@@ -39,31 +73,14 @@ class FoodInsecurity(Base):
     gender = Column(String)
     indicator = Column(String)
     indicator_category = Column(String)
-    lga_pid = Column(String, index=True)     # FK → vic_lga_boundaries.lga_pid
+    lga_pid = Column(String, ForeignKey("vic_lga_boundaries.lga_pid"), index=True)
     subpopulation = Column(String)
     estimate_pct = Column(Float)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
 
-class VicLgaBoundary(Base):
-    __tablename__ = "vic_lga_boundaries"
+    lga = relationship("VicLgaBoundary", back_populates="food_insecurity_records")
 
-    lga_pid = Column(String, primary_key=True, index=True)
-    lga_name = Column(String)
-    geometry = Column(Geometry(geometry_type='MULTIPOLYGON', srid=4326))
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-
-
-class LgaPopulation(Base):
-    __tablename__ = "vic_lga_population"
-
-    lga_pid = Column(String, primary_key=True, index=True)
-    lga_name = Column(String)
-    pop_2024_total = Column(Integer)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
 class DietIndicator(Base):
@@ -113,6 +130,7 @@ class LowCostDiet(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
+
 class LowCostDietHealthOutcome(Base):
     __tablename__ = "low_cost_diet_health_outcome"
 
@@ -141,3 +159,78 @@ class RecommendedMacronutrientsIntake(Base):
     actionable_guidance = Column(String)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class FoodInaccessibilityReasons(Base):
+    __tablename__ = "food_inaccessibility_reasons"
+
+    id = Column(Integer, primary_key=True, index=True)
+    lga_pid = Column(String, ForeignKey("vic_lga_boundaries.lga_pid"), index=True)
+    limited_variety = Column(Float)
+    too_expensive = Column(Float)
+    wrong_quality = Column(Float)
+    transport_gap = Column(Float)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    lga = relationship("VicLgaBoundary", back_populates="food_inaccessibility_reasons")
+
+
+class Ingredient(Base):
+    __tablename__ = "ingredient"
+
+    ingredient_code = Column(String, primary_key=True, index=True)
+    product_name = Column(String, nullable=False)
+    sub_category = Column(String, nullable=False)
+    retail_price = Column(Float, nullable=False)
+
+    ingredient_nutrition = relationship("IngredientNutrition", back_populates="ingredient", uselist=False)
+    health_rating = relationship("IngredientHealthRating", back_populates="ingredient", uselist=False)
+
+
+class IngredientNutrition(Base):
+    __tablename__ = "ingredient_nutrition"
+
+    ingredient_code = Column(String, ForeignKey("ingredient.ingredient_code"), primary_key=True, index=True)
+    protein_g = Column(Float)
+    fat_total_g = Column(Float)
+    total_dietary_fibre_g = Column(Float)
+    total_sugars_g = Column(Float)
+    available_carbohydrate_without_sugar_alcohols_g = Column(Float)
+    sodium_na_mg = Column(Float)
+
+    ingredient = relationship("Ingredient", back_populates="ingredient_nutrition")
+
+
+class IngredientHealthRating(Base):
+    __tablename__ = "ingredient_health_rating"
+
+    ingredient_code = Column(String, ForeignKey("ingredient.ingredient_code"), primary_key=True, index=True)
+    nutriscore_grade = Column(String, nullable=True)   # A–E from OpenFoodFacts, null if not found
+    nutriscore_score = Column(Integer, nullable=True)  # raw OFF score, null if not found
+    nova_score = Column(Integer, nullable=True)        # 1–4 processing level, null if not found
+    computed_health_score = Column(Float, nullable=False)  # always present, derived from nutrition columns
+    final_health_score = Column(Float, nullable=False)     # 0–100; OFF-based if available, else computed
+    health_source = Column(String, nullable=False)         # 'openfoodfacts' or 'computed'
+    last_fetched = Column(DateTime, default=datetime.utcnow)
+
+    ingredient = relationship("Ingredient", back_populates="health_rating")
+
+
+class IngredientEmbedding(Base):
+    __tablename__ = "ingredient_embedding"
+
+    ingredient_code = Column(String, ForeignKey("ingredient.ingredient_code"), primary_key=True, index=True)
+    embedding = Column(LargeBinary, nullable=False)       # float32 bytes, 388-d vector
+    functional_role = Column(String, nullable=True)
+    proteins_100g = Column(Float, nullable=True)
+    fat_100g = Column(Float, nullable=True)
+    carbohydrates_100g = Column(Float, nullable=True)
+    energy_100g = Column(Float, nullable=True)
+
+
+class SubstitutionMeta(Base):
+    __tablename__ = "substitution_meta"
+
+    key = Column(String, primary_key=True, index=True)    # e.g. "scaler"
+    value = Column(LargeBinary, nullable=False)           # pickled object

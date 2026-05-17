@@ -2,90 +2,98 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Global tokens*/
-:root {
-  --x-1st: #181e4b;
-  --detailed-information: rgba(68, 71, 76, 1);
-  --information-list-font-family: 'Roboto', Helvetica;
+@layer base {
+  body,
+  #__nuxt {
+    @apply bg-white font-body text-chere-text overflow-x-hidden;
+  }
 }
 
-/* ─── Global Reset ───────────────────────────────────────── */
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+@layer components {
+  .section-base {
+    @apply py-16 lg:py-20;
+  }
+
+  .section-standard {
+    @apply section-base min-h-section;
+  }
+
+  .section-large {
+    @apply section-base min-h-section-lg;
+  }
+
+  .section-hero {
+    @apply section-base min-h-section-xl;
+    padding-top: clamp(48px, 6vh, 72px);
+    padding-bottom: clamp(72px, 9vh, 110px);
+  }
+
+
+  .section-inner {
+    @apply mx-auto w-full max-w-container px-6 lg:px-10;
+  }
+
+  .heading-xl {
+    @apply font-display text-[44px] font-semibold leading-[1.1] tracking-[-1.5px] text-chere-navy lg:text-[64px];
+  }
+
+  .heading-lg {
+    @apply font-display text-[38px] font-bold leading-[1.15] tracking-[-0.96px] text-chere-navy lg:text-[48px];
+  }
+
+  .heading-md {
+    @apply font-display text-[24px] font-semibold leading-[32px] text-chere-navy;
+  }
+
+  .body-copy {
+    @apply font-body text-[16px] leading-[1.7] text-chere-text;
+  }
+
+  .btn-base {
+    @apply inline-flex h-[56px] w-[258px] items-center justify-center rounded-[8px] px-8 font-body text-[18px] font-semibold leading-6 transition hover:-translate-y-1 active:translate-y-0 max-sm:w-full;
+  }
+
+  .btn-primary-strong {
+    @apply btn-base font-bold;
+  }
+
+  .btn-dark {
+    @apply btn-base bg-chere-ink text-white shadow-button;
+  }
+
+  .btn-light {
+    @apply btn-base bg-chere-skyPale text-black shadow-button;
+  }
+
+  .btn-blue {
+    @apply btn-base bg-chere-blue text-white shadow-button;
+  }
+
+  .btn-lightblue {
+    @apply btn-base bg-chere-sky text-chere-navy shadow-button;
+  }
+
+  .btn-outline {
+    @apply btn-base border-2 border-chere-ink bg-transparent text-chere-ink;
+  }
+
+  .btn-outline:hover {
+    @apply bg-white/60;
+  }
+
+  .btn-outline-light {
+    @apply btn-base border-2 border-white bg-transparent text-white;
+  }
+
+  .btn-outline-light:hover {
+    @apply bg-white/10;
+  }  
+
+  .btn-lightblue:hover {
+    @apply -translate-y-1 bg-[#cfe2ff];
+  }
+  
+  .card-base {
+    @apply rounded-card border border-chere-border/30 bg-white shadow-card;
+  }
 }
-
-html {
-  scroll-behavior: smooth;
-}
-
-body,
-#__nuxt {
-  background-color: #ffffff;
-  font-family: 'Roboto', Helvetica, sans-serif;
-  overflow-x: hidden;
-}
-
-/* ─── Scroll Reveal Animations ───────────────────────────── */
-.reveal {
-  opacity: 0;
-  transform: translateY(48px);
-  transition: opacity 0.75s cubic-bezier(0.22, 1, 0.36, 1),
-              transform 0.75s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.reveal.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.reveal-delay-1 { transition-delay: 0.1s; }
-.reveal-delay-2 { transition-delay: 0.2s; }
-.reveal-delay-3 { transition-delay: 0.3s; }
-.reveal-delay-4 { transition-delay: 0.4s; }
-
-/* ─── Parallax Exit ──────────────────────────────────────── */
-.parallax-section {
-  will-change: transform;
-}
-
-/* ─── Navbar Button Hover ────────────────────────────────── */
-.nav-link {
-  position: relative;
-  transition: color 0.2s ease;
-}
-
-
-.nav-link:hover::after {
-  width: 100%;
-}
-
-
-/* ─── CTA Button Hover ───────────────────────────────────── */
-.btn-cta {
-  transition: transform 0.25s ease;
-}
-
-.btn-cta:hover {
-  transform: translateY(-4px);
-}
-
-.btn-cta:active {
-  transform: translateY(0);
-}
-
-/* ─── Image Hover Float + Glow ───────────────────────────── */
-.img-hover-card {
-  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
-              box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1),
-              filter 0.35s ease;
-  cursor: pointer;
-}
-.img-hover-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 24px 60px -8px rgba(68, 154, 196, 0.22),
-              0 0 0 1px rgba(68, 154, 196, 0.12);
-  filter: brightness(1.04);
-}
-
