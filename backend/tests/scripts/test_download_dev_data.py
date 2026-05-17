@@ -1,7 +1,19 @@
 import pytest
-import pandas as pd
-import geopandas as gpd
+import runpy
+import sys
+import types
 from unittest.mock import patch, MagicMock, call
+
+import pandas as pd
+try:
+    import geopandas as gpd
+except ModuleNotFoundError:
+    class _GeoPandasStub:
+        GeoDataFrame = pd.DataFrame
+
+    gpd = _GeoPandasStub()
+    sys.modules["geopandas"] = types.SimpleNamespace(GeoDataFrame=pd.DataFrame)
+sys.modules.setdefault("kagglehub", types.SimpleNamespace(dataset_download=MagicMock()))
 
 from src.scripts.download_dev_data import save_local_copy
 from src.core.config import settings
@@ -638,3 +650,19 @@ class TestReturnValue:
              patch.object(pd.DataFrame, "to_excel"):
             result = save_local_copy()
         assert result is None
+
+
+def test_module_main_guard_calls_save_local_copy():
+    """Covers the script entry point used by python -m src.scripts.download_dev_data."""
+    mock_path = make_path_mock(exists=True)
+    sys.modules.pop("src.scripts.download_dev_data", None)
+    with patch("pathlib.Path", return_value=mock_path), \
+         patch("src.data.extractors.api_extractor.fetch_csv_from_url", return_value=SAMPLE_DF), \
+         patch("src.data.extractors.api_extractor.fetch_excel_from_url", return_value=SAMPLE_DF), \
+         patch("src.data.extractors.api_extractor.fetch_zip_from_url", return_value=SAMPLE_GDF), \
+         patch("src.data.extractors.kaggle_extractor.fetch_csv_from_kaggle", return_value=SAMPLE_DF), \
+         patch.object(pd.DataFrame, "to_csv") as to_csv, \
+         patch.object(pd.DataFrame, "to_excel"):
+        runpy.run_module("src.scripts.download_dev_data", run_name="__main__")
+
+    assert to_csv.called
