@@ -1,94 +1,93 @@
 <template>
-  <section class="w-full bg-chere-hero relative overflow-hidden py-12 lg:py-20 flex flex-col justify-center min-h-[calc(100vh-72px)] lg:min-h-[calc(100vh-100px)]">
+  <section class="relative overflow-hidden bg-chere-hero">
+    <!-- IMPACT marquee -->
+    <div class="impact-marquee-wrap">
+      <div class="impact-marquee-track">
+        <span class="impact-marquee-text">IMPACT&nbsp;&nbsp;&nbsp;</span>
+        <span class="impact-marquee-text">IMPACT&nbsp;&nbsp;&nbsp;</span>
+        <span class="impact-marquee-text">IMPACT&nbsp;&nbsp;&nbsp;</span>
+        <span class="impact-marquee-text">IMPACT&nbsp;&nbsp;&nbsp;</span>
+      </div>
+    </div>
 
-    <div class="max-w-container mx-auto px-5 w-full relative z-10">
-      <div class="flex flex-col lg:flex-row items-center justify-between gap-10 lg:gap-20">
-        <!-- Text Content -->
-        <div class="hero-reveal flex-1">
-          <h1 class="font-playfair text-[40px] lg:text-[64px] leading-tight font-semibold tracking-[-2.1px] text-chere-navy">
-            Understand the story <br class="hidden lg:block"/>
-            <span class="text-black">behind</span> 
-            <span class="text-[#cd5005] italic"> the numbers</span>
+    <div class="section-inner section-hero story-hero-inner relative z-10 flex flex-col justify-center">
+      <!-- Top hero text -->
+      <div class="grid items-center gap-10 lg:grid-cols-[1.15fr_0.85fr]">
+        <div class="hero-reveal max-w-[670px]">
+          <h1 class="heading-xl">
+            Understand the story<br />
+            behind
+            <span class="italic text-[#cd5005]">the numbers</span>
           </h1>
-          <button 
-            href="/"
-            class="mt-8 lg:mt-12 bg-black text-white rounded-[8px] px-12 py-4 font-jakarta text-[18px] hover:scale-105 hover:shadow-button transition-all duration-300">
+
+          <NuxtLink to="#story-path" class="btn-dark mt-8 lg:mt-10">
             Explore the Story
-          </button>
+          </NuxtLink>
         </div>
 
-        <!-- Vertical border text -->
-        <div class="hero-reveal flex-1 lg:pl-10 lg:border-l-2 lg:border-[#c1c6d5]">
-          <p class="font-jakarta text-[16px] lg:text-[18px] leading-[28px] text-black">
-            Behind every statistic is a human experience. <br class="hidden lg:block"/>
-            Journey through the data to uncover the reality of <br class="hidden lg:block"/>
-            food insecurity in Victoria.
+        <div
+          class="hero-reveal max-w-[470px] border-chere-border/70 lg:border-l lg:pl-8"
+        >
+          <p class="body-copy text-chere-ink">
+            Behind every statistic is a human experience. Journey through the
+            data to uncover the reality of food insecurity in Victoria.
           </p>
         </div>
       </div>
 
-      <!-- Bento Cards -->
-      <div class="mt-20 lg:mt-32 grid grid-cols-1 lg:grid-cols-3 gap-6 relative z-10">
-        <!-- Card 1 -->
-        <div class="hero-reveal bg-white border-t-[4px] border-[#96432a] rounded-[24px] p-8 shadow-card flex flex-col hover:translate-y-[-4px] transition-transform duration-300">
-          <div class="flex items-start gap-1 min-h-[64px]">
-            <span class="font-playfair text-[64px] font-semibold text-[#151B2C] leading-none">1</span>
-            <span class="font-playfair text-[24px] font-semibold text-[#151B2C] mt-2">in</span>
-            <span class="font-playfair text-[64px] font-semibold text-[#151B2C] leading-none ml-1">9</span>
+      <!-- Stat cards -->
+      <div
+        id="story-data"
+        class="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:mt-16 lg:grid-cols-3"
+      >
+        <article
+          v-for="stat in stats"
+          :key="stat.label"
+          class="hero-reveal stat-card card-base"
+          :style="{ borderTopColor: stat.color }"
+        >
+          <div class="flex min-h-[62px] items-start gap-1">
+            <span class="font-display text-[58px] font-semibold leading-none text-chere-ink lg:text-[64px]">
+              {{ stat.value }}
+            </span>
+
+            <span
+              v-if="stat.middle"
+              class="mt-2 font-display text-[22px] font-semibold text-chere-ink"
+            >
+              {{ stat.middle }}
+            </span>
+
+            <span
+              v-if="stat.valueAfter"
+              class="font-display text-[58px] font-semibold leading-none text-chere-ink lg:text-[64px]"
+            >
+              {{ stat.valueAfter }}
+            </span>
+
+            <span
+              v-if="stat.suffix"
+              class="mt-2 font-display text-[22px] font-semibold text-chere-ink"
+            >
+              {{ stat.suffix }}
+            </span>
           </div>
-          <div class="mt-6">
-            <h3 class="font-jakarta text-[14px] font-bold text-[#96432a] tracking-[1.4px] uppercase">Victorians</h3>
-            <div class="h-[1px] w-12 bg-[#dbc1ba] mt-3"></div>
-            <p class="font-playfair text-[20px] lg:text-[24px] font-semibold text-[#151B2C] leading-[30px] mt-4">
-              Go without enough food at <br class="hidden lg:block"/> some point each year
+
+          <div class="mt-5">
+            <h3
+              class="font-body text-[12px] font-extrabold uppercase tracking-[1.8px]"
+              :style="{ color: stat.color }"
+            >
+              {{ stat.label }}
+            </h3>
+
+            <div class="mt-3 h-px w-12 bg-chere-border/70" />
+
+            <p class="mt-4 font-display text-[19px] font-semibold leading-[1.22] text-chere-ink lg:text-[21px]">
+              {{ stat.description }}
             </p>
           </div>
-        </div>
-
-        <!-- Card 2 -->
-        <div class="hero-reveal bg-white border-t-[4px] border-[#585e4d] rounded-[24px] p-8 shadow-card flex flex-col hover:translate-y-[-4px] transition-transform duration-300">
-          <div class="flex items-start gap-1 min-h-[64px]">
-            <span class="font-playfair text-[64px] font-semibold text-[#151B2C] leading-none">35</span>
-            <span class="font-playfair text-[24px] font-semibold text-[#151B2C] mt-2">%</span>
-          </div>
-          <div class="mt-6">
-            <h3 class="font-jakarta text-[14px] font-bold text-[#585e4d] tracking-[1.4px] uppercase">Mental Distress</h3>
-            <div class="h-[1px] w-12 bg-[#dbc1ba] mt-3"></div>
-            <p class="font-playfair text-[20px] lg:text-[24px] font-semibold text-[#151B2C] leading-[30px] mt-4">
-              Of food-insecure adults <br class="hidden lg:block"/> report serious mental <br class="hidden lg:block"/> distress
-            </p>
-          </div>
-        </div>
-
-        <!-- Card 3 -->
-        <div class="hero-reveal bg-white border-t-[4px] border-[#716252] rounded-[24px] p-8 shadow-card flex flex-col hover:translate-y-[-4px] transition-transform duration-300">
-          <div class="flex items-start gap-1 min-h-[64px]">
-            <span class="font-playfair text-[64px] font-semibold text-[#151B2C] leading-none">12</span>
-            <span class="font-playfair text-[24px] font-semibold text-[#151B2C] mt-2">%</span>
-          </div>
-          <div class="mt-6">
-            <h3 class="font-jakarta text-[14px] font-bold text-[#716252] tracking-[1.4px] uppercase">Children</h3>
-            <div class="h-[1px] w-12 bg-[#dbc1ba] mt-3"></div>
-            <p class="font-playfair text-[20px] lg:text-[24px] font-semibold text-[#151B2C] leading-[30px] mt-4">
-              Of Victorian children are <br class="hidden lg:block"/> not getting adequate daily <br class="hidden lg:block"/> nutrition
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Impact Background Marquee -->
-    <div class="w-full overflow-hidden pointer-events-none select-none mt-16 lg:mt-24 opacity-[0.47] z-[0]">
-      <div class="flex w-max animate-marquee font-playfair text-[140px] lg:text-[200px] xl:text-[256px] font-semibold text-[#CADCE5] tracking-widest uppercase leading-none">
-        <span class="mx-8 lg:mx-12">IMPACT</span>
-        <span class="mx-8 lg:mx-12">IMPACT</span>
-        <span class="mx-8 lg:mx-12">IMPACT</span>
-        <span class="mx-8 lg:mx-12">IMPACT</span>
-        <!-- Duplicated for seamless scrolling -->
-        <span class="mx-8 lg:mx-12">IMPACT</span>
-        <span class="mx-8 lg:mx-12">IMPACT</span>
-        <span class="mx-8 lg:mx-12">IMPACT</span>
-        <span class="mx-8 lg:mx-12">IMPACT</span>
+        </article>
       </div>
     </div>
   </section>
@@ -96,6 +95,31 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
+
+const stats = [
+  {
+    value: '1',
+    middle: 'in',
+    valueAfter: '9',
+    label: 'Victorians',
+    description: 'Go without enough food at some point each year',
+    color: '#96432a',
+  },
+  {
+    value: '35',
+    suffix: '%',
+    label: 'Mental Distress',
+    description: 'Of food-insecure adults report serious mental distress',
+    color: '#585e4d',
+  },
+  {
+    value: '12',
+    suffix: '%',
+    label: 'Children',
+    description: 'Of Victorian children are not getting adequate daily nutrition',
+    color: '#716252',
+  },
+]
 
 onMounted(() => {
   const elements = document.querySelectorAll('.hero-reveal')
@@ -112,9 +136,7 @@ onMounted(() => {
   )
 
   elements.forEach((el, index) => {
-    if (el.classList.contains('bg-white')) {
-      ;(el as HTMLElement).style.transitionDelay = `${index * 150}ms`
-    }
+    ;(el as HTMLElement).style.transitionDelay = `${index * 110}ms`
     observer.observe(el)
   })
 })
@@ -124,7 +146,9 @@ onMounted(() => {
 .hero-reveal {
   opacity: 0;
   transform: translateY(28px);
-  transition: opacity 700ms ease, transform 700ms ease;
+  transition:
+    opacity 700ms ease,
+    transform 700ms ease;
 }
 
 .hero-reveal.is-visible {
@@ -132,12 +156,89 @@ onMounted(() => {
   transform: translateY(0);
 }
 
-@keyframes marquee {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+.story-hero-inner {
+  padding-top: 0;
+  justify-content: flex-start;
 }
 
-.animate-marquee {
-  animation: marquee 30s linear infinite;
+.stat-card {
+  min-height: 220px;
+  border-top-width: 4px;
+  padding: 28px;
+  transition:
+    transform 220ms ease,
+    box-shadow 220ms ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 18px 38px rgba(0, 0, 0, 0.13);
+}
+
+.impact-marquee-wrap {
+  pointer-events: none;
+  position: absolute;
+  left: 0;
+  bottom: -16px;
+  z-index: 0;
+  width: 100%;
+  height: 170px;
+  overflow: hidden;
+  opacity: 0.35;
+}
+
+.impact-marquee-track {
+  display: flex;
+  width: max-content;
+  white-space: nowrap;
+  animation: impact-marquee-scroll 22s linear infinite;
+}
+
+.impact-marquee-text {
+  flex-shrink: 0;
+  color: #cadce5;
+  font-family: theme('fontFamily.display');
+  font-size: 160px;
+  font-weight: 600;
+  line-height: 170px;
+  letter-spacing: -3px;
+}
+
+@keyframes impact-marquee-scroll {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@media (max-width: 1024px) {
+  .impact-marquee-wrap {
+    bottom: -8px;
+    height: 120px;
+  }
+
+  .impact-marquee-text {
+    font-size: 150px;
+    line-height: 120px;
+  }
+}
+
+@media (max-width: 768px) {
+  .stat-card {
+    min-height: auto;
+    padding: 24px;
+  }
+
+  .impact-marquee-wrap {
+    height: 70px;
+  }
+
+  .impact-marquee-text {
+    font-size: 86px;
+    line-height: 70px;
+  }
 }
 </style>

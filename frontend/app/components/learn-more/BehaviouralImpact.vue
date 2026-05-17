@@ -1,22 +1,21 @@
 <template>
   <section class="w-full bg-[#C6C6CD33]/20 py-16 lg:py-24" ref="sectionRef">
-    <div class="max-w-[1280px] mx-auto px-5 lg:px-12">
-
+    <div class="section-inner">
       <!-- Heading Area -->
       <div class="flex flex-col lg:flex-row gap-6 lg:items-center">
         <div class="flex-1">
           <div class="flex items-center gap-4">
             <span class="text-[#DF6951] text-5xl lg:text-6xl font-playfair font-bold">03</span>
-            <h2 class="text-[#3D687C] font-bold uppercase tracking-widest text-[14px] lg:text-[16px]">
+            <h2 class="font-body text-[14px] font-bold uppercase tracking-[0.18em] text-[#3D687C] lg:text-[16px]">
               The behavioural impact
             </h2>
           </div>
-          <h3 class="mt-4 font-playfair font-bold text-black text-[32px] lg:text-[52px] leading-tight">
+          <h3 class="mt-4 font-playfair font-semibold text-black text-[32px] lg:text-[52px] leading-tight">
             Beyond an empty plate - <br class="hidden lg:block" />
-            <span class="text-[#DF6951] italic font-playfair">hidden cost of food insecurity</span>
+            <span class="text-[#DF6951] italic font-playfair font-normal">hidden cost of food insecurity</span>
           </h3>
         </div>
-        <div class="lg:w-[400px] border-l-2 border-[#C6C6CD] pl-6 mt-6 lg:mt-0">
+        <div class="lg:w-[420px] justify-self-end border-l border-[#C6C6CD] pl-6 mt-6 lg:mt-28">
           <p class="text-black text-[16px] lg:text-[18px]">
             Food insecurity doesn't just leave families hungry. It reshapes habits, emotions, and long-term wellbeing.
           </p>
@@ -24,15 +23,24 @@
       </div>
 
       <!-- ================= DESKTOP ================= -->
-      <div class="relative mt-16 min-h-[720px] hidden lg:block" ref="desktopContainerRef">
+      <div
+        class="relative mt-16 min-h-[720px] hidden lg:block"
+        ref="desktopContainerRef"
+      >
 
         <!-- Connecting Lines SVG -->
         <svg class="absolute inset-0 w-full h-full pointer-events-none z-0 overflow-visible">
           <line v-for="stat in stats" :key="'line-' + stat.id" x1="50%" y1="50%"
             :x2="dynamicLineTargets[stat.id] ? dynamicLineTargets[stat.id].x : stat.lineTarget.x"
             :y2="dynamicLineTargets[stat.id] ? dynamicLineTargets[stat.id].y : stat.lineTarget.y" :stroke="stat.color"
-            stroke-width="2" stroke-dasharray="4 4" class="transition-all duration-300"
-            :class="hoveredStat === stat.id ? 'opacity-100 stroke-[4px] drop-shadow-md' : (hoveredStat ? 'opacity-20' : 'opacity-60')" />
+            stroke-width="2" stroke-dasharray="4 4" class="transition-all duration-500 ease-out"
+            :class="
+              activeLineStat === stat.id
+                ? 'opacity-100 stroke-[4px]'
+                : hoveredStat
+                  ? 'opacity-20'
+                  : 'opacity-60'
+            "/>
         </svg>
 
         <!-- White Circle behind donut to mask crossing lines -->
@@ -48,13 +56,18 @@
         <div v-for="stat in stats" :key="'desktop-' + stat.id" :ref="(el) => setBoxRef(el, stat.id)" :class="[
           stat.desktopClass,
           'z-20 border-[2px] rounded-[12px] px-5 py-4 bg-white/95 backdrop-blur-sm cursor-pointer',
-          'transition-all duration-300 hover:scale-110 hover:-translate-y-1 hover:shadow-xl shadow-md',
+          'transition-all duration-500 ease-out shadow-md',
+          activeCardStat === stat.id
+            ? 'scale-110 -translate-y-1 shadow-xl'
+            : '',
           hoveredStat && hoveredStat !== stat.id ? 'opacity-40' : 'opacity-100'
-        ]" :style="{ borderColor: stat.color }" @mouseenter="hoveredStat = stat.id" @mouseleave="hoveredStat = null">
+        ]" :style="{ borderColor: stat.color }" @mouseenter="hoveredStat = stat.id" @mouseleave="hoveredStat = null" @click="selectedStat(stat.id)">
           <p class="font-bold text-[24px] transition-colors duration-300" :style="{ color: stat.color }">
             {{ animatedValues[stat.id] !== undefined ? animatedValues[stat.id] : '0.0' }}%
           </p>
-          <p class="text-gray-800 font-medium leading-snug mt-1">{{ stat.title }}</p>
+          <p class="text-gray-800 font-medium mt-1 whitespace-nowrap">
+            {{ stat.title }}
+          </p>
         </div>
 
       </div>
@@ -78,39 +91,70 @@
         </div>
       </div>
 
-      <!-- Bottom Cards -->
-      <div class="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6">
-        <!-- Card 1 (Orange) -->
-        <div class="bg-[#E8A85D] rounded-[12px] p-8 flex flex-col text-black shadow-sm">
-          <p class="font-bold uppercase tracking-widest text-[12px] mb-6">In Real Numbers</p>
-          <p class="font-playfair font-bold text-5xl mb-4">$2.80</p>
-          <p class="text-[15px] leading-relaxed">
-            less per serve — the average saving of a healthy home-cooked meal vs fast food. Over a week that adds up to
-            $22 saved.
+      <!-- Dynamic Bottom Cards -->
+      <div ref="bottomCardsRef" class="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
+
+        <!-- Left -->
+        <div
+          class="rounded-[12px] p-8 text-black shadow-sm relative overflow-hidden"
+          :style="{ backgroundColor: activeCard.color }"
+        >
+          <div
+            class="absolute -right-[40px] -top-[40px] h-[150px] w-[150px] rounded-full bg-white/10"
+          />
+
+          <p class="font-volkhov font-bold uppercase tracking-[0.15em] text-[16px] mb-8">
+            In Real Numbers
+          </p>
+
+          <div class="mb-5 flex items-end gap-3">
+            <span class="font-volkhov text-[64px] leading-none font-semibold">
+              {{ activeCard.number }}
+            </span>
+
+            <span
+              v-if="activeCard.numberSuffix"
+              class="font-volkhov text-[28px] leading-none font-semibold mb-1"
+            >
+              {{ activeCard.numberSuffix }}
+            </span>
+          </div>
+
+          <p class="text-[16px] leading-[1.7] max-w-[260px]">
+            {{ activeCard.numberLabel }}
           </p>
         </div>
 
-        <!-- Card 2 (White) -->
-        <div class="bg-[#FFFFFF] rounded-[12px] p-8 flex flex-col text-black shadow-sm">
-          <p class="font-bold uppercase tracking-widest text-[12px] mb-6">Why This Happens</p>
-          <p class="text-[15px] leading-relaxed">
-            When time and energy are depleted by financial stress, fast food becomes the default — it's quick, cheap,
-            and predictable.
+        <!-- Middle -->
+        <div class="bg-white rounded-[12px] p-8 shadow-sm">
+          <p class="font-volkhov font-bold uppercase tracking-[0.15em] text-[16px] mb-8">
+            Why This Happens
+          </p>
+
+          <p class="text-[16px] leading-[1.9] text-[#4B5563]">
+            {{ activeCard.why }}
           </p>
         </div>
 
-        <!-- Card 3 (Beige) -->
-        <div class="bg-[#ECEAE1] rounded-[12px] p-8 flex flex-col text-black shadow-sm">
-          <p class="font-bold uppercase tracking-widest text-[12px] mb-6">What You Can Do</p>
-          <p class="text-[15px] leading-relaxed flex-1">
-            Quick affordable home meals don't need much time or skill. See ingredients that offers plenty nutritional
-            benefits
+        <!-- Right -->
+        <div class="bg-[#ECEAE1] rounded-[12px] p-8 flex flex-col shadow-sm">
+          <p class="font-volkhov font-bold uppercase tracking-[0.15em] text-[16px] mb-8">
+            What You Can Do
           </p>
-          <NuxtLink to="/get-food"
-            class="mt-6 inline-flex justify-center items-center px-6 py-3 bg-[#E8A85D] hover:bg-[#d6964a] text-black font-bold rounded-[8px] transition-all duration-300 hover:-translate-y-1 hover:shadow-lg cursor-pointer">
-            Browse affordable ingredients
+
+          <p class="text-[16px] leading-[1.9] text-[#4B5563] flex-1">
+            {{ activeCard.action }}
+          </p>
+
+          <NuxtLink
+            :to="activeCard.link"
+            class="mt-8 inline-flex h-[56px] items-center justify-center rounded-[8px] px-6 font-volkhov font-bold transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
+            :style="{ backgroundColor: activeCard.color, color: '#111827' }"
+          >
+            {{ activeCard.button }}
           </NuxtLink>
         </div>
+
       </div>
 
       <!-- Data resources -->
@@ -160,7 +204,7 @@ const stats = computed(() => [
     title: 'Drink sugary soft drinks daily',
     value: getStat(dietIndicators, 'Sugar-Sweetened Soft Drinks Daily', 'Yes', 'worried_pct', 13.9),
     color: '#5E8470',
-    desktopClass: 'absolute left-[0%] top-[20%] w-[250px]',
+    desktopClass: 'absolute left-[0%] top-[20%] w-[260px]',
     lineTarget: { x: '25%', y: '25%' }
   },
   {
@@ -168,7 +212,7 @@ const stats = computed(() => [
     title: 'Eat almost no vegetables daily',
     value: getStat(dietIndicators, 'Serves of Vegetables Per Day', 'Less than 1 serve', 'worried_pct', 7.8),
     color: '#6B8CA8',
-    desktopClass: 'absolute left-[25%] top-[0%] w-[250px]',
+    desktopClass: 'absolute left-[25%] top-[0%] w-[275px]',
     lineTarget: { x: '65%', y: '15%' }
   },
   {
@@ -176,7 +220,7 @@ const stats = computed(() => [
     title: 'Suffer serious mental distress',
     value: getStat(healthOutcomes, 'Psychological Distress Level', 'High or very high', 'insecure_hunger_pct', 31.3),
     color: '#4A7BA7',
-    desktopClass: 'absolute right-[0%] top-[15%] w-[260px]',
+    desktopClass: 'absolute right-[0%] top-[15%] w-[265px]',
     lineTarget: { x: '85%', y: '50%' }
   },
   {
@@ -184,19 +228,74 @@ const stats = computed(() => [
     title: 'Report poor physical health',
     value: getStat(lcdHealthOutcomes, 'Self-Reported Health Status', 'Fair or poor', 'relied_lowcost_yes_pct', 31.3),
     color: '#A73E5C',
-    desktopClass: 'absolute right-[10%] bottom-[5%] w-[250px]',
-    lineTarget: { x: '45%', y: '85%' }
+    desktopClass: 'absolute right-[0%] bottom-[24%] w-[240px]',
+    lineTarget: { x: '68%', y: '72%' }
   },
   {
     id: 'fast_food',
     title: 'Eat fast food 2x a week',
     value: getStat(dietIndicators, 'Fast Food Consumption', 'Two or more times a week', 'worried_pct', 15.7),
     color: '#E8A85D',
-    desktopClass: 'absolute left-[0%] bottom-[15%] w-[240px]',
-    lineTarget: { x: '15%', y: '50%' }
+    desktopClass: 'absolute left-[2%] bottom-[28%] w-[220px]',
+    lineTarget: { x: '30%', y: '70%' }
   }
 ])
 
+const impactCards = {
+  fast_food: {
+    number: '34%',
+    numberLabel: 'Australian household food spending goes on meals out and fast food.',
+    why: 'When time and energy are depleted by financial stress, fast food becomes the default - it\'s quick, cheap, and predictable.',
+    action: 'Eating well starts with knowing what to buy. Tell us your budget and goals - we\'ll recommend ingredients and smart swaps tailored just for you.',
+    button: 'Browse Affordable Ingredients',
+    link: '/get-food',
+    color: '#E8A85D'
+  },
+
+  mental_distress: {
+    number: '2x',
+    numberSuffix:  'more likely',
+    numberLabel: 'People with poor mental health are twice as likely to be food insecure - not knowing where your next meal comes from.',
+    why: 'Constantly worrying about where the next meal comes from creates chronic stress and anxiety. Over time, this takes a serious toll on mental and emotional wellbeing.',
+    action: 'Food stress can weigh heavily on your mind. Reach out to a free Australian mental health support line - you don\'t have to carry it alone.',
+    button: 'Call 13 11 14',
+    link: 'https://www.lifeline.org.au/',
+    color: '#5A88B8'
+  },
+
+  sugary_drinks: {
+    number: '12',
+    numberSuffix: 'teaspoons',
+    numberLabel: 'of sugar in a single 375ml can - nearly your entire daily limit. That\'s with zero nutritional value.',
+    why: 'Many low-income areas lack nearby supermarkets or fresh food stores. Without reliable transport, people rely on whatever is closest - often convenience stores or fast food outlets.',
+    action: 'Small daily habits add up over time. Explore simple swaps and healthy routines that fit your lifestyle without overhauling everything at once.',
+    button: 'Explore Wellness Guide',
+    link: '/nutrition-guide',
+    color: '#6E927B'
+  },
+
+  no_veg: {
+    number: '5%',
+    numberLabel: 'of Australians eat the recommended amount of vegetables daily. The rest are at higher risk of heart disease and diabetes.',
+    why: 'Fresh vegetables, lean proteins, and whole foods cost significantly more than processed alternatives - making nutritious eating feel out of reach when every dollar counts.',
+    action: 'Fast food feels easier when money\'s tight, but it doesn\'t have to be your only option. Discover affordable ingredients that are quick, filling, and better for you.',
+    button: 'Explore Get Food Page',
+    link: '/get-food',
+    color: '#6B8CA8'
+  },
+
+  poor_health_lcd: {
+    number: '50%',
+    numberLabel: 'of severely food insecure adults go entire days without eating. The body pays the price over time.',
+    why: 'Poor nutrition weakens the body, which affects energy, focus, and the ability to work or study - making it even harder to escape financial hardship and eat-well long-term.',
+    action: 'Poor nutrition takes a real toll on your body. Learn what your body needs and how to nourish it - even on a tight budget.',
+    button: 'Explore Nutritional Guide',
+    link: '/nutrition-guide',
+    color: '#B34B6D'
+  }
+}
+
+const activeCard = computed(() => impactCards[selectedStat.value])
 const sectionRef = ref(null)
 const desktopContainerRef = ref(null)
 const donutRef = ref(null)
@@ -206,7 +305,27 @@ const dynamicLineTargets = ref({})
 
 const animatedValues = ref({})
 const hasAnimated = ref(false)
+const donutHoveredStat = ref(null)
+const activeLineStat = ref(null)
+const activeCardStat = ref(null)
 const hoveredStat = ref(null)
+const selectedStat = ref('fast_food')
+
+const bottomCardsRef = ref(null)
+
+const selectStat = (id) => {
+  selectedStat.value = id
+
+  const y =
+    bottomCardsRef.value.getBoundingClientRect().top +
+    window.scrollY -
+    400
+
+  window.scrollTo({
+    top: y,
+    behavior: 'smooth',
+  })
+}
 
 const setBoxRef = (el, id) => {
   if (el) {
@@ -263,9 +382,33 @@ const renderDonut = (container, size) => {
     .on("mouseenter", (event, d) => {
       hoveredStat.value = d.data.id;
     })
+    .on("click", (event, d) => {
+      selectStat(d.data.id)
+    })
+    .on("mouseenter", (event, d) => {
+      const id = d.data.id
+
+      hoveredStat.value = id
+      donutHoveredStat.value = id
+
+      activeLineStat.value = null
+      activeCardStat.value = null
+
+      setTimeout(() => {
+        activeLineStat.value = id
+      }, 120)
+
+      setTimeout(() => {
+        activeCardStat.value = id
+      }, 240)
+    })
+
     .on("mouseleave", () => {
-      hoveredStat.value = null;
-    });
+      hoveredStat.value = null
+      donutHoveredStat.value = null
+      activeLineStat.value = null
+      activeCardStat.value = null
+    })
 
   // Center text
   const textGroup = svg.append("g").attr("class", "center-text");

@@ -1,11 +1,11 @@
 <template>
   <section id="story-path" class="w-full">
     <div class="w-full bg-[linear-gradient(106deg,#131B2E_0%,#396477_100%)]">
-      <div class="mx-auto w-full max-w-[1280px] px-5 pb-12 pt-12 sm:px-8 lg:min-h-[968px] lg:px-14 lg:pb-0">
-        <div class="story-reveal max-w-[520px]">
-          <h1 class="font-volkhov text-[48px] font-bold leading-[0.95] tracking-normal text-white sm:text-[64px] lg:text-[72px]">
+      <div class="section-inner pb-12 pt-16 lg:min-h-[940px] lg:pb-0 lg:pt-20">
+        <div class="story-reveal max-w-[520px] pt-0">
+          <h1 class="font-volkhov text-[48px] font-semibold leading-[0.95] tracking-normal text-white sm:text-[64px] lg:text-[72px]">
             Follow the
-            <span class="font-normal italic text-[#DF6951]">path</span>
+            <span class="italic text-[#DF6951]">path</span>
           </h1>
 
           <p class="mt-10 max-w-[500px] font-roboto text-[16px] leading-7 text-white/90 lg:text-[18px]">
@@ -16,23 +16,37 @@
         </div>
 
         <!-- Desktop plotted journey -->
-        <div ref="storyRef" class="relative -mt-10 hidden h-[690px] w-full lg:block">
+        <div ref="storyRef" class="relative -mt-24 hidden h-[760px] w-full lg:block">
           <svg
-            class="absolute inset-0 h-full w-full pointer-events-none"
+            class="absolute inset-0 z-0 h-full w-full pointer-events-none"
             viewBox="0 0 1200 620"
             preserveAspectRatio="xMidYMid meet"
             fill="none"
           >
-            <path class="story-path" d="M165 405 C245 530, 330 560, 430 505" />
-            <path class="story-path" d="M505 500 C640 455, 640 335, 720 285" />
-            <path class="story-path" d="M790 285 C900 340, 955 435, 1040 410" />
+            <path
+              class="story-path"
+              d="M120 280
+                C285 455, 355 500, 440 455"
+            />
+
+            <path
+              class="story-path"
+              d="M440 455
+                C625 415, 665 300, 700 225"
+            />
+
+            <path
+              class="story-path"
+              d="M770 225
+                C930 350, 995 405, 1095 325"
+            />
           </svg>
 
           <button
             v-for="(item, index) in storyItems"
             :key="item.title"
             type="button"
-            class="story-node group absolute flex w-[245px] -translate-x-1/2 -translate-y-1/2 flex-col items-center text-center outline-none"
+            class="story-node group absolute z-10 flex w-[245px] -translate-x-1/2 -translate-y-1/2 flex-col items-center text-center outline-none"
             :class="selectedItem?.title === item.title ? 'is-selected' : ''"
             :style="{
               left: `${(item.cx / 1200) * 100}%`,
@@ -57,7 +71,7 @@
             </span>
 
             <span
-              class="flex h-[196px] w-[196px] items-center justify-center rounded-full bg-[#B5DCFF99] transition duration-300 group-hover:scale-[1.03]"
+              class="flex h-[196px] w-[196px] items-center justify-center rounded-full bg-[#7C9DBA] transition duration-300 group-hover:scale-[1.03]"
               :class="selectedItem?.title === item.title ? 'scale-[1.08] ring-[6px] ring-[#DF6951] ring-offset-4 ring-offset-[#27475b] shadow-[0_0_34px_rgba(223,105,81,0.46)]' : 'shadow-none'"
             >
               <span
@@ -131,9 +145,9 @@
       <div
         v-if="selectedItem"
         ref="detailRef"
-        class="w-full bg-[#D5E3FC]/85"
+        class="w-full bg-[#FFFFFF]/80"
       >
-        <div class="mx-auto grid w-full max-w-[1280px] gap-8 px-5 py-9 sm:px-8 lg:grid-cols-[130px_minmax(0,1fr)_250px] lg:items-center lg:px-11">
+        <div class="section-inner grid gap-8 py-9 lg:grid-cols-[130px_minmax(0,1fr)_250px] lg:items-center">
           <div class="flex items-center gap-7">
             <p class="font-volkhov text-[58px] font-bold leading-none text-black lg:text-[64px]">
               {{ selectedItem.chapter }}
@@ -163,6 +177,8 @@
         </div>
       </div>
     </transition>
+    <!-- Dark buffer for hidden navbar hover -->
+    <div class="h-[72px] w-full bg-[linear-gradient(106deg,#131B2E_0%,#396477_100%)]" />
   </section>
 </template>
 
@@ -194,7 +210,7 @@ const storyItems: StoryItem[] = [
     title: 'Where it happens',
     img: '/images/learn-more/subject-26-1.webp',
     cx: 120,
-    cy: 365,
+    cy: 280,
     metricValue: '1 in 6',
     metricLabel: 'Vic households',
     eyebrow: 'Around us . Victoria',
@@ -208,7 +224,7 @@ const storyItems: StoryItem[] = [
     title: 'Who it affects',
     img: '/images/learn-more/subject-33-1.webp',
     cx: 440,
-    cy: 500,
+    cy: 405,
     metricValue: '312k',
     metricLabel: 'Children . 2024',
     eyebrow: 'Families . Children',
@@ -221,8 +237,8 @@ const storyItems: StoryItem[] = [
     chapter: '03',
     title: 'The Impact',
     img: '/images/learn-more/subject-31-1.webp',
-    cx: 735,
-    cy: 230,
+    cx: 720,
+    cy: 225,
     metricValue: '3.2x',
     metricLabel: 'Risk of anxiety',
     eyebrow: 'Long term . The impact',
@@ -235,8 +251,8 @@ const storyItems: StoryItem[] = [
     chapter: '04',
     title: 'Finding Support',
     img: '/images/learn-more/subject-30-1.webp',
-    cx: 1035,
-    cy: 395,
+    cx: 1095,
+    cy: 325,
     metricValue: '5 min',
     metricLabel: 'Action plan',
     eyebrow: 'Next steps . Finding support',
@@ -272,7 +288,7 @@ function scrollToDetailPanel() {
 function jumpToSection(targetId: string) {
   const el = document.getElementById(targetId)
   if (el) {
-    const yOffset = -80 // Offset for fixed navbar if needed
+    const yOffset = -72 // Offset for fixed navbar if needed
     const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset
     window.scrollTo({ top: y, behavior: 'smooth' })
   }
@@ -311,6 +327,7 @@ onMounted(() => {
 }
 
 .story-node {
+  z-index: 10;
   opacity: 1;
   transform: translate(-50%, -50%);
   transition: transform 220ms ease;
@@ -322,7 +339,7 @@ onMounted(() => {
 }
 
 .story-node.is-selected {
-  z-index: 5;
+  z-index: 20;
 }
 
 .story-path {

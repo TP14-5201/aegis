@@ -32,8 +32,7 @@
             Meal plan
           </h3>
           <p class="mt-2 font-body text-[16px] leading-6 text-white/90">
-            Tell us your weekly budget and family size - we'll build you a full meal plan
-            using affordable, nutritious ingredients available near you.
+            Tell us your weekly budget and dietary goal - we'll recommend you a list of ingredients that are affordable, nutritious.
           </p>
         </article>
 
@@ -44,7 +43,7 @@
           </h3>
           <p class="mt-2 font-body text-[16px] leading-6 text-white/90">
             Can't find an ingredient or need to swap it out? We'll suggest affordable
-            alternatives that keep your meal just as nutritious.
+            alternatives that are just as nutritious.
           </p>
         </article>
 
@@ -54,7 +53,7 @@
               Groceries Costing Too Much?
             </h3>
             <p class="mt-3 font-body text-[16px] leading-6 text-chere-text">
-              Master budget-friendly shopping with weekly meal plans, smart swaps,
+              Budget-friendly ingredient recommendations, smart swaps,
               and nutritional information.
             </p>
           </div>

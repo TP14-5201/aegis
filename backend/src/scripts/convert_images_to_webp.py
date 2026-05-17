@@ -10,6 +10,10 @@ def convert_and_delete(target_directory, quality):
         return
 
     for root, dirs, files in os.walk(target_directory):
+        # Skip wellness folder entirely
+        if "wellness" in root.lower():
+            continue
+
         for file in files:
             if file.lower().endswith(extensions):
                 if not "icon-" in file.lower():

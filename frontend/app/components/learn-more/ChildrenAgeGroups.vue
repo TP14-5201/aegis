@@ -1,22 +1,34 @@
 <template>
-  <section class="w-full bg-white py-12 lg:py-20 flex justify-center">
-    <div class="w-full max-w-[1280px] px-5 lg:px-12 flex flex-col items-center">
+  <section id="children-age-groups" class="bg-white pb-16 pt-8 lg:pb-20 lg:pt-10">
+    <div class="section-inner flex flex-col">
       <!-- Heading Section -->
-      <div class="w-full flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
-        <div class="flex-1">
-          <div class="flex items-center gap-4">
-            <span class="text-[#DF6951] text-[40px] md:text-[56px] font-playfair font-bold leading-none">02</span>
-            <span class="text-[#396477] text-sm md:text-base font-bold tracking-[2px] uppercase">The Children</span>
-          </div>
-          <h2 class="mt-4 text-[40px] md:text-[56px] lg:text-[64px] font-playfair font-bold text-navy leading-[1.1]">
-            What every child needs- <br />
-            <span class="italic text-[#DF6951] font-normal">at every stage of growth</span>
-          </h2>
+      <div class="w-full">
+        <div class="flex items-center gap-4">
+          <span class="font-volkhov text-[42px] font-bold leading-none text-[#DF6951]">
+            02
+          </span>
+
+          <span class="font-roboto text-[18px] font-bold uppercase tracking-[0.12em] text-[#396477]">
+            The Children
+          </span>
         </div>
-        <div class="lg:w-[300px] lg:border-l lg:border-[#C6C6CD] lg:pl-6 pt-2">
-          <p class="text-[#45464D] text-sm md:text-base leading-relaxed">
-            Nutrition needs shift as children grow. Tap a stage to see the recommended daily intake of nutrients.
-          </p>
+
+        <div class="mt-5 grid items-end gap-8 lg:grid-cols-[minmax(0,760px)_320px] lg:justify-between">
+          <h2 class="font-volkhov text-[48px] font-semibold leading-[0.95] text-black sm:text-[60px] lg:text-[64px]">
+            What every child needs-
+            <br />
+            <span class="font-normal italic text-[#DF6951]">
+              at every stage of growth
+            </span>
+          </h2>
+
+          <div
+            class="border-l border-[#C6C6CD] pl-6 mt-6 lg:mb-0 lg:-ml-16"
+          >
+            <p class="text-black text-[16px]">
+              Nutrition needs shift as children grow. Tap a stage to see the recommended daily intake of nutrients.
+            </p>
+          </div>
         </div>
       </div>
 
@@ -24,10 +36,10 @@
       <div
         class="w-full bg-[#E6EEFF] rounded-[32px] px-4 sm:px-8 pt-8 pb-4 mt-12 flex flex-wrap justify-center sm:justify-between items-end gap-y-8 gap-x-4">
         <button v-for="g in ageGroups" :key="g.label"
-          class="flex flex-col items-center transition-all duration-500 group relative w-[100px] sm:w-[120px] lg:w-[160px]"
+          class="flex flex-col items-center transition-all duration-500 group relative w-[110px] sm:w-[140px] lg:w-[180px]"
           :class="selectedGroupLabel === g.label ? 'scale-110' : 'opacity-70 hover:opacity-100 hover:scale-105'"
-          @click="selectGroup(g.label)">
-          <div class="h-[100px] sm:h-[140px] lg:h-[180px] w-full flex items-end justify-center mb-3">
+          @click="selectGroup(g.label, true)">
+          <div class="h-[130px] sm:h-[170px] lg:h-[220px] w-full flex items-end justify-center mb-2">
             <img :src="g.img" class="object-contain transition-all duration-500 origin-bottom" :class="[
               selectedGroupLabel === g.label ? '' : 'grayscale group-hover:grayscale-0',
               getImageScale(g.label)
@@ -35,7 +47,7 @@
           </div>
           <div class="text-center">
             <h4
-              class="font-playfair font-bold text-[16px] sm:text-[18px] lg:text-[22px] leading-tight transition-colors duration-300"
+              class="font-roboto font-bold text-[13px] sm:text-[15px] lg:text-[17px] leading-tight transition-colors duration-300"
               :class="selectedGroupLabel === g.label ? 'text-[#396477]' : 'text-navy/60'">
               {{ getGroupName(g.label) }}
             </h4>
@@ -48,15 +60,15 @@
       </div>
 
       <!-- Main Interactive Display -->
-      <div class="w-full mt-8 flex flex-col lg:flex-row gap-8">
+      <div id="age-group-details" class="mt-8 grid w-full items-stretch gap-4 lg:grid-cols-[240px_minmax(0,1fr)]">
         <!-- LEFT: Currently Viewing Card -->
         <div
-          class="w-full lg:w-[320px] xl:w-[380px] bg-[#E6EEFF] rounded-[32px] p-8 flex flex-col relative overflow-hidden min-h-[450px]">
+          class="flex min-h-[520px] w-full flex-col overflow-hidden rounded-[20px] border border-[#C6C6CD] bg-[#E6EEFF] p-6 shadow-[0_8px_18px_rgba(19,27,46,0.16)]">
           <div class="relative z-10">
             <p class="font-roboto font-bold text-[12px] tracking-[2px] text-[#396477] uppercase">
               Currently viewing
             </p>
-            <h3 class="font-playfair font-bold text-[36px] lg:text-[42px] text-navy mt-1 leading-tight">
+            <h3 class="mt-1 font-playfair text-[36px] font-bold leading-tight text-[#0D1C2E]">
               {{ getGroupName(selectedGroupLabel) }}
             </h3>
 
@@ -67,8 +79,8 @@
           </div>
 
           <!-- Silhouette -->
-          <div class="flex-1 w-full flex justify-center items-center mt-6 pointer-events-none opacity-40 z-0">
-            <div class="w-[180px] h-[160px] lg:w-[150px] lg:h-[100px]">
+          <div class="flex-1 w-full flex justify-center items-end mt-6 pointer-events-none z-0">
+            <div class="w-[240px] h-[220px] lg:w-[260px] lg:h-[240px]">
               <transition name="logo-fade" mode="out-in" @after-enter="onLogoEnter">
                 <div :key="selectedGroupLabel" class="relative w-full h-full flex justify-center items-center">
                   <div class="absolute inset-0 w-full h-full" :style="{
@@ -81,8 +93,8 @@
                     maskRepeat: 'no-repeat',
                     WebkitMaskRepeat: 'no-repeat'
                   }">
-                    <div class="absolute inset-0 w-full h-full bg-[#396477] opacity-80"></div>
-                    <div class="absolute bottom-0 left-0 w-full bg-navy transition-all duration-[1500ms] ease-out"
+                    <div class="absolute inset-0 w-full h-full bg-chere-navy opacity-80"></div>
+                    <div class="absolute bottom-0 left-0 w-full bg-chere-navy transition-all duration-[1500ms] ease-out"
                       :style="{ height: fillTrigger ? '100%' : '0%' }"></div>
                   </div>
                 </div>
@@ -98,17 +110,17 @@
           </div>
 
           <transition name="slide-fade" mode="out-in">
-            <div v-if="!pending" :key="selectedGroupLabel"
-              class="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6 w-full">
+            <div v-if="!pending" :key="selectedGroupLabel" 
+            class="grid w-full grid-cols-1 gap-5 md:grid-cols-2 md:grid-rows-3">
               <div v-for="(nutrient, index) in selectedGroupNutrients" :key="nutrient.id"
-                class="bg-white border border-[#C6C6CD] rounded-[24px] overflow-hidden flex h-[160px] shadow-[0px_4px_12px_rgba(0,0,0,0.05)] hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 group"
+                class="group flex h-[200px] overflow-hidden rounded-[18px] border border-[#C6C6CD] bg-white shadow-[0_8px_18px_rgba(19,27,46,0.16)] transition-all duration-300 hover:-translate-y-1"
                 :style="{ animationDelay: `${index * 100}ms` }">
-                <div class="p-5 flex-1 flex flex-col justify-center">
-                  <h4 class="font-playfair text-[18px] lg:text-[20px] text-[#396477]">
+                <div class="flex flex-1 flex-col justify-center p-6">
+                  <h4 class="font-playfair font-semibold text-[18px] text-[#396477]">
                     {{ nutrient.nutrient }}
                   </h4>
                   <p
-                    class="font-playfair font-bold text-[32px] lg:text-[38px] text-navy mt-1 leading-none tracking-tight">
+                    class="mt-1 font-playfair text-[32px] font-bold leading-none tracking-tight text-[#0D1C2E]">
                     {{ extractValue(nutrient.goal) }}
                   </p>
                   <p class="font-roboto text-[11px] lg:text-[12px] text-[#45464D] mt-3 line-clamp-2 leading-snug pr-2">
@@ -117,8 +129,8 @@
                 </div>
 
                 <!-- Right Side Image Placeholder -->
-                <div class="w-[40%] bg-gray-100 h-full overflow-hidden shrink-0">
-                  <img :src="getNutrientImage(nutrient.nutrient)"
+                <div class="h-full w-[42%] shrink-0 overflow-hidden bg-gray-100">
+                  <img :src="getNutrientImage(nutrient.nutrient, selectedGroupLabel)"
                     class="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity group-hover:scale-105 duration-500"
                     alt="Nutrient placeholder" />
                 </div>
@@ -130,7 +142,7 @@
 
       <!-- Bottom Banner -->
       <div
-        class="w-full mt-12 border border-[#C6C6CD] rounded-[20px] p-6 lg:p-8 flex flex-col lg:flex-row justify-between items-center gap-6">
+        class="mt-5 flex w-full flex-col items-center justify-between gap-5 rounded-[16px] border border-[#131B2E] bg-white px-6 py-5 shadow-[0_8px_18px_rgba(19,27,46,0.12)] lg:flex-row">
         <div>
           <h4 class="font-playfair font-bold text-[24px] lg:text-[28px] text-navy text-center lg:text-left">Unsure what
             your child needs right now ?</h4>
@@ -140,7 +152,7 @@
         </div>
         <NuxtLink to="/nutrition-guide">
           <button
-            class="bg-black text-white px-8 py-4 rounded-[16px] font-roboto font-medium hover:bg-[#396477] transition-colors duration-300 whitespace-nowrap text-[15px]">
+            class="h-[54px] rounded-[8px] bg-black px-8 font-roboto text-[14px] font-semibold text-white transition hover:bg-[#131B2E]">
             Explore Nutrition Guide
           </button>
         </NuxtLink>
@@ -166,7 +178,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, nextTick } from 'vue'
 import { useFetch, useRuntimeConfig } from '#app'
 
 const config = useRuntimeConfig()
@@ -182,6 +194,7 @@ interface NutrientData {
   actionable_guidance: string
 }
 
+
 const { data: macronutrientsData, pending } = useFetch<NutrientData[]>(
   `${apiBase}/recommended-macronutrients`,
   { lazy: true }
@@ -192,7 +205,50 @@ const ageImageMap: Record<string, string> = {
   '7-12 months': '/images/learn-more/children-infant.webp',
   '1-3 years': '/images/learn-more/children-toddler.webp',
   '4-8 years': '/images/learn-more/children-preschool.webp',
-  '9-13 years': '/images/learn-more/children-school-age.webp'
+  '9-13 years': '/images/learn-more/children-school-age.webp',
+}
+
+const nutrientImageMap: Record<string, Record<string, string>> = {
+  '0-6 months': {
+    carbohydrate: '/images/learn-more/macro/nb-1.webp',
+    energy: '/images/learn-more/macro/nb-2.webp',
+    protein: '/images/learn-more/macro/nb-3.webp',
+    fibre: '/images/learn-more/macro/nb-4.webp',
+    fat: '/images/learn-more/macro/nb-5.webp',
+    fluid: '/images/learn-more/macro/nb-6.webp',
+  },
+  '7-12 months': {
+    carbohydrate: '/images/learn-more/macro/in-1.webp',
+    energy: '/images/learn-more/macro/in-2.webp',
+    protein: '/images/learn-more/macro/in-3.webp',
+    fibre: '/images/learn-more/macro/in-4.webp',
+    fat: '/images/learn-more/macro/in-5.webp',
+    fluid: '/images/learn-more/macro/in-6.webp',
+  },
+  '1-3 years': {
+    carbohydrate: '/images/learn-more/macro/td-1.webp',
+    energy: '/images/learn-more/macro/td-2.webp',
+    protein: '/images/learn-more/macro/td-3.webp',
+    fibre: '/images/learn-more/macro/td-4.webp',
+    fat: '/images/learn-more/macro/td-5.webp',
+    fluid: '/images/learn-more/macro/td-6.webp',
+  },
+  '4-8 years': {
+    carbohydrate: '/images/learn-more/macro/yc-1.webp',
+    energy: '/images/learn-more/macro/yc-2.webp',
+    protein: '/images/learn-more/macro/yc-3.webp',
+    fibre: '/images/learn-more/macro/yc-4.webp',
+    fat: '/images/learn-more/macro/yc-5.webp',
+    fluid: '/images/learn-more/macro/yc-6.webp',
+  },
+  '9-13 years': {
+    carbohydrate: '/images/learn-more/macro/pt-1.webp',
+    energy: '/images/learn-more/macro/pt-2.webp',
+    protein: '/images/learn-more/macro/pt-3.webp',
+    fibre: '/images/learn-more/macro/pt-4.webp',
+    fat: '/images/learn-more/macro/pt-5.webp',
+    fluid: '/images/learn-more/macro/pt-6.webp',
+  },
 }
 
 const ageOrder = ['0-6 months', '7-12 months', '1-3 years', '4-8 years', '9-13 years']
@@ -248,16 +304,225 @@ const selectedGroupImage = computed(() => {
   return ageImageMap[selectedGroupLabel.value]
 })
 
+const nutrientContent: Record<
+  string,
+  Array<{
+    key: string
+    nutrient: string
+    description: string
+  }>
+> = {
+  '0-6 months': [
+    {
+      key: 'carbohydrate',
+      nutrient: 'Carbohydrate',
+      description: 'Lactose in breast milk is the only carbohydrate needed',
+    },
+    {
+      key: 'energy',
+      nutrient: 'Energy',
+      description: 'All energy needs are met through breast milk or formula alone',
+    },
+    {
+      key: 'protein',
+      nutrient: 'Protein',
+      description: 'Complete protein source. Other foods or drinks are not needed',
+    },
+    {
+      key: 'fibre',
+      nutrient: 'Dietary Fibre',
+      description: 'No fibre intake is set for this age. Breast milk covers all nutritional needs',
+    },
+    {
+      key: 'fat',
+      nutrient: 'Fat',
+      description: 'Breast milk or infant formula only',
+    },
+    {
+      key: 'fluid',
+      nutrient: 'Fluid',
+      description: 'No water or juice needed at this stage. Only breast milk/formula',
+    },
+  ],
+
+  '7-12 months': [
+    {
+      key: 'carbohydrate',
+      nutrient: 'Carbohydrate',
+      description: 'Infant rice cereal and sweet potato puree',
+    },
+    {
+      key: 'energy',
+      nutrient: 'Energy',
+      description: 'Smaller frequent meals like sweet potato puree plus milk',
+    },
+    {
+      key: 'protein',
+      nutrient: 'Protein',
+      description: 'Pureed chicken lentils and well-cooked eggs',
+    },
+    {
+      key: 'fibre',
+      nutrient: 'Dietary Fibre',
+      description: 'Soft cooked vegetables and pumpkin puree, lentil puree',
+    },
+    {
+      key: 'fat',
+      nutrient: 'Fat',
+      description: 'Avocado puree, full-fat dairy, oily fish purees',
+    },
+    {
+      key: 'fluid',
+      nutrient: 'Fluid',
+      description: 'Mostly via breast milk; small sips of water with meals',
+    },
+  ],
+
+  '1-3 years': [
+    {
+      key: 'carbohydrate',
+      nutrient: 'Carbohydrate',
+      description: 'Quinoa corn wholegrain bread and starchy vegetables',
+    },
+    {
+      key: 'energy',
+      nutrient: 'Energy',
+      description: 'Grains like oats and fruits veggies like broccoli',
+    },
+    {
+      key: 'protein',
+      nutrient: 'Protein',
+      description: 'Iron-rich meals lentils and well-cooked eggs',
+    },
+    {
+      key: 'fibre',
+      nutrient: 'Dietary Fibre',
+      description: 'All types of fruits like berries apple and watermelon',
+    },
+    {
+      key: 'fat',
+      nutrient: 'Fat',
+      description: 'Full-fat dairy until age 2. Nuts yoghurt and avocado',
+    },
+    {
+      key: 'fluid',
+      nutrient: 'Fluid',
+      description: "Full-fat cow's milk can replace formula from 12 months",
+    },
+  ],
+
+  '4-8 years': [
+    {
+      key: 'carbohydrate',
+      nutrient: 'Carbohydrate',
+      description: 'Corn wholegrain pasta oats and legumes',
+    },
+    {
+      key: 'energy',
+      nutrient: 'Energy',
+      description: '4 serves of grain foods like chickpeas rice needed per day',
+    },
+    {
+      key: 'protein',
+      nutrient: 'Protein',
+      description: 'Tofu lentils eggs and meat like chicken lean beef',
+    },
+    {
+      key: 'fibre',
+      nutrient: 'Dietary Fibre',
+      description: '2-3 different vegetables daily and wholegrain cereals',
+    },
+    {
+      key: 'fat',
+      nutrient: 'Fat',
+      description: 'Avocado eggs oily fish like salmon',
+    },
+    {
+      key: 'fluid',
+      nutrient: 'Fluid',
+      description: 'Reduced-fat milk tap water',
+    },
+  ],
+
+  '9-13 years': [
+    {
+      key: 'carbohydrate',
+      nutrient: 'Carbohydrate',
+      description: 'Wholegrain pasta oats breakfast cereals',
+    },
+    {
+      key: 'energy',
+      nutrient: 'Energy',
+      description: 'Lean meat poultry barley nuts and seeds',
+    },
+    {
+      key: 'protein',
+      nutrient: 'Protein',
+      description: 'Reduced-fat dairy products like cheese tofu',
+    },
+    {
+      key: 'fibre',
+      nutrient: 'Dietary Fibre',
+      description: 'Veggies like brussels sprouts sweet potato broccoli',
+    },
+    {
+      key: 'fat',
+      nutrient: 'Fat',
+      description: 'Cheese yoghurt eggs and oils like olive oil',
+    },
+    {
+      key: 'fluid',
+      nutrient: 'Fluid',
+      description: 'Tap water; caffeine and soft drinks are not recommended',
+    },
+  ],
+}
+
 const selectedGroupNutrients = computed(() => {
-  if (!macronutrientsData.value) return []
-  return macronutrientsData.value.filter(item => item.age === selectedGroupLabel.value)
+  const rows = macronutrientsData.value || []
+
+  const ageRows = rows.filter(
+    item => item.age === selectedGroupLabel.value
+  )
+
+  return nutrientContent[selectedGroupLabel.value].map((item, index) => {
+    const dbMatch = ageRows.find(
+      row => getNutrientKey(row.nutrient) === item.key
+    )
+
+    return {
+      id: index,
+      nutrient: item.nutrient,
+
+      goal: dbMatch?.goal || 'No AI set',
+
+      actionable_guidance: item.description,
+
+      portion_guide: item.description,
+    }
+  })
 })
 
-const selectGroup = (label: string) => {
-  if (selectedGroupLabel.value === label) return
+const selectGroup = async (label: string, shouldScroll = false) => {
+  if (selectedGroupLabel.value !== label) {
+    fillTrigger.value = false
+    selectedGroupLabel.value = label
+  }
 
-  fillTrigger.value = false
-  selectedGroupLabel.value = label
+  if (shouldScroll) {
+    await nextTick()
+
+    const el = document.getElementById('age-group-details')
+    if (!el) return
+
+    const yOffset = -130
+    const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset
+
+    window.scrollTo({
+      top: Math.max(0, y),
+      behavior: 'smooth',
+    })
+  }
 }
 
 const onLogoEnter = () => {
@@ -279,16 +544,22 @@ const extractValue = (goal: string | undefined) => {
 }
 
 // Generate real images based on nutrient name
-const getNutrientImage = (nutrient: string) => {
-  const n = (nutrient || '').toLowerCase()
+const getNutrientKey = (nutrient: string) => {
+  const n = (nutrient || '').toLowerCase().trim()
 
-  if (n.includes('energy')) return '/images/learn-more/energy.webp'
-  if (n.includes('protein')) return '/images/learn-more/protein.webp'
-  if (n.includes('fibre') || n.includes('fiber')) return '/images/learn-more/fibre.webp'
-  if (n.includes('fluid')) return '/images/learn-more/fluid.webp'
-  if (n.includes('fat')) return '/images/learn-more/fat.webp'
-  if (n.includes('carbohydrate')) return '/images/learn-more/carbohydrate.webp'
+  if (n.includes('carbohydrate') || n.includes('carb') || n.includes('cho')) return 'carbohydrate'
+  if (n.includes('energy') || n.includes('kilojoule') || n.includes('kj')) return 'energy'
+  if (n.includes('protein')) return 'protein'
+  if (n.includes('fibre') || n.includes('fiber')) return 'fibre'
+  if (n.includes('fat') || n.includes('lipid')) return 'fat'
+  if (n.includes('fluid') || n.includes('water')) return 'fluid'
 
+  return ''
+}
+
+const getNutrientImage = (nutrient: string, age = selectedGroupLabel.value) => {
+  const key = getNutrientKey(nutrient)
+  return nutrientImageMap[age]?.[key] || '/images/learn-more/macro/carbohydrate.webp'
 }
 </script>
 

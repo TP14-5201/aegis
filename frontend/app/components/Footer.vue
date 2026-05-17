@@ -1,6 +1,6 @@
 <template>
-  <footer class="bg-[#dce9ff] px-6 py-10 lg:px-10">
-    <div class="mx-auto flex max-w-7xl flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
+  <footer class="bg-[#dce9ff] py-10">
+    <div class="section-inner flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
       <div>
         <NuxtLink
           to="/"
@@ -20,7 +20,9 @@
         <NuxtLink to="/food-banks" class="hover:text-black">Food Bank</NuxtLink>
         <NuxtLink to="/get-food" class="hover:text-black">Get Food</NuxtLink>
         <NuxtLink to="/nutrition-guide" class="hover:text-black">Nutrition Guide</NuxtLink>
-        <NuxtLink to="/learn-more" class="hover:text-black">Learn More</NuxtLink>
+        <NuxtLink to="/health-tracking" class="nav-link">Health Tracking</NuxtLink>
+        <NuxtLink to="/learn-more" class="nav-link">Know more</NuxtLink>
+        <NuxtLink to="/quick-action" class="nav-link">Quick Action</NuxtLink>
       </nav>
     </div>
   </footer>
