@@ -8,6 +8,15 @@ from src.data.loaders.data_loader import (
     load_lga_boundaries_dataset,
     load_emergency_services_dataset,
     load_food_insecurity_dataset,
+    load_diet_indicator_dataset,
+    load_health_outcome_dataset,
+    load_low_cost_diet_dataset,
+    load_low_cost_diet_health_outcome_dataset,
+    load_recommended_macronutrients_intake_dataset,
+    load_food_inaccessibility_reasons_dataset,
+    load_ingredient_dataset,
+    load_ingredient_nutrition_dataset,
+    load_ingredient_health_rating_dataset,
 )
 from src.core.config import settings
 
@@ -582,3 +591,92 @@ class TestLoadFoodInsecurityDataset:
              patch("src.data.loaders.data_loader.logger"):
             with pytest.raises(FileNotFoundError):
                 load_food_insecurity_dataset()
+
+
+# ---------------------------------------------------------------------------
+# Remaining dataset loader wrappers
+# ---------------------------------------------------------------------------
+
+class TestSimpleDatasetLoaders:
+    @pytest.mark.parametrize(
+        "loader,path_attr,wrangler_name,label",
+        [
+            (load_diet_indicator_dataset, "DIET_INDICATOR_RAW_PATH", "wrangle_diet_indicator", "Diet Indicator"),
+            (load_health_outcome_dataset, "HEALTH_OUTCOME_RAW_PATH", "wrangle_health_outcome", "Health Outcome"),
+            (load_low_cost_diet_dataset, "LOW_COST_DIET_RAW_PATH", "wrangle_low_cost_diet", "Low Cost Diet"),
+            (
+                load_low_cost_diet_health_outcome_dataset,
+                "LOW_COST_DIET_HEALTH_OUTCOME_RAW_PATH",
+                "wrangle_low_cost_diet_health_outcome",
+                "Low Cost Diet Health Outcome",
+            ),
+            (
+                load_recommended_macronutrients_intake_dataset,
+                "RECOMMENDED_MACRONUTRIENTS_INTAKE_RAW_PATH",
+                "wrangle_recommended_macronutrients_intake",
+                "Recommended Macronutrients Intake",
+            ),
+            (load_ingredient_dataset, "GROCERY_PRICES_RAW_PATH", "wrangle_ingredient", "Ingredient"),
+        ],
+    )
+    def test_loader_reads_configured_csv_and_calls_wrangler(self, loader, path_attr, wrangler_name, label):
+        raw_df = pd.DataFrame({"raw": [1]})
+        wrangled_df = pd.DataFrame({"wrangled": [2]})
+        mock_wrangler = MagicMock(return_value=wrangled_df)
+
+        with patch("src.data.loaders.data_loader.pd.read_csv", return_value=raw_df) as mock_read_csv, \
+             patch(f"src.data.loaders.data_loader.{wrangler_name}", mock_wrangler):
+            result = loader()
+
+        mock_read_csv.assert_called_once_with(getattr(settings, path_attr))
+        mock_wrangler.assert_called_once_with(raw_df)
+        assert result is wrangled_df
+
+
+class TestLoadFoodInaccessibilityReasonsDataset:
+    def test_reads_raw_csv_loads_lga_boundaries_and_wrangler(self):
+        raw_df = pd.DataFrame({"reason": [1]})
+        lga_df = pd.DataFrame({"lga_pid": ["LGA001"]})
+        wrangled_df = pd.DataFrame({"result": [1]})
+
+        with patch("src.data.loaders.data_loader.pd.read_csv", return_value=raw_df) as mock_read_csv, \
+             patch("src.data.loaders.data_loader.load_lga_boundaries_dataset", return_value=lga_df) as mock_lga_loader, \
+             patch("src.data.loaders.data_loader.wrangle_food_inaccessibility_reasons", return_value=wrangled_df) as mock_wrangler:
+            result = load_food_inaccessibility_reasons_dataset()
+
+        mock_read_csv.assert_called_once_with(settings.FOOD_INACCESSIBILITY_REASONS_RAW_PATH)
+        mock_lga_loader.assert_called_once()
+        mock_wrangler.assert_called_once_with(raw_df, lga_df)
+        assert result is wrangled_df
+
+
+class TestIngredientNutritionAndHealthRatingLoaders:
+    def test_load_ingredient_nutrition_dataset_reads_food_facts_and_ingredients(self):
+        nutrition_df = pd.DataFrame({"nutrient": [1]})
+        ingredient_df = pd.DataFrame({"ingredient_code": ["A1"]})
+        wrangled_df = pd.DataFrame({"result": [1]})
+
+        with patch("src.data.loaders.data_loader.pd.read_excel", return_value=nutrition_df) as mock_read_excel, \
+             patch("src.data.loaders.data_loader.load_ingredient_dataset", return_value=ingredient_df) as mock_ingredient_loader, \
+             patch("src.data.loaders.data_loader.wrangle_ingredient_nutrition", return_value=wrangled_df) as mock_wrangler:
+            result = load_ingredient_nutrition_dataset()
+
+        mock_read_excel.assert_called_once_with(settings.FOOD_FACTS_RAW_PATH)
+        mock_ingredient_loader.assert_called_once()
+        mock_wrangler.assert_called_once_with(ingredient_df, nutrition_df)
+        assert result is wrangled_df
+
+    def test_load_ingredient_health_rating_dataset_combines_ingredient_and_nutrition_data(self):
+        ingredient_df = pd.DataFrame({"ingredient_code": ["A1"]})
+        nutrition_df = pd.DataFrame({"protein_g": [4.0]})
+        wrangled_df = pd.DataFrame({"final_health_score": [80]})
+
+        with patch("src.data.loaders.data_loader.load_ingredient_dataset", return_value=ingredient_df) as mock_ingredient_loader, \
+             patch("src.data.loaders.data_loader.load_ingredient_nutrition_dataset", return_value=nutrition_df) as mock_nutrition_loader, \
+             patch("src.data.loaders.data_loader.wrangle_ingredient_health_ratings", return_value=wrangled_df) as mock_wrangler:
+            result = load_ingredient_health_rating_dataset()
+
+        mock_ingredient_loader.assert_called_once()
+        mock_nutrition_loader.assert_called_once()
+        mock_wrangler.assert_called_once_with(ingredient_df, nutrition_df)
+        assert result is wrangled_df

@@ -4,12 +4,15 @@ from unittest.mock import MagicMock, patch
 
 from src.services.recommendation_service import (
     _dietary_vetoed,
+    _load_ingredients_df,
     _compute_rec_score,
     _compute_nutrient_badges,
+    warm_percentiles,
     select_bag,
     score_ingredients,
     score_ingredients_with_preferences,
 )
+from src.services import recommendation_service
 
 
 # ---------------------------------------------------------------------------
@@ -129,6 +132,11 @@ class TestComputeRecScore:
         medians = {"Fruit": 6.0}
         assert _compute_rec_score(cheap, cap, medians, []) > _compute_rec_score(pricey, cap, medians, [])
 
+    def test_invalid_nova_score_uses_default_deduction(self):
+        row = _make_row(nova_score="not-a-number", retail_price=5.0)
+        score = _compute_rec_score(row, price_cap=20.0, cat_median_prices={}, dietary_needs=[])
+        assert score > 0.0
+
 
 # ---------------------------------------------------------------------------
 # _compute_nutrient_badges
@@ -241,6 +249,48 @@ def _make_ingredients_df() -> pd.DataFrame:
     ])
 
 
+class TestWarmPercentilesAndLoadIngredients:
+    def test_warm_percentiles_populates_cache_and_logs(self):
+        df = _make_ingredients_df()
+
+        with patch("src.services.recommendation_service._load_ingredients_df", return_value=df), \
+             patch("src.services.recommendation_service.logger") as mock_logger:
+            warm_percentiles(MagicMock())
+
+        assert recommendation_service._PERCENTILES["protein_g"]["p25"] == pytest.approx(df["protein_g"].quantile(0.25))
+        assert recommendation_service._PERCENTILES["total_sugars_g"]["p75"] == pytest.approx(df["sugars_g"].quantile(0.75))
+        mock_logger.info.assert_called_once()
+
+    def test_load_ingredients_df_builds_dataframe_and_filters_missing_or_non_positive_prices(self):
+        rows = [
+            ("A1", "Apple", "Fruit", 2.0, "a", 1, 90.0, 0.3, 2.4, 0.1, 10.0),
+            ("A2", "Free sample", "Fruit", 0.0, "b", 1, 80.0, 1.0, 1.0, 1.0, 1.0),
+            ("A3", "Missing price", "Fruit", None, "c", 1, 70.0, 1.0, 1.0, 1.0, 1.0),
+        ]
+        query = MagicMock()
+        query.outerjoin.return_value = query
+        query.all.return_value = rows
+        db = MagicMock()
+        db.query.return_value = query
+
+        result = _load_ingredients_df(db)
+
+        assert list(result["ingredient_code"]) == ["A1"]
+        assert list(result.columns) == [
+            "ingredient_code",
+            "product_name",
+            "sub_category",
+            "retail_price",
+            "nutriscore_grade",
+            "nova_score",
+            "final_health_score",
+            "protein_g",
+            "fibre_g",
+            "fat_g",
+            "sugars_g",
+        ]
+
+
 class TestScoreIngredients:
     def test_all_prices_within_budget_cap(self):
         with patch("src.services.recommendation_service._load_ingredients_df", return_value=_make_ingredients_df()):
@@ -350,6 +400,22 @@ class TestScoreIngredientsWithPreferences:
             )
         scores = result["final_score"].tolist()
         assert scores == sorted(scores, reverse=True)
+
+    def test_nutrient_priority_boosts_alignment_for_threshold_matches(self):
+        with patch("src.services.recommendation_service._load_ingredients_df", return_value=_make_ingredients_df()), \
+             patch("src.services.recommendation_service._sub_engine") as mock_engine:
+            mock_engine.find_similar_to_text.return_value = {}
+            result = score_ingredients_with_preferences(
+                MagicMock(),
+                budget=60.0,
+                people=2,
+                days=5,
+                dietary_needs=[],
+                preferences=self._prefs(nutrient_priorities=["protein_g", "unknown_priority"]),
+            )
+
+        chicken = result[result["ingredient_code"] == "A1"].iloc[0]
+        assert chicken["preference_alignment"] == pytest.approx(0.2)
 
 
 # ---------------------------------------------------------------------------
