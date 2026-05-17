@@ -21,7 +21,7 @@
       :popup="activePopup"
       @close="closePopup"
     />
-    />
+ 
   </section>
 </template>
 
