@@ -61,7 +61,7 @@
       <div id="age-group-details" class="mt-8 grid w-full items-stretch gap-4 lg:grid-cols-[240px_minmax(0,1fr)]">
         <!-- LEFT: Currently Viewing Card -->
         <div
-          class="flex h-full min-h-[456px] w-full flex-col overflow-hidden rounded-[20px] border border-[#C6C6CD] bg-[#E6EEFF] p-6 shadow-[0_8px_18px_rgba(19,27,46,0.16)]">
+          class="flex min-h-[520px] w-full flex-col overflow-hidden rounded-[20px] border border-[#C6C6CD] bg-[#E6EEFF] p-6 shadow-[0_8px_18px_rgba(19,27,46,0.16)]">
           <div class="relative z-10">
             <p class="font-roboto font-bold text-[12px] tracking-[2px] text-[#396477] uppercase">
               Currently viewing
@@ -77,7 +77,7 @@
           </div>
 
           <!-- Silhouette -->
-          <div class="flex-1 w-full flex justify-center items-end mt-6 pointer-events-none opacity-40 z-0">
+          <div class="flex-1 w-full flex justify-center items-end mt-6 pointer-events-none z-0">
             <div class="w-[240px] h-[220px] lg:w-[260px] lg:h-[240px]">
               <transition name="logo-fade" mode="out-in" @after-enter="onLogoEnter">
                 <div :key="selectedGroupLabel" class="relative w-full h-full flex justify-center items-center">
@@ -91,8 +91,8 @@
                     maskRepeat: 'no-repeat',
                     WebkitMaskRepeat: 'no-repeat'
                   }">
-                    <div class="absolute inset-0 w-full h-full bg-[#396477] opacity-80"></div>
-                    <div class="absolute bottom-0 left-0 w-full bg-navy transition-all duration-[1500ms] ease-out"
+                    <div class="absolute inset-0 w-full h-full bg-chere-navy opacity-80"></div>
+                    <div class="absolute bottom-0 left-0 w-full bg-chere-navy transition-all duration-[1500ms] ease-out"
                       :style="{ height: fillTrigger ? '100%' : '0%' }"></div>
                   </div>
                 </div>
@@ -108,10 +108,10 @@
           </div>
 
           <transition name="slide-fade" mode="out-in">
-            <div v-if="!pending" :key="selectedGroupLabel"
-              class="grid h-full w-full grid-cols-1 gap-5 md:grid-cols-2 md:grid-rows-3">
+            <div v-if="!pending" :key="selectedGroupLabel" 
+            class="grid w-full grid-cols-1 gap-5 md:grid-cols-2 md:grid-rows-3">
               <div v-for="(nutrient, index) in selectedGroupNutrients" :key="nutrient.id"
-                class="group flex min-h-[140px] overflow-hidden rounded-[18px] border border-[#C6C6CD] bg-white shadow-[0_8px_18px_rgba(19,27,46,0.16)] transition-all duration-300 hover:-translate-y-1"
+                class="group flex h-[200px] overflow-hidden rounded-[18px] border border-[#C6C6CD] bg-white shadow-[0_8px_18px_rgba(19,27,46,0.16)] transition-all duration-300 hover:-translate-y-1"
                 :style="{ animationDelay: `${index * 100}ms` }">
                 <div class="flex flex-1 flex-col justify-center p-6">
                   <h4 class="font-playfair font-semibold text-[18px] text-[#396477]">
@@ -191,6 +191,7 @@ interface NutrientData {
   rationale_summary: string
   actionable_guidance: string
 }
+
 
 const { data: macronutrientsData, pending } = useFetch<NutrientData[]>(
   `${apiBase}/recommended-macronutrients`,
@@ -301,9 +302,203 @@ const selectedGroupImage = computed(() => {
   return ageImageMap[selectedGroupLabel.value]
 })
 
+const nutrientContent: Record<
+  string,
+  Array<{
+    key: string
+    nutrient: string
+    description: string
+  }>
+> = {
+  '0-6 months': [
+    {
+      key: 'carbohydrate',
+      nutrient: 'Carbohydrate',
+      description: 'Lactose in breast milk is the only carbohydrate needed',
+    },
+    {
+      key: 'energy',
+      nutrient: 'Energy',
+      description: 'All energy needs are met through breast milk or formula alone',
+    },
+    {
+      key: 'protein',
+      nutrient: 'Protein',
+      description: 'Complete protein source. Other foods or drinks are not needed',
+    },
+    {
+      key: 'fibre',
+      nutrient: 'Dietary Fibre',
+      description: 'No fibre intake is set for this age. Breast milk covers all nutritional needs',
+    },
+    {
+      key: 'fat',
+      nutrient: 'Fat',
+      description: 'Breast milk or infant formula only',
+    },
+    {
+      key: 'fluid',
+      nutrient: 'Fluid',
+      description: 'No water or juice needed at this stage. Only breast milk/formula',
+    },
+  ],
+
+  '7-12 months': [
+    {
+      key: 'carbohydrate',
+      nutrient: 'Carbohydrate',
+      description: 'Infant rice cereal and sweet potato puree',
+    },
+    {
+      key: 'energy',
+      nutrient: 'Energy',
+      description: 'Smaller frequent meals like sweet potato puree plus milk',
+    },
+    {
+      key: 'protein',
+      nutrient: 'Protein',
+      description: 'Pureed chicken lentils and well-cooked eggs',
+    },
+    {
+      key: 'fibre',
+      nutrient: 'Dietary Fibre',
+      description: 'Soft cooked vegetables and pumpkin puree, lentil puree',
+    },
+    {
+      key: 'fat',
+      nutrient: 'Fat',
+      description: 'Avocado puree, full-fat dairy, oily fish purees',
+    },
+    {
+      key: 'fluid',
+      nutrient: 'Fluid',
+      description: 'Mostly via breast milk; small sips of water with meals',
+    },
+  ],
+
+  '1-3 years': [
+    {
+      key: 'carbohydrate',
+      nutrient: 'Carbohydrate',
+      description: 'Quinoa corn wholegrain bread and starchy vegetables',
+    },
+    {
+      key: 'energy',
+      nutrient: 'Energy',
+      description: 'Grains like oats and fruits veggies like broccoli',
+    },
+    {
+      key: 'protein',
+      nutrient: 'Protein',
+      description: 'Iron-rich meals lentils and well-cooked eggs',
+    },
+    {
+      key: 'fibre',
+      nutrient: 'Dietary Fibre',
+      description: 'All types of fruits like berries apple and watermelon',
+    },
+    {
+      key: 'fat',
+      nutrient: 'Fat',
+      description: 'Full-fat dairy until age 2. Nuts yoghurt and avocado',
+    },
+    {
+      key: 'fluid',
+      nutrient: 'Fluid',
+      description: "Full-fat cow's milk can replace formula from 12 months",
+    },
+  ],
+
+  '4-8 years': [
+    {
+      key: 'carbohydrate',
+      nutrient: 'Carbohydrate',
+      description: 'Corn wholegrain pasta oats and legumes',
+    },
+    {
+      key: 'energy',
+      nutrient: 'Energy',
+      description: '4 serves of grain foods like chickpeas rice needed per day',
+    },
+    {
+      key: 'protein',
+      nutrient: 'Protein',
+      description: 'Tofu lentils eggs and meat like chicken lean beef',
+    },
+    {
+      key: 'fibre',
+      nutrient: 'Dietary Fibre',
+      description: '2-3 different vegetables daily and wholegrain cereals',
+    },
+    {
+      key: 'fat',
+      nutrient: 'Fat',
+      description: 'Avocado eggs oily fish like salmon',
+    },
+    {
+      key: 'fluid',
+      nutrient: 'Fluid',
+      description: 'Reduced-fat milk tap water',
+    },
+  ],
+
+  '9-13 years': [
+    {
+      key: 'carbohydrate',
+      nutrient: 'Carbohydrate',
+      description: 'Wholegrain pasta oats breakfast cereals',
+    },
+    {
+      key: 'energy',
+      nutrient: 'Energy',
+      description: 'Lean meat poultry barley nuts and seeds',
+    },
+    {
+      key: 'protein',
+      nutrient: 'Protein',
+      description: 'Reduced-fat dairy products like cheese tofu',
+    },
+    {
+      key: 'fibre',
+      nutrient: 'Dietary Fibre',
+      description: 'Veggies like brussels sprouts sweet potato broccoli',
+    },
+    {
+      key: 'fat',
+      nutrient: 'Fat',
+      description: 'Cheese yoghurt eggs and oils like olive oil',
+    },
+    {
+      key: 'fluid',
+      nutrient: 'Fluid',
+      description: 'Tap water; caffeine and soft drinks are not recommended',
+    },
+  ],
+}
+
 const selectedGroupNutrients = computed(() => {
-  if (!macronutrientsData.value) return []
-  return macronutrientsData.value.filter(item => item.age === selectedGroupLabel.value)
+  const rows = macronutrientsData.value || []
+
+  const ageRows = rows.filter(
+    item => item.age === selectedGroupLabel.value
+  )
+
+  return nutrientContent[selectedGroupLabel.value].map((item, index) => {
+    const dbMatch = ageRows.find(
+      row => getNutrientKey(row.nutrient) === item.key
+    )
+
+    return {
+      id: index,
+      nutrient: item.nutrient,
+
+      goal: dbMatch?.goal || 'No AI set',
+
+      actionable_guidance: item.description,
+
+      portion_guide: item.description,
+    }
+  })
 })
 
 const selectGroup = async (label: string, shouldScroll = false) => {
@@ -348,16 +543,16 @@ const extractValue = (goal: string | undefined) => {
 
 // Generate real images based on nutrient name
 const getNutrientKey = (nutrient: string) => {
-  const n = (nutrient || '').toLowerCase()
+  const n = (nutrient || '').toLowerCase().trim()
 
-  if (n.includes('carbohydrate')) return 'carbohydrate'
-  if (n.includes('energy')) return 'energy'
+  if (n.includes('carbohydrate') || n.includes('carb') || n.includes('cho')) return 'carbohydrate'
+  if (n.includes('energy') || n.includes('kilojoule') || n.includes('kj')) return 'energy'
   if (n.includes('protein')) return 'protein'
   if (n.includes('fibre') || n.includes('fiber')) return 'fibre'
-  if (n.includes('fat')) return 'fat'
-  if (n.includes('fluid')) return 'fluid'
+  if (n.includes('fat') || n.includes('lipid')) return 'fat'
+  if (n.includes('fluid') || n.includes('water')) return 'fluid'
 
-  return 'carbohydrate'
+  return ''
 }
 
 const getNutrientImage = (nutrient: string, age = selectedGroupLabel.value) => {
