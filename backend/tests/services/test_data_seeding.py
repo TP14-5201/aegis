@@ -1,6 +1,9 @@
 import pytest
+import runpy
+import sys
 import pandas as pd
 import numpy as np
+from types import SimpleNamespace
 from unittest.mock import patch, MagicMock, call
 
 from src.services.data_seeding import (
@@ -553,3 +556,43 @@ class TestLoadDataset:
     def test_propagates_exception_from_ingredient_health_rating_loader(self):
         """Tests that a failure in load_ingredient_health_rating_dataset propagates up."""
         self._assert_propagates("load_ingredient_health_rating_dataset")
+
+
+# ---------------------------------------------------------------------------
+# Script entrypoint
+# ---------------------------------------------------------------------------
+
+def test_data_seeding_script_entrypoint_resets_db_seeds_data_builds_index_and_closes_session(monkeypatch):
+    fake_engine = SimpleNamespace(build_index=MagicMock())
+    fake_module = SimpleNamespace(engine=fake_engine)
+    monkeypatch.setitem(sys.modules, "src.services.ingredient_substitution", fake_module)
+
+    db = MagicMock()
+    loader_names = list(_all_loader_patches().keys())
+    patch_objs = [
+        patch("src.models.Base.metadata.drop_all"),
+        patch("src.models.Base.metadata.create_all"),
+        patch("src.database.SessionLocal", return_value=db),
+        patch("src.scripts.download_dev_data.save_local_copy"),
+        patch("os.path.exists", return_value=True),
+    ]
+    for loader_name in loader_names:
+        patch_objs.append(
+            patch(f"src.data.loaders.data_loader.{loader_name}", return_value=pd.DataFrame())
+        )
+
+    started = [p.start() for p in patch_objs]
+    try:
+        runpy.run_module("src.services.data_seeding", run_name="__main__")
+    finally:
+        for p in reversed(patch_objs):
+            p.stop()
+
+    drop_all, create_all, session_local = started[0], started[1], started[2]
+    drop_all.assert_called_once()
+    create_all.assert_called_once()
+    session_local.assert_called_once()
+    assert db.query.return_value.delete.call_count == len(loader_names)
+    assert db.commit.call_count == len(loader_names)
+    fake_engine.build_index.assert_called_once_with(db)
+    db.close.assert_called_once()

@@ -1,7 +1,25 @@
 import pytest
+import builtins
+import importlib
 from unittest.mock import MagicMock, patch
 
+import src.services.personalisation_service as personalisation_service
 from src.services.personalisation_service import extract_preferences, _EMPTY_PREFERENCES
+
+
+def test_groq_import_error_sets_groq_to_none():
+    original_import = builtins.__import__
+
+    def fake_import(name, *args, **kwargs):
+        if name == "groq":
+            raise ImportError("groq unavailable")
+        return original_import(name, *args, **kwargs)
+
+    with patch("builtins.__import__", side_effect=fake_import):
+        reloaded = importlib.reload(personalisation_service)
+
+    assert reloaded.Groq is None
+    importlib.reload(personalisation_service)
 
 
 class TestExtractPreferences:
