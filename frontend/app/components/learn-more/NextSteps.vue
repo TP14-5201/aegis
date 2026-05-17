@@ -1,8 +1,8 @@
 <template>
-  <section class="w-full bg-white py-12 lg:py-20">
+  <section class="w-full bg-white pt-10 pb-20 lg:pt-12 lg:pb-32">
     <div class="section-inner">
       <!-- Header Area -->
-      <div class="mt-5 grid items-end gap-8 lg:grid-cols-[minmax(0,800px)_300px] lg:justify-between mb-14">
+      <div class="mt-3 grid items-end gap-8 lg:grid-cols-[minmax(0,800px)_300px] lg:justify-between mb-14">
         <div class="flex-1">
           <div class="flex items-center gap-4 mb-4">
             <span class="font-volkhov text-[48px] font-bold leading-none text-[#DF6951] lg:text-[60px]">04</span>
@@ -22,7 +22,7 @@
       </div>
 
       <!-- Main Card -->
-      <div class="w-full bg-[#292D3E] rounded-[32px] p-6 sm:p-8 lg:p-14 relative shadow-soft">
+      <div class="w-full bg-[#292D3E] rounded-[32px] p-6 sm:p-8 lg:px-14 lg:py-10 relative shadow-soft">
         <div class="flex flex-col relative">
           <!-- Vertical Line -->
           <div class="absolute left-[29.5px] top-[40px] bottom-[40px] w-[1px] bg-coral/40 hidden md:block"></div>
