@@ -4,6 +4,12 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   modules: ['@nuxtjs/tailwindcss'],
   css: ['~/assets/css/main.css'],
+  vite: {
+    server: {
+      // Allow ngrok (and similar) tunnels during local dev / accessWidget testing
+      allowedHosts: ['.ngrok-free.dev', '.ngrok-free.app'],
+    },
+  },
   runtimeConfig: {
     public: {
       googleMapsApiKey: '',   // set via NUXT_PUBLIC_GOOGLE_MAPS_API_KEY in .env
