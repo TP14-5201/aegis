@@ -2,7 +2,7 @@
   <!-- Floating notch -->
   <div
     v-if="isNavHidden"
-    class="fixed left-1/2 top-0 z-[60] flex -translate-x-1/2 items-center justify-center"
+    class="fixed left-1/2 top-0 z-[1300] flex -translate-x-1/2 items-center justify-center"
     @mouseenter="isNavHidden = false"
   >
     <div
@@ -27,7 +27,7 @@
 
   <!-- Desktop -->
   <header
-    class="fixed left-0 right-0 top-0 z-50 border-b border-[#e5e7eb] bg-[#f8f9ff]/95 backdrop-blur transition-transform duration-300"
+    class="fixed left-0 right-0 top-0 z-[1300] border-b border-[#e5e7eb] bg-[#f8f9ff]/95 backdrop-blur transition-transform duration-300"
     :class="[
       menuOpen ? 'h-auto' : 'h-[72px]',
       isNavHidden ? '-translate-y-full' : 'translate-y-0',
@@ -53,7 +53,8 @@
 
       <NuxtLink
         to="/quick-action"
-        class="quick-action-btn hidden h-10 items-center justify-center rounded-md bg-black px-7 text-[13px] font-bold text-white transition hover:opacity-90 lg:inline-flex"
+        class="quick-action-btn hidden h-10 items-center justify-center rounded-md bg-black px-7 text-[13px] font-bold text-white lg:inline-flex"
+        style="transition: opacity 0.22s ease, transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);"
       >
         <span class="quick-action-text">
           Quick Action
@@ -156,11 +157,13 @@ header {
   position: relative;
   padding-bottom: 5px;
   color: #1f2937;
-  transition: color 0.2s ease;
+  display: inline-block;
+  transition: color 0.22s ease, transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .nav-link:hover {
   color: #000000;
+  transform: translateY(-3px);
 }
 
 .nav-link.router-link-active::after {
@@ -172,6 +175,11 @@ header {
   height: 2px;
   border-radius: 999px;
   background-color: #000000;
+}
+
+.quick-action-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-3px);
 }
 
 .quick-action-text {

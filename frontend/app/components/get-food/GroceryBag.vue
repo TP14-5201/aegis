@@ -14,9 +14,8 @@
           </div>
         </div>
         <p class="mt-1 font-roboto text-[14px] text-gray-500">
-          Top picks globally ranked for your
-          <strong>${{ props.plannerData?.budget }} AUD</strong> budget,
-          {{ props.plannerData?.people ?? 2 }} {{ (props.plannerData?.people ?? 2) === 1 ? 'person' : 'people' }}.
+          Top picks globally ranked for
+          {{ props.plannerData?.people ?? 2 }} {{ (props.plannerData?.people ?? 2) === 1 ? 'person' : 'people' }} over {{ props.plannerData?.days ?? 4 }} days.
           <template v-if="props.plannerData?.dietaryGoal"> Goal: <strong>{{ props.plannerData.dietaryGoal }}</strong>.</template>
           Hit <strong>Swap</strong> to pick an alternative for any slot.
         </p>
@@ -50,16 +49,22 @@
             </div>
           </div>
           <div>
-            <p class="mb-2 text-[12px] font-bold uppercase tracking-wider text-gray-400">Relative cost — six levels</p>
+            <p class="mb-2 text-[12px] font-bold uppercase tracking-wider text-gray-400">Relative cost levels</p>
             <div class="space-y-1">
               <div v-for="tier in priceTierGuide" :key="tier.label" class="flex items-center gap-2 text-[12px]">
-                <span :class="tierBadgeClass(tier.label)" class="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold">{{ tier.symbol }} {{ tier.label }}</span>
+                <span :class="tierBadgeClass(tier.label)" class="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold">{{ tier.label }}</span>
                 <span class="text-gray-500">{{ tier.description }}</span>
               </div>
             </div>
           </div>
         </div>
       </details>
+
+      <p class="mt-3 font-roboto text-[12px] text-gray-500">
+        <span class="font-semibold text-gray-600">Note:</span>
+        When swapping, <span class="font-bold text-red-500">▲▲</span> means the alternative is relatively pricier,
+        <span class="font-bold text-green-600">▼▼</span> means it's cheaper.
+      </p>
 
       <!-- ── LOADING ─────────────────────────────────────────────────── -->
       <div v-if="pending" class="space-y-4">
@@ -104,11 +109,11 @@
             </div>
 
             <div class="flex-1 min-w-0">
-              <!-- Sub-category label + price tier badge -->
+              <!-- Sub-category label + cost tier -->
               <div class="flex flex-wrap items-center gap-2 mb-1">
                 <p class="font-roboto text-[11px] font-bold uppercase tracking-wider text-[#396477]">{{ slot.sub_category }}</p>
                 <span :class="tierBadgeClass(priceTier(slot.selected.retail_price))" class="rounded-full px-2 py-0.5 text-[10px] font-bold">
-                  {{ priceTierSymbol(slot.selected.retail_price) }} {{ priceTier(slot.selected.retail_price) }}
+                  {{ priceTier(slot.selected.retail_price) }}
                 </span>
                 <span
                   v-if="matchesGoal(slot.selected, props.plannerData?.dietaryGoal ?? null)"
@@ -133,12 +138,8 @@
               </div>
             </div>
 
-            <!-- Price + swap -->
+            <!-- Swap -->
             <div class="flex shrink-0 flex-col items-end gap-3">
-              <div class="text-right">
-                <p class="font-roboto text-[18px] font-bold text-navy">${{ slot.selected.retail_price.toFixed(2) }}</p>
-                <p class="text-[11px] text-gray-400">retail est.</p>
-              </div>
               <button
                 v-if="slot.alternatives.length > 0"
                 type="button"
@@ -168,11 +169,9 @@
                   class="flex w-full items-center justify-between gap-4 rounded-2xl border-2 border-gray-100 bg-white px-4 py-3 text-left transition hover:border-navy hover:shadow-sm"
                 >
                   <div class="min-w-0">
-                    <div class="flex flex-wrap items-center gap-1.5 mb-1">
-                      <span :class="tierBadgeClass(priceTier(alt.retail_price))" class="rounded-full px-2 py-0.5 text-[10px] font-bold">
-                        {{ priceTierSymbol(alt.retail_price) }} {{ priceTier(alt.retail_price) }}
-                      </span>
-                    </div>
+                    <span :class="tierBadgeClass(priceTier(alt.retail_price))" class="rounded-full px-2 py-0.5 text-[10px] font-bold mb-1 inline-block">
+                      {{ priceTier(alt.retail_price) }}
+                    </span>
                     <p class="font-roboto text-[14px] font-semibold text-navy leading-snug">{{ alt.product_name }}</p>
                     <div class="mt-1.5 flex flex-wrap gap-1">
                       <span v-for="badge in alt.nutrient_badges" :key="badge" :class="badgeClass(badge)" class="text-[10px]">
@@ -181,8 +180,14 @@
                     </div>
                   </div>
                   <div class="shrink-0 text-right">
-                    <p class="font-roboto text-[15px] font-bold text-navy">${{ alt.retail_price.toFixed(2) }}</p>
-                    <p class="text-[10px] text-[#396477] font-semibold">Select →</p>
+                    <p
+                      v-if="alt.retail_price !== slot.selected.retail_price"
+                      class="font-bold text-[16px] leading-none"
+                      :class="alt.retail_price > slot.selected.retail_price ? 'text-red-500' : 'text-green-600'"
+                    >
+                      {{ alt.retail_price > slot.selected.retail_price ? '▲▲' : '▼▼' }}
+                    </p>
+                    <p class="text-[10px] text-[#396477] font-semibold mt-1">Select →</p>
                   </div>
                 </button>
               </div>
@@ -191,21 +196,33 @@
         </article>
       </div>
 
-      <!-- ── RUNNING TOTAL ──────────────────────────────────────────── -->
-      <div v-if="!pending && !fetchError && resolvedSlots.length > 0" class="mt-6 rounded-2xl bg-navy px-6 py-5 text-white">
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="font-roboto text-[12px] font-bold uppercase tracking-wider text-[#8BAFC8]">Estimated basket total</p>
-            <p class="mt-0.5 font-roboto text-[11px] text-[#8BAFC8]">Sum of selected ingredients · swap to update</p>
-          </div>
-          <p class="font-volkhov text-[32px] font-bold">${{ runningTotal.toFixed(2) }}</p>
+      <!-- Data resources -->
+      <div class="mt-10 pt-6 border-t border-gray-200 text-[11px] text-gray-500">
+        <p class="font-bold uppercase tracking-widest mb-3 text-black/60">Data Resources Used</p>
+        <div class="flex flex-wrap gap-x-8 gap-y-3">
+          <span class="flex items-center gap-2">
+            <span class="font-semibold text-black/70">Nutrition:</span>
+            <a href="https://www.foodstandards.gov.au/science-data/monitoringnutrients/afcd" target="_blank" rel="noopener"
+              class="hover:text-[#396477] underline decoration-gray-300 underline-offset-2 transition-colors">
+              AFCD — Food Standards Australia New Zealand
+            </a>
+          </span>
+          <span class="flex items-center gap-2">
+            <span class="font-semibold text-black/70">Nutrition:</span>
+            <a href="https://fdc.nal.usda.gov/" target="_blank" rel="noopener"
+              class="hover:text-[#396477] underline decoration-gray-300 underline-offset-2 transition-colors">
+              USDA FoodData Central
+            </a>
+          </span>
+          <span class="flex items-center gap-2">
+            <span class="font-semibold text-black/70">Food Data:</span>
+            <a href="https://world.openfoodfacts.org/" target="_blank" rel="noopener"
+              class="hover:text-[#396477] underline decoration-gray-300 underline-offset-2 transition-colors">
+              Open Food Facts (ODbL)
+            </a>
+          </span>
         </div>
       </div>
-
-      <!-- ── FOOTER NOTE ─────────────────────────────────────────────── -->
-      <p v-if="!pending && !fetchError" class="mt-6 text-center font-roboto text-[12px] text-gray-400">
-        Note: These are decision-support suggestions, not live prices. Relative cost levels reflect typical Australian supermarket ranges and may vary by store and season.
-      </p>
     </div>
   </section>
 </template>
@@ -300,10 +317,6 @@ const selectIngredient = (sub_category: string, ing: ScoredIngredient) => {
   openSwap.value = null
 }
 
-const runningTotal = computed(() =>
-  resolvedSlots.value.reduce((sum, slot) => sum + slot.selected.retail_price, 0)
-)
-
 // ── Category initial avatar ────────────────────────────────────────────────
 
 const categoryInitial = (cat: string): string =>
@@ -320,14 +333,6 @@ const priceTier = (price: number): string => {
   return 'Very High'
 }
 
-const priceTierSymbol = (price: number): string => {
-  const map: Record<string, string> = {
-    'Very Low': '$', 'Low': '$', 'Medium-Low': '$$',
-    'Medium-High': '$$', 'High': '$$$', 'Very High': '$$$',
-  }
-  return map[priceTier(price)] ?? '$'
-}
-
 const tierBadgeClass = (tier: string): string => {
   const map: Record<string, string> = {
     'Very Low':    'bg-green-100 text-green-700',
@@ -341,12 +346,12 @@ const tierBadgeClass = (tier: string): string => {
 }
 
 const priceTierGuide = [
-  { label: 'Very Low',    symbol: '$',   description: 'AU$1–5 · Pantry staples & long-life basics — easy on any budget.' },
-  { label: 'Low',         symbol: '$',   description: 'AU$5–10 · Everyday affordable picks for most families.' },
-  { label: 'Medium-Low',  symbol: '$$',  description: 'AU$10–15 · A small step up — still gentle on the shop.' },
-  { label: 'Medium-High', symbol: '$$',  description: 'AU$15–25 · A balanced splurge — fits a comfortable budget.' },
-  { label: 'High',        symbol: '$$$', description: 'AU$25–40 · Premium ingredients — best as occasional features.' },
-  { label: 'Very High',   symbol: '$$$', description: 'AU$40+ · Luxury or specialty items — consider swaps to save.' },
+  { label: 'Very Low',    description: 'Pantry staples & long-life basics — easy on any budget.' },
+  { label: 'Low',         description: 'Everyday affordable picks for most families.' },
+  { label: 'Medium-Low',  description: 'A small step up — still gentle on the shop.' },
+  { label: 'Medium-High', description: 'A balanced splurge — fits a comfortable budget.' },
+  { label: 'High',        description: 'Premium ingredients — best as occasional features.' },
+  { label: 'Very High',   description: 'Luxury or specialty items — consider swaps to save.' },
 ]
 
 // ── Nutrient badge helpers ─────────────────────────────────────────────────

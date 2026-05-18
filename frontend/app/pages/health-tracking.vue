@@ -32,7 +32,7 @@
           class="mt-4 mx-auto"
           style="width:576px; max-width:100%; flex-shrink:0; color:#142741; text-align:center; font-family:'Plus Jakarta Sans'; font-size:17px; font-style:normal; font-weight:500; line-height:27.2px;"
         >
-          Track seven kind habits - with a focus on real, daily nutrition - in under a minute. Watch your little companion grow alongside the small things you already do.
+          Track seven kind habits in under a minute. Watch your little companion grow alongside the small things you already do.
         </p>
       </section>
 
@@ -116,6 +116,13 @@
   </div>
 
   <Footer />
+
+  <!-- Storage consent modal -->
+  <HealthTrackingStorageConsentModal
+    :visible="showConsentModal"
+    @accept="onConsentAccept"
+    @decline="onConsentDecline"
+  />
 </template>
 
 <script setup lang="ts">
@@ -164,6 +171,7 @@ const LS_MUTED = 'ht_muted'
 // so that redo always restores to the pre-survey baseline (no accumulation).
 const LS_BASE_EXP = 'ht_base_exp'
 const LS_BASE_LEVEL = 'ht_base_level'
+const LS_CONSENT = 'ht_storage_consent'
 
 // --- Reactive state ---
 const stage = ref<AgeStage>('newborns')
@@ -173,6 +181,9 @@ const petMood = ref<PetMood>('idle')
 const petLevel = ref(1)
 const petExp = ref(0)
 const isMuted = ref(true)
+
+const showConsentModal = ref(false)
+const storageConsented = ref(false)
 
 const weekData = ref<DayData[]>(buildEmptyWeek())
 const todayDimensions = ref<TodayDim[]>([])
@@ -307,8 +318,24 @@ function saveState() {
   lsSet(LS_WEEK, JSON.stringify(weekData.value))
 }
 
+// --- Consent ---
+function onConsentAccept() {
+  lsSet(LS_CONSENT, '1')
+  storageConsented.value = true
+  showConsentModal.value = false
+  startSurvey()
+}
+
+function onConsentDecline() {
+  showConsentModal.value = false
+}
+
 // --- Survey flow ---
 function startSurvey() {
+  if (!storageConsented.value) {
+    showConsentModal.value = true
+    return
+  }
   hasVisited.value = true
   surveyPhase.value = 'survey'
   // Pet stays idle during survey
@@ -444,6 +471,7 @@ watch(isMuted, (val) => { lsSet(LS_MUTED, val ? '1' : '0') })
 
 // --- Lifecycle ---
 onMounted(() => {
+  storageConsented.value = ls(LS_CONSENT) === '1'
   loadState()
 })
 
