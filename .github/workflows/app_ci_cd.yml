@@ -72,6 +72,11 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
+      # Deploy backend to Render Staging first when merged into underdevelopment
+      - name: Deploy backend to Render (Staging)
+        if: github.ref == 'refs/heads/underdevelopment'
+        run: curl --fail --request POST "${{ secrets.RENDER_STAGING_DEPLOY_HOOK_URL }}"
+
       - name: Install Vercel CLI
         run: npm install -g vercel@latest
 
