@@ -8,7 +8,8 @@ from src.models import (
     VicLgaBoundary, LgaPopulation,
     DietIndicator, HealthOutcome, LowCostDiet,
     LowCostDietHealthOutcome, RecommendedMacronutrientsIntake, FoodInaccessibilityReasons,
-    Ingredient, IngredientNutrition, IngredientHealthRating
+    Ingredient, IngredientNutrition, IngredientHealthRating,
+    IngredientEmbedding, SubstitutionMeta
 )
 
 from src.core.config import settings
@@ -31,17 +32,18 @@ from src.data.loaders.data_loader import (
 )
 
 
-def seed_database(db: Session, df: pd.DataFrame, model: Base) -> None:
+def seed_database(db: Session, df: pd.DataFrame, model: Base, *, clear_existing: bool = True) -> None:
     """Clears and re-seeds the table from the given DataFrame.
 
-    Deletes all existing rows before inserting to avoid duplicates on re-runs.
+    Deletes existing rows by default before inserting to avoid duplicates on re-runs.
     Rolls back and re-raises on any error.
     """
     logger.info(f"Starting database seed with {len(df)} records...")
 
     records = df.to_dict(orient='records')
     try:
-        db.query(model).delete()
+        if clear_existing:
+            db.query(model).delete()
         service_objects = [model(**data) for data in records]
         db.bulk_save_objects(service_objects)
         db.commit()
@@ -99,18 +101,40 @@ def load_dataset() -> pd.DataFrame:
     return [(loader(), model) for loader, model in DATASET_REGISTRY]
 
 
+def reset_seeded_tables(db: Session, models: list[type[Base]]) -> None:
+    """Clear managed seed tables in reverse dependency order."""
+    logger.info("Clearing existing seeded data...")
+    try:
+        for model in reversed(models):
+            db.query(model).delete()
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error clearing seeded data: {e}")
+        raise
+
+
+def should_reset_schema() -> bool:
+    """Return true only when an explicit destructive schema reset is requested."""
+    return os.getenv("AEGIS_RESET_DB", "").strip().lower() in {"1", "true", "yes"}
+
+
 if __name__ == "__main__":
     from src.services.ingredient_substitution import engine as substitution_engine
 
-    Base.metadata.drop_all(bind=engine)
+    if should_reset_schema():
+        logger.warning("AEGIS_RESET_DB is enabled; dropping all database tables before seeding.")
+        Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
 
     download_dataset()
     datasets = load_dataset()
     db = SessionLocal()
     try:
+        seed_models = [model for _, model in datasets]
+        reset_seeded_tables(db, [*seed_models, IngredientEmbedding, SubstitutionMeta])
         for df, model in datasets:
-            seed_database(db, df, model)
+            seed_database(db, df, model, clear_existing=False)
         logger.info("Building FAISS substitution index…")
         substitution_engine.build_index(db)
         logger.info("FAISS index built successfully.")
