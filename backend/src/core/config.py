@@ -1,4 +1,5 @@
 import os
+from typing import Any
 
 from pydantic_settings import BaseSettings
 
@@ -40,7 +41,7 @@ class Settings(BaseSettings):
     ### "Learn More" Page Dataset ###
     # Food insecurity data: VAHI (Victorian Population Health Survey)
     FOOD_INSECURITY_URL: str = "https://www.dropbox.com/scl/fi/8dj6f9knai1pvc2kuxbq8/food_insecurity_data.xlsx?rlkey=jxyaf0viyy84fnev3t3m0atod&st=7vc78ayw&dl=1"
-    FOOD_INSECURITY_SHEET_NAME: any = 0
+    FOOD_INSECURITY_SHEET_NAME: Any = 0
     SELECTED_REGIONS: list[str] = [
         'LGAs of Ovens-Murray PHU',
         'LGAs of Grampians Wimmera Southern Mallee PHU',
@@ -101,7 +102,7 @@ class Settings(BaseSettings):
     ]
 
     FOOD_FACTS_DATASET_URL: str = "https://www.foodstandards.gov.au/sites/default/files/2025-12/AFCD%20Release%203%20-%20Nutrient%20profiles.xlsx"
-    FOOD_FACTS_SHEET_NAME: any = 1
+    FOOD_FACTS_SHEET_NAME: Any = 1
     FOOD_FACTS_COLS: list[str] = [
         # Main ingredient info
         'ingredient_code',
