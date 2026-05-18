@@ -55,7 +55,7 @@ class Settings(BaseSettings):
     ]
 
     # Regional Victorian GDB boundaries
-    VICLGA_BOUNDARY_URL: str = "https://data.gov.au/data/dataset/bdf92691-c6fe-42b9-a0e2-a4cd716fa811/resource/95079e79-37d0-43c7-9f80-10eda1b0d05f/download/vic_lga_gda2020.zip"
+    VICLGA_BOUNDARY_URL: str = "https://www.dropbox.com/scl/fi/hjjai65eudy2rl81fb85x/vic_lga_gda2020.zip?rlkey=ygjk3mmq5y5dfv69y5kukpr5h&st=dptdfzsz&dl=1"
 
     # LGA Population
     LGA_POPULATION_URL: str = "https://www.dropbox.com/scl/fi/ebycjxbqe4k609nl7tr5r/abs_population_raw.csv?rlkey=acffuxvapuwtae1asrfyeivaz&st=msgf6ui9&dl=1"
