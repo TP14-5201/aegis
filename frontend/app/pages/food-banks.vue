@@ -133,11 +133,11 @@
     </div>
 
     <!-- ── Weather + Checklist CTA ──────────────────────────────────────── -->
-    <div class="border-b border-[#c4c6cf]">
-      <div class="mx-auto flex max-w-[1280px] gap-4 px-6 py-4 lg:px-12">
+    <div ref="weatherEl" class="weather-row">
+      <div class="mx-auto flex max-w-[1280px] gap-4 px-6 py-3 lg:px-12">
 
         <!-- Weather card -->
-        <div class="flex flex-1 items-center gap-6 rounded-2xl border border-[#e5c97a] bg-[#fae2424a] px-6 py-4">
+        <div class="flex flex-1 items-center gap-6 rounded-2xl border border-[#e5c97a] bg-[#fae2424a] px-6 py-3">
           <div class="flex flex-col gap-0.5">
             <div class="flex items-end gap-1">
               <span class="font-display text-[44px] font-bold leading-none" :class="weather ? 'text-[#001b3d]' : 'text-[#001b3d] opacity-30'">
@@ -175,7 +175,7 @@
         </div>
 
         <!-- Checklist CTA card -->
-        <div class="flex flex-1 items-center justify-between gap-4 rounded-2xl border border-[#c4c6cf] bg-white px-6 py-4">
+        <div class="flex flex-1 items-center justify-between gap-4 rounded-2xl border border-[#c4c6cf] bg-white px-6 py-3">
           <div>
             <p class="font-display text-[20px] font-semibold text-[#001b3d]">Unsure what to pack?</p>
             <p class="mt-0.5 font-body text-[13px] text-[#74777f]">a few quick tasks before you go</p>
@@ -591,6 +591,50 @@
       </div>
     </div>
 
+    <!-- Data resources -->
+    <div class="w-full border-t border-[#C3C5D9] bg-[#e8f0fb]">
+      <div class="section-inner py-4 text-left text-[11px] text-[#6B7280]">
+        <p class="mb-3 font-bold uppercase tracking-widest text-[#434656]">Data Resources Used</p>
+        <div class="flex flex-wrap items-center gap-x-8 gap-y-3">
+          <span class="flex items-center gap-2">
+            <span class="font-semibold text-[#434656]">Relief Services:</span>
+            <a href="https://data.melbourne.vic.gov.au/" target="_blank" rel="noopener"
+              class="underline decoration-[#C3C5D9] underline-offset-2 hover:text-[#0052FF]">
+              City of Melbourne Open Data
+            </a>
+          </span>
+          <span class="flex items-center gap-2">
+            <span class="font-semibold text-[#434656]">Relief Services:</span>
+            <a href="https://data.gov.au/" target="_blank" rel="noopener"
+              class="underline decoration-[#C3C5D9] underline-offset-2 hover:text-[#0052FF]">
+              data.gov.au — Emergency Relief Providers
+            </a>
+          </span>
+          <span class="flex items-center gap-2">
+            <span class="font-semibold text-[#434656]">Weather:</span>
+            <a href="https://openweathermap.org/" target="_blank" rel="noopener"
+              class="underline decoration-[#C3C5D9] underline-offset-2 hover:text-[#0052FF]">
+              OpenWeatherMap
+            </a>
+          </span>
+          <span class="flex items-center gap-2">
+            <span class="font-semibold text-[#434656]">Transit:</span>
+            <a href="https://www.ptv.vic.gov.au/" target="_blank" rel="noopener"
+              class="underline decoration-[#C3C5D9] underline-offset-2 hover:text-[#0052FF]">
+              PTV GTFSR — Transport for Victoria
+            </a>
+          </span>
+          <span class="flex items-center gap-2">
+            <span class="font-semibold text-[#434656]">Maps & Directions:</span>
+            <a href="https://maps.google.com/" target="_blank" rel="noopener"
+              class="underline decoration-[#C3C5D9] underline-offset-2 hover:text-[#0052FF]">
+              Google Maps Platform
+            </a>
+          </span>
+        </div>
+      </div>
+    </div>
+
     <Footer />
 
     <!-- ── Checklist modal ──────────────────────────────────────────────── -->
@@ -671,6 +715,7 @@ const MOCK_SERVICES = [
 // ── State ──────────────────────────────────────────────────────────────────
 const mapEl = ref(null)
 const headerEl = ref(null)
+const weatherEl = ref(null)
 const searchQuery = ref('')
 const activeFilter = ref('both')
 const openNowFilter = ref(false)
@@ -679,7 +724,7 @@ const locating = ref(false)
 const services = ref([])
 const selectedService = ref(null)
 const expandedServiceId = ref(null)
-const visibleCount = ref(200)
+const visibleCount = ref(5)
 const mainHeight = ref('600px')
 const userLocation = ref(null)
 const locationLabel = ref('')
@@ -866,6 +911,7 @@ async function searchByAddress() {
     const label = data[0].display_name.split(',')[0]
     userLocation.value = { lat, lon }
     locationLabel.value = label
+    fetchWeather(lat, lon)
     mapInstance?.setView([lat, lon], 13)
     placeUserMarker(lat, lon)
     sortByDistance(lat, lon)
@@ -974,7 +1020,7 @@ function fitMapToMarkers() {
 watch(filteredServices, () => {
   updateMapMarkers()
   clearDirections()
-  visibleCount.value = 200
+  visibleCount.value = 5
   expandedServiceId.value = null
 })
 
@@ -1017,6 +1063,7 @@ async function selectSuggestion(s) {
     const lon = place.location.lng()
     userLocation.value = { lat, lon }
     locationLabel.value = s.description.split(',')[0]
+    fetchWeather(lat, lon)
     mapInstance?.setView([lat, lon], 13)
     placeUserMarker(lat, lon)
     sortByDistance(lat, lon)
@@ -1434,28 +1481,34 @@ function maneuverIcon(maneuver) {
   return 'M12 19V5M5 12l7-7 7 7' // straight
 }
 
-// ── Init ───────────────────────────────────────────────────────────────────
-onMounted(async () => {
-  await nextTick()
-  updateLayout()
-  window.addEventListener('resize', updateLayout)
-
-  // Dynamic import — Leaflet requires browser globals (window/document)
+// ── Map initialisation (isolated to this page) ────────────────────────────
+async function initFoodBanksMap() {
   await import('leaflet/dist/leaflet.css')
   L = (await import('leaflet')).default
 
-  // Leaflet initialisation — no API key needed
+  await nextTick() // ensure mainHeight has been applied to DOM before Leaflet reads container size
   mapInstance = L.map(mapEl.value, {
     center: [-36.8, 144.9],
     zoom: 7,
     zoomControl: true,
   })
 
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}', {
+  // Explicit .png extension avoids empty {r} retina suffix causing CDN 404s
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
     attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/">CARTO</a>',
     subdomains: 'abcd',
     maxZoom: 19,
+    detectRetina: false,
   }).addTo(mapInstance)
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────
+onMounted(async () => {
+  await nextTick()
+  updateLayout()
+  window.addEventListener('resize', updateLayout)
+
+  await initFoodBanksMap()
 
   // Load Google Maps JS API (Places autocomplete + DirectionsService)
   const gmKey = config.public.googleMapsApiKey
@@ -1478,14 +1531,19 @@ onMounted(async () => {
 })
 
 function updateLayout() {
+  const spacerH = window.innerWidth >= 1024 ? 100 : 72
   const headerH = headerEl.value?.offsetHeight ?? 185
-  const navbarH = 86
+  const weatherH = weatherEl.value?.offsetHeight ?? 84
   if (window.innerWidth >= 768) {
-    mainHeight.value = `calc(100vh - ${navbarH + headerH}px)`
+    // Use window.innerHeight (accounts for mobile browser chrome, like 100dvh)
+    mainHeight.value = `calc(${window.innerHeight}px - ${spacerH + headerH + weatherH}px)`
   } else {
     mainHeight.value = 'auto'
   }
-  nextTick(() => setTimeout(() => mapInstance?.invalidateSize(), 50))
+  nextTick(() => {
+    setTimeout(() => mapInstance?.invalidateSize(), 50)
+    setTimeout(() => mapInstance?.invalidateSize(), 300)
+  })
 }
 
 onBeforeUnmount(() => {
@@ -1510,10 +1568,16 @@ onBeforeUnmount(() => {
 /* ── Search / filter header ──────────────────────────── */
 .page-header {
   background: #ffffff;
-  border-bottom: 1px solid #c4c6cf;
   flex-shrink: 0;
   position: relative;
   z-index: 1100;
+}
+
+/* ── Weather + checklist row ─────────────────────────── */
+.weather-row {
+  background: #ffffff;
+  border-bottom: 1px solid rgba(196, 198, 207, 0.4);
+  flex-shrink: 0;
 }
 
 /* ── Main panel (cards + map side by side) ───────────── */
@@ -1521,14 +1585,17 @@ onBeforeUnmount(() => {
   display: flex;
   flex-shrink: 0;
   overflow: hidden;
+  background: #f8f9fc;
+  min-height: 500px;
 }
 
 /* ── Left card panel ──────────────────────────────────── */
 .left-panel {
-  width: 410px;
-  min-width: 340px;
+  width: clamp(320px, 28vw, 420px);
+  min-width: 320px;
   background: #fafafa;
-  border-right: 1px solid #c4c6cf;
+  border-right: 1px solid rgba(196, 198, 207, 0.45);
+  box-shadow: 2px 0 8px rgba(0, 27, 61, 0.04);
   position: relative;
   display: flex;
   flex-direction: column;
@@ -1556,7 +1623,7 @@ onBeforeUnmount(() => {
   flex: 1;
   position: relative;
   min-width: 0;
-  min-height: 0;
+  min-height: clamp(420px, 60vh, 900px);
 }
 
 /* ── Leaflet overrides ────────────────────────────────── */
@@ -1607,8 +1674,8 @@ onBeforeUnmount(() => {
   }
 
   .map-panel {
-    height: 45vh;
-    min-height: 280px;
+    height: 50vh;
+    min-height: 300px;
     order: 1;
     width: 100%;
   }
