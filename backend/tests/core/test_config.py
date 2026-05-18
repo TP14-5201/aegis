@@ -142,8 +142,7 @@ class TestBoundarySettings:
         """Tests the default VicLGA boundary URL."""
         s = Settings()
         assert s.VICLGA_BOUNDARY_URL == (
-            "https://data.gov.au/data/dataset/bdf92691-c6fe-42b9-a0e2-a4cd716fa811/resource/"
-            "95079e79-37d0-43c7-9f80-10eda1b0d05f/download/vic_lga_gda2020.zip"
+            "https://www.dropbox.com/scl/fi/hjjai65eudy2rl81fb85x/vic_lga_gda2020.zip?rlkey=ygjk3mmq5y5dfv69y5kukpr5h&st=dptdfzsz&dl=1"
         )
 
     def test_settings_default_viclga_boundary_raw_zip_path(self):

@@ -1,11 +1,7 @@
 <template>
-  <section
-    id="wellness-guide"
-    class="wellness-section"
-  >
+  <section id="wellness-guide" class="wellness-section">
     <div class="wellness-header">
       <h2>Wellness Habits Guide</h2>
-
       <p>
         Bite-sized, actionable advice for your family’s health and daily
         well-being to integrate seamlessly into your routine.
@@ -15,13 +11,12 @@
     <WellnessGuideOrbitTips
       :orbit-items="orbitItems"
       @open-popup="onOpenPopup"
+      @open-wellness-book="showBook = true"
     />
 
-    <WellnessHabitsPopup
-      :popup="activePopup"
-      @close="closePopup"
-    />
- 
+    <WellnessHabitsPopup :popup="activePopup" @close="closePopup" />
+
+    <WellnessGuideBook v-if="showBook" @close="showBook = false" />
   </section>
 </template>
 
@@ -33,8 +28,10 @@ import type { WellnessPopup } from "../../data/wellnessPopups";
 
 import WellnessGuideOrbitTips from "./WellnessGuideOrbitTips.vue";
 import WellnessHabitsPopup from "./WellnessHabitsPopup.vue";
+import WellnessGuideBook from "./WellnessGuideBook.vue";
 
 const activePopup = ref<WellnessPopup | null>(null);
+const showBook = ref(false);
 
 function onOpenPopup(popup: WellnessPopup) {
   activePopup.value = popup;
@@ -48,40 +45,31 @@ function closePopup() {
 <style scoped>
 .wellness-section {
   width: 100%;
-
   background: #eaf1ff;
-
   padding: 64px 40px 72px;
 }
 
 .wellness-header {
   max-width: 780px;
-
   margin: 0 auto 56px;
-
   text-align: center;
 }
 
 .wellness-header h2 {
   margin: 0;
-
   font-family: "Playfair Display", Georgia, serif;
   font-size: clamp(40px, 4vw, 56px);
   font-weight: 700;
   line-height: 1.1;
-
-  color: #000000;
+  color: #000;
 }
 
 .wellness-header p {
   margin: 18px auto 0;
-
   max-width: 760px;
-
   font-family: "Plus Jakarta Sans", sans-serif;
   font-size: 18px;
   line-height: 1.55;
-
   color: #45464d;
 }
 
