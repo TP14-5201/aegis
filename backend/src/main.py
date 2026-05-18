@@ -55,6 +55,8 @@ app = FastAPI(title="Aegis Support Services API", version="0.1.0")
 ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+    # ngrok dev tunnel (accessWidget testing) — remove or update when URL changes
+    "https://resurrect-activity-chaffing.ngrok-free.dev",
     # Production
     "https://cherebowl.vercel.app",
     # Dev

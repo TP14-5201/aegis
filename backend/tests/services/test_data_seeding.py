@@ -9,7 +9,9 @@ from unittest.mock import patch, MagicMock, call
 from src.services.data_seeding import (
     seed_database,
     download_dataset,
-    load_dataset
+    load_dataset,
+    reset_seeded_tables,
+    should_reset_schema
 )
 from src.core.config import settings
 
@@ -124,6 +126,12 @@ class TestSeedDatabase:
         seed_database(mock_db, df, mock_model)
         mock_db.query.assert_called_once_with(mock_model)
         mock_db.query.return_value.delete.assert_called_once()
+
+    def test_can_skip_deleting_existing_rows(self, mock_db, mock_model):
+        """Tests that table clearing can be handled separately by the entrypoint."""
+        seed_database(mock_db, make_sample_df(), mock_model, clear_existing=False)
+        mock_db.query.assert_not_called()
+        mock_db.bulk_save_objects.assert_called_once()
 
     def test_deletes_before_insert(self, mock_db, mock_model):
         """Tests that delete precedes bulk_save to prevent duplicates on re-runs."""
@@ -559,13 +567,52 @@ class TestLoadDataset:
 
 
 # ---------------------------------------------------------------------------
+# reset_seeded_tables / should_reset_schema
+# ---------------------------------------------------------------------------
+
+def test_reset_seeded_tables_deletes_models_in_reverse_order_and_commits(mock_db):
+    model_a = MagicMock()
+    model_a.__name__ = "ModelA"
+    model_b = MagicMock()
+    model_b.__name__ = "ModelB"
+
+    reset_seeded_tables(mock_db, [model_a, model_b])
+
+    assert mock_db.query.call_args_list == [call(model_b), call(model_a)]
+    assert mock_db.query.return_value.delete.call_count == 2
+    mock_db.commit.assert_called_once()
+
+
+def test_reset_seeded_tables_rolls_back_and_reraises_on_error(mock_db):
+    model = MagicMock()
+    mock_db.query.return_value.delete.side_effect = RuntimeError("delete failed")
+
+    with pytest.raises(RuntimeError, match="delete failed"):
+        reset_seeded_tables(mock_db, [model])
+
+    mock_db.rollback.assert_called_once()
+    mock_db.commit.assert_not_called()
+
+
+def test_should_reset_schema_defaults_to_false(monkeypatch):
+    monkeypatch.delenv("AEGIS_RESET_DB", raising=False)
+    assert should_reset_schema() is False
+
+
+def test_should_reset_schema_accepts_explicit_true_values(monkeypatch):
+    monkeypatch.setenv("AEGIS_RESET_DB", "true")
+    assert should_reset_schema() is True
+
+
+# ---------------------------------------------------------------------------
 # Script entrypoint
 # ---------------------------------------------------------------------------
 
-def test_data_seeding_script_entrypoint_resets_db_seeds_data_builds_index_and_closes_session(monkeypatch):
+def test_data_seeding_script_entrypoint_seeds_data_builds_index_and_closes_session(monkeypatch):
     fake_engine = SimpleNamespace(build_index=MagicMock())
     fake_module = SimpleNamespace(engine=fake_engine)
     monkeypatch.setitem(sys.modules, "src.services.ingredient_substitution", fake_module)
+    monkeypatch.delenv("AEGIS_RESET_DB", raising=False)
 
     db = MagicMock()
     loader_names = list(_all_loader_patches().keys())
@@ -589,10 +636,42 @@ def test_data_seeding_script_entrypoint_resets_db_seeds_data_builds_index_and_cl
             p.stop()
 
     drop_all, create_all, session_local = started[0], started[1], started[2]
-    drop_all.assert_called_once()
+    drop_all.assert_not_called()
     create_all.assert_called_once()
     session_local.assert_called_once()
-    assert db.query.return_value.delete.call_count == len(loader_names)
-    assert db.commit.call_count == len(loader_names)
+    assert db.query.return_value.delete.call_count == len(loader_names) + 2
+    assert db.commit.call_count == len(loader_names) + 1
     fake_engine.build_index.assert_called_once_with(db)
     db.close.assert_called_once()
+
+
+def test_data_seeding_script_entrypoint_drops_schema_only_when_enabled(monkeypatch):
+    fake_engine = SimpleNamespace(build_index=MagicMock())
+    fake_module = SimpleNamespace(engine=fake_engine)
+    monkeypatch.setitem(sys.modules, "src.services.ingredient_substitution", fake_module)
+    monkeypatch.setenv("AEGIS_RESET_DB", "true")
+
+    db = MagicMock()
+    loader_names = list(_all_loader_patches().keys())
+    patch_objs = [
+        patch("src.models.Base.metadata.drop_all"),
+        patch("src.models.Base.metadata.create_all"),
+        patch("src.database.SessionLocal", return_value=db),
+        patch("src.scripts.download_dev_data.save_local_copy"),
+        patch("os.path.exists", return_value=True),
+    ]
+    for loader_name in loader_names:
+        patch_objs.append(
+            patch(f"src.data.loaders.data_loader.{loader_name}", return_value=pd.DataFrame())
+        )
+
+    started = [p.start() for p in patch_objs]
+    try:
+        runpy.run_module("src.services.data_seeding", run_name="__main__")
+    finally:
+        for p in reversed(patch_objs):
+            p.stop()
+
+    drop_all, create_all = started[0], started[1]
+    drop_all.assert_called_once()
+    create_all.assert_called_once()
