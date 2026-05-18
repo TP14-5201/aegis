@@ -1,14 +1,14 @@
 <template>
-  <div class="wellness-layout">
+  <motion.div class="wellness-layout">
     <article class="orbit-panel">
-      <div class="orbit-heading">
+      <motion.div class="orbit-heading">
         <h3 class="dos-title">DO’s</h3>
         <h3 class="donts-title">DON’Ts</h3>
-      </div>
+      </motion.div>
 
-      <div class="orbit-map">
-        <div class="orbit-ring" />
-        <div class="centre-bubble">Habits</div>
+      <motion.div class="orbit-map">
+        <motion.div class="orbit-ring" />
+        <motion.div class="centre-bubble">Habits</motion.div>
 
         <button
           v-for="(item, i) in orbitItems"
@@ -17,7 +17,7 @@
           class="orbit-item"
           :class="[item.side, item.position]"
           :style="orbitPointStyle(item, i, orbitItems)"
-          @click="$emit('openPopup', item.popup)"
+          @click="emit('openPopup', item.popup)"
         >
           <template v-if="item.side === 'do'">
             <span class="orbit-label">{{ item.label }}</span>
@@ -32,7 +32,7 @@
             <span class="orbit-label">{{ item.label }}</span>
           </template>
         </button>
-      </div>
+      </motion.div>
     </article>
 
     <aside class="tips-panel">
@@ -40,37 +40,50 @@
 
       <div class="tips-list">
         <article v-for="tip in quickTips" :key="tip.title" class="tip-card">
-          <div class="tip-icon">
+          <motion.div class="tip-icon">
             <img :src="tip.iconSrc" :alt="tip.title" />
-          </div>
+          </motion.div>
 
-          <div>
+          <motion.div>
             <h4>{{ tip.title }}</h4>
             <p>{{ tip.text }}</p>
-          </div>
+          </motion.div>
+        </article>
+
+        <article class="tip-card tip-cta">
+          <p class="tip-cta-title">Looking for more?</p>
+          <p class="tip-cta-sub">
+            Explore more quick tips
+          </p>
+          <button type="button" class="cta-button" @click="emit('openWellnessBook')">
+            Explore Wellness Guide
+          </button>
         </article>
       </div>
     </aside>
-  </div>
+  </motion.div>
 </template>
 
-<script setup>
-const ORBIT = { cx: 260, cy: 196, r: 156 };
+<script setup lang="ts">
+import type { OrbitItem } from "../../data/wellnessPopups";
+import type { QuickTip } from "../../types/wellness";
 
-const props = defineProps({
-  orbitItems: {
-    type: Array,
-    required: true,
-  },
-});
+const ORBIT = { cx: 260, cy: 196, r: 156 } as const;
 
-defineEmits(["openPopup"]);
+defineProps<{
+  orbitItems: OrbitItem[];
+}>();
 
-const quickTips = [
+const emit = defineEmits<{
+  openPopup: [popup: OrbitItem["popup"]];
+  openWellnessBook: [];
+}>();
+
+const quickTips: QuickTip[] = [
   {
-    title: "Mindful Portions",
-    text: "Use smaller plates to help manage portion sizes naturally during meals.",
-    iconSrc: "/images/wellness/tips-1.webp",
+    title: "Keep water close",
+    text: "A visible water bottle encourages constant hydration throughout the day.",
+    iconSrc: "/images/wellness/tips-4.webp",
   },
   {
     title: "Freeze your greens",
@@ -78,23 +91,22 @@ const quickTips = [
     iconSrc: "/images/wellness/tips-2.webp",
   },
   {
-    title: "Meal planning",
-    text: "Plan meals ahead to avoid relying on fast food during busy days.",
-    iconSrc: "/images/wellness/tips-3.webp",
-  },
-  {
-    title: "Keep water close",
-    text: "A visible water bottle encourages constant hydration throughout the day.",
-    iconSrc: "/images/wellness/tips-4.webp",
+    title: "Mindful Portions",
+    text: "Use smaller plates to help manage portion sizes naturally during meals.",
+    iconSrc: "/images/wellness/tips-1.webp",
   },
 ];
 
-function orbitPointStyle(item, listIndex, orbitItems) {
+function orbitPointStyle(
+  item: OrbitItem,
+  listIndex: number,
+  items: OrbitItem[],
+): Record<string, string> {
   const n = 7;
   const indexOnSide =
     item.side === "do"
-      ? orbitItems.slice(0, listIndex).filter((x) => x.side === "do").length
-      : orbitItems.slice(0, listIndex).filter((x) => x.side === "dont").length;
+      ? items.slice(0, listIndex).filter((x) => x.side === "do").length
+      : items.slice(0, listIndex).filter((x) => x.side === "dont").length;
 
   const inset = 15;
   const span = 180 - 2 * inset;
@@ -293,6 +305,7 @@ function orbitPointStyle(item, listIndex, orbitItems) {
 }
 
 .tips-list {
+  flex: 1;
   display: grid;
   gap: 16px;
 }
@@ -342,15 +355,73 @@ function orbitPointStyle(item, listIndex, orbitItems) {
   color: #45464d;
 }
 
+/* CTA CARD */
+
+.tip-card.tip-cta {
+  margin-top: auto;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    "title button"
+    "sub button";
+  align-items: center;
+  column-gap: 24px;
+  row-gap: 4px;
+  min-height: 82px;
+  padding: 18px 20px;
+  border-radius: 14px;
+  background: #fff;
+  border: 1.5px solid #000;
+  box-shadow: 0 4px 8px rgba(13, 28, 46, 0.15);
+}
+
+.tip-card.tip-cta h4,
+.tip-card.tip-cta p {
+  margin: 0;
+}
+
+.tip-cta-title {
+  grid-area: title;
+  font-family: "Playfair Display", serif !important;
+  font-size: 20px !important;
+  font-weight: 700;
+  line-height: 1.25;
+  color: #0d1c2e;
+}
+
+.tip-cta-sub {
+  grid-area: sub;
+  font-family: "Playfair Display", serif;
+  font-size: 14px;
+  line-height: 1.35;
+  color: #45464d;
+}
+
+.tip-card.tip-cta .cta-button {
+  grid-area: button;
+  height: 44px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 8px;
+  background: #000;
+  color: #fff;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.tip-card.tip-cta .cta-button:hover {
+  background: #16263a;
+}
+
 @media (max-width: 1100px) {
   .wellness-layout {
     grid-template-columns: 1fr;
   }
 
-  .tips-panel {
-    height: auto;
-  }
-
+  .tips-panel,
   .orbit-panel {
     height: auto;
   }
@@ -367,6 +438,21 @@ function orbitPointStyle(item, listIndex, orbitItems) {
     transform-origin: top center;
     margin-left: 50%;
     translate: -50% 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .tip-card.tip-cta {
+    grid-template-columns: 1fr;
+    text-align: left;
+  }
+
+  .tip-card.tip-cta .cta-button {
+    width: 100%;
+  }
+
+  .tip-cta-sub {
+    max-width: none;
   }
 }
 
