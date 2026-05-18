@@ -64,6 +64,7 @@ export default {
         'chere-hero': 'linear-gradient(180deg, #F8F9FF 0%, #E6EEFF 100%)',
         'chere-dark': 'linear-gradient(163deg, #131B2E 0%, #396477 100%)',
         'chere-slate': 'linear-gradient(154deg, #233144 0%, #565E74 100%)',
+        'get-food-hero': 'linear-gradient(131deg, rgba(10,21,38,1) 0%, rgba(20,39,65,1) 50%, rgba(30,58,95,1) 100%)',
       },
     },
   },

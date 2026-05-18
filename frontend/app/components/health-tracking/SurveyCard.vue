@@ -158,7 +158,13 @@
             </button>
             <div class="flex items-center gap-2 font-body" style="color:#0d1c2e; font-weight:700; font-size:12px; opacity:0.65;">
               <span class="inline-block w-2 h-2 rounded-full" style="background:#7fe3c4;" />
-              Private - judgment-free - yours
+              <span class="flex items-center gap-2">
+                Private
+                <span class="inline-block w-1.5 h-1.5 rounded-full" style="background:currentColor; opacity:0.5;"></span>
+                Free of Judgement
+                <span class="inline-block w-1.5 h-1.5 rounded-full" style="background:currentColor; opacity:0.5;"></span>
+                Yours
+              </span>
             </div>
           </div>
         </div>

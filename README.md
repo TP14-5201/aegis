@@ -11,7 +11,7 @@ Cherebowl is a web platform that helps Victorians experiencing food insecurity f
 [![Python](https://img.shields.io/badge/python-3.11-3776AB?style=flat&logo=python&logoColor=white)](https://www.python.org/)
 [![Nuxt](https://img.shields.io/badge/nuxt-4.x-00DC82?style=flat&logo=nuxt.js&logoColor=white)](https://nuxt.com/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green?style=flat)](LICENSE)
-[![Tests Status](https://img.shields.io/github/actions/workflow/status/TP14-5201/aegis/backend_tests.yml?branch=main&label=Backend%20CI&logo=github-actions&logoColor=white&style=flat)](https://github.com/TP14-5201/aegis/actions/workflows/backend_tests.yml)
+[![Tests Status](https://img.shields.io/github/actions/workflow/status/TP14-5201/aegis/backend_tests.yml?branch=main&label=Backend%20CI&logo=github-actions&logoColor=white&style=flat)](https://github.com/TP14-5201/aegis/actions/workflows/app_ci_cd.yml)
 [![codecov](https://codecov.io/gh/TP14-5201/aegis/graph/badge.svg?token=JC4L80XQVA)](https://codecov.io/gh/TP14-5201/aegis)
 
 ---
@@ -306,7 +306,7 @@ SOFTWARE.
 
 - 🌐 **Live App:** [cherebowl.vercel.app](https://cherebowl.vercel.app)
 - 🐛 **Issues:** [GitHub Issues](https://github.com/TP14-5201/aegis/issues)
-- 📧 **Email:** ylii0721@student.monash.edu (Yanghao), dsus0006@student.monash.edu (Dominica), yche0814@student.monash.edu (Yuqing/Chloe), asut0032@student.monash.edu (Archel), rkup0001@student.monash.edu (Rukma),
+- 📧 **Email:** ylii0721@student.monash.edu (Yanghao), dsus0006@student.monash.edu (Dominica), yche0814@student.monash.edu (Yuqing/Chloe), asut0032@student.monash.edu (Archel), rkup0001@student.monash.edu (Rukma), pdha0010@student.monash.edu (Priyank).
 
 <div align="center">
 
