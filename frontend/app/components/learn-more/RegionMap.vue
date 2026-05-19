@@ -44,18 +44,18 @@
           <input
             v-model="searchQuery"
             type="text"
-            placeholder="Mount Alexander"
+            placeholder="Search a Victorian LGA, e.g. Casey"
             class="h-[50px] w-full rounded-[6px] border border-[#C3C5D9] bg-white px-5 pl-12 font-roboto text-[14px]
                    text-[#131B2E] region-card-shadow outline-none transition placeholder:text-[#6B7280]
                    focus:border-[#0052FF] focus:ring-2 focus:ring-[#B5DCFF99]"
             @input="filterLgas"
-            @focus="showDropdown = filteredLgas.length > 0"
+            @focus="filterLgas"
             @blur="onSearchBlur"
           />
           <Search class="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#434656]" :stroke-width="2" />
 
           <ul
-            v-if="showDropdown && filteredLgas.length"
+            v-if="showDropdown"
             class="absolute z-30 mt-2 max-h-60 w-full overflow-y-auto rounded-[8px] border border-[#C3C5D9] bg-white shadow-card"
           >
             <li
@@ -65,6 +65,12 @@
               @mousedown.prevent="selectLgaFromSearch(lga)"
             >
               {{ lga }}
+            </li>
+            <li
+              v-if="!filteredLgas.length"
+              class="px-5 py-3 font-roboto text-[15px] leading-6 text-[#434656]"
+            >
+              This place does not exist in our Victorian region list. Try another name.
             </li>
           </ul>
         </div>
@@ -130,18 +136,21 @@
               <div
                 v-for="reason in barrierMetrics"
                 :key="reason.key"
-                class="flex h-[66px] w-full items-center gap-3 rounded-[6px] border border-[#C3C5D9] bg-white px-4 text-left region-card-shadow"
+                class="flex h-[74px] w-full items-center gap-3 rounded-[6px] border border-[#C3C5D9] bg-white px-4 text-left region-card-shadow"
               >
                 <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-[6px] bg-[#B5DCFF99] text-[#131B2E]">
                   <component :is="reason.icon" class="h-4 w-4" :stroke-width="2" />
                 </span>
-                <span>
+                <span class="min-w-0 flex-1">
                   <span class="block font-roboto text-[11px] font-bold uppercase tracking-[0.08em] text-[#434656]">
                     {{ reason.eyebrow }}
                   </span>
                   <span class="block font-roboto text-[13px] font-extrabold leading-tight text-[#131B2E]">
                     {{ reason.label }}
                   </span>
+                </span>
+                <span class="shrink-0 text-right font-volkhov text-[22px] font-bold leading-none text-[#DF6951]">
+                  {{ getBarrierDisplay(reason.key) }}
                 </span>
               </div>
             </div>
@@ -407,7 +416,7 @@ const barrierMetrics = [
   },
 ]
 
-const barrierKeys = new Set()
+const barrierKeys = new Set(barrierMetrics.map(m => m.key))
 
 function getMetricDefinition(key) {
   return [...metrics, ...barrierMetrics].find(m => m.key === key) || metrics[0]
@@ -426,7 +435,7 @@ function filterLgas() {
     return
   }
   filteredLgas.value = searchIndex.value.filter(l => l.toLowerCase().includes(q)).slice(0, 12)
-  showDropdown.value = filteredLgas.value.length > 0
+  showDropdown.value = true
 }
 
 function selectLgaFromSearch(lga) {
@@ -561,6 +570,20 @@ const selectedLgaStat = computed(() => {
   return statsMap.value[selectedLgaName.value] || statsMap.value[normalizeLgaName(selectedLgaName.value)] || null
 })
 
+const selectedReasonStat = computed(() => {
+  if (!selectedLgaStat.value) return null
+  return reasonStatsMap.value[selectedLgaStat.value.lga_pid]
+    || reasonStatsMap.value[selectedLgaStat.value.lga_name]
+    || reasonStatsMap.value[selectedLgaStat.value.lga_key]
+    || null
+})
+
+function getSelectedBarrierValue(key) {
+  if (!selectedLgaStat.value) return null
+  const value = selectedReasonStat.value?.[key]
+  return Number.isFinite(value) ? value : null
+}
+
 const foodInsecurityStat = computed(() => {
   if (!selectedLgaStat.value) return 0
   return Math.round(selectedLgaStat.value.food_insecurity_pct)
@@ -614,6 +637,12 @@ const selectedMetricValue = computed(() => {
 })
 
 const displaySelectedMetric = useCountUp(selectedMetricValue)
+const displayBarrierValues = {
+  limited_variety: useCountUp(computed(() => Math.round(getSelectedBarrierValue('limited_variety') ?? 0))),
+  too_expensive: useCountUp(computed(() => Math.round(getSelectedBarrierValue('too_expensive') ?? 0))),
+  wrong_quality: useCountUp(computed(() => Math.round(getSelectedBarrierValue('wrong_quality') ?? 0))),
+  transport_gap: useCountUp(computed(() => Math.round(getSelectedBarrierValue('transport_gap') ?? 0))),
+}
 
 const selectedMetricDisplay = computed(() => displaySelectedMetric.value.toLocaleString())
 
@@ -626,6 +655,12 @@ const selectedMetricLabel = computed(() => {
   if (currentMetric.value === 'foodInsecurity') return 'Food Insecurity Rate'
   return getMetricDefinition(currentMetric.value).layerLabel
 })
+
+function getBarrierDisplay(key) {
+  if (!selectedLgaStat.value) return '--'
+  if (getSelectedBarrierValue(key) == null) return 'Unknown'
+  return `${displayBarrierValues[key]?.value.toLocaleString() ?? 0}%`
+}
 
 const selectedStory = computed(() => {
   if (!selectedLgaStat.value) {
@@ -698,7 +733,9 @@ function getMetricValue(stat, key) {
   if (key === 'foodBanks') return getFoodBankSites(stat)
   if (key === 'peopleAffected') return stat.pop_2024_total * stat.food_insecurity_pct / 100
   if (barrierKeys.has(key)) {
-    const reason = reasonStatsMap.value[stat.lga_pid] || reasonStatsMap.value[stat.lga_name] || reasonStatsMap.value[stat.lga_key]
+    const reason = stat === selectedLgaStat.value
+      ? selectedReasonStat.value
+      : reasonStatsMap.value[stat.lga_pid] || reasonStatsMap.value[stat.lga_name] || reasonStatsMap.value[stat.lga_key]
     const value = reason?.[key]
     return Number.isFinite(value) ? value : null
   }
