@@ -40,12 +40,10 @@
       <section class="max-w-[1200px] mx-auto px-6 lg:px-10 pb-16">
         <div class="grid lg:grid-cols-12 gap-6 items-stretch">
           <!-- Virtual pet card -->
-          <div class="lg:col-span-4 flex" style="min-height:560px;">
+          <div class="lg:col-span-4 flex" style="min-height:620px;">
             <HealthTrackingVirtualPetCard
               :mood="petMood"
-              :level="petLevel"
-              :exp="petExp"
-              :exp-to-next="EXP_TO_NEXT"
+              :health-pct="healthPct"
               :stage-label="currentStageObj.label"
               :is-muted="isMuted"
               class="w-full"
@@ -53,7 +51,7 @@
           </div>
 
           <!-- Survey card -->
-          <div class="lg:col-span-8 flex" style="min-height:560px;">
+          <div class="lg:col-span-8 flex" style="min-height:620px;">
             <HealthTrackingSurveyCard
               v-model:stage="stage"
               :has-visited="hasVisited"
@@ -194,6 +192,11 @@ const todayCompleted = ref(false)
 
 // --- Computed ---
 const currentStageObj = computed(() => STAGES.find(s => s.id === stage.value) ?? STAGES[0])
+
+const healthPct = computed(() => {
+  if (!todayCompleted.value || todayMaxExp.value === 0) return null
+  return Math.min(1, todayExp.value / todayMaxExp.value)
+})
 
 // -- Helpers --
 function todayKey(): string {
@@ -351,7 +354,7 @@ function onSurveyComplete(payload: {
 
   // Classify mood from EXP percentage
   const pct = maxExp > 0 ? totalExp / maxExp : 0
-  const mood: 'happy' | 'neutral' | 'sad' = pct >= 0.7 ? 'happy' : pct >= 0.4 ? 'neutral' : 'sad'
+  const mood: 'happy' | 'neutral' | 'sad' = pct >= 0.667 ? 'happy' : pct >= 0.333 ? 'neutral' : 'sad'
 
   // EXP snapshot: save baseline before first submission; restore it on any redo
   const savedBase = ls(LS_BASE_EXP)
