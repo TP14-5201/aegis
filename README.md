@@ -236,8 +236,8 @@ pytest tests/ -v --cov=src --cov-report=term-missing
 - [x] Backend REST API with SQLite (dev) and PostgreSQL (prod) support
 - [x] CI/CD pipeline with GitHub Actions (test on PR, deploy on merge)
 - [x] Automated deployment to Vercel (frontend) and Render (backend)
-- [ ] Action list
-- [ ] Virtual baby for the user to keep track of what children ate
+- [x] Action list
+- [x] Virtual baby for the user to keep track of what children ate
 
 ---
 
