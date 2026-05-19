@@ -35,59 +35,6 @@
           </svg>
           <span style="font-size: 11px; font-weight: 700; letter-spacing: 0.06em;">{{ isMuted ? 'Sound off' : 'Sound on' }}</span>
         </button>
-
-        <!-- Stage chip (return visits, not during survey) -->
-        <div v-if="hasVisited && phase !== 'survey'" class="relative">
-          <button
-            @click="stageDropOpen = !stageDropOpen"
-            class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border font-body"
-            style="background:#dce9ff; color:#0d1c2e; border-color:#0d1c2e; font-weight:700; font-size:12px; letter-spacing:0.06em;"
-          >
-            <span style="text-transform:uppercase;">{{ currentStageObj.label }}</span>
-            <span style="opacity:0.6; font-weight:700; font-size:10px;">{{ currentStageObj.sub }}</span>
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
-
-          <Transition
-            enter-active-class="transition duration-150 ease-out"
-            enter-from-class="opacity-0 -translate-y-1 scale-95"
-            enter-to-class="opacity-100 translate-y-0 scale-100"
-            leave-active-class="transition duration-100 ease-in"
-            leave-from-class="opacity-100 translate-y-0 scale-100"
-            leave-to-class="opacity-0 -translate-y-1 scale-95"
-          >
-            <div
-              v-if="stageDropOpen"
-              class="absolute right-0 mt-2 w-60 rounded-2xl border shadow-2xl z-30 overflow-hidden"
-              style="background:white; border-color:#dce9ff;"
-            >
-              <div class="px-4 py-2.5 border-b" style="border-color:#eef4fb;">
-                <div class="font-body" style="font-weight:700; font-size:10px; letter-spacing:0.14em; text-transform:uppercase; color:#0d1c2e; opacity:0.55;">
-                  Change age stage
-                </div>
-              </div>
-              <div class="py-1">
-                <button
-                  v-for="s in STAGES"
-                  :key="s.id"
-                  @click="selectStage(s.id)"
-                  class="w-full flex items-center justify-between px-4 py-2 font-body hover:bg-[#f4f8fe] transition-colors"
-                  :style="{ color:'#0d1c2e', fontWeight: modelStage === s.id ? 800 : 600, fontSize:'13px' }"
-                >
-                  <span>
-                    {{ s.label }}
-                    <span style="opacity:0.55; font-weight:600; margin-left:8px; font-size:11px;">{{ s.sub }}</span>
-                  </span>
-                  <svg v-if="modelStage === s.id" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-          </Transition>
-        </div>
       </div>
     </div>
 
@@ -101,14 +48,36 @@
             Ready when you are.
           </h3>
           <p class="font-body mt-3 max-w-lg" style="font-size:15px; color:#0d1c2e; opacity:0.7; font-weight:500; line-height:1.6;">
-            No right answers - just a soft check-in with how today actually felt. Your companion grows alongside you.
+            No right answers - just a soft check-in with how today actually felt. Your child's companion grows with each completed check-in.
           </p>
 
-          <!-- First visit: Stage picker -->
-          <div v-if="!hasVisited" class="mt-7">
-            <div class="font-body mb-3" style="color:#0d1c2e; opacity:0.6; font-weight:700; font-size:11px; letter-spacing:0.15em; text-transform:uppercase;">
-              Who are we caring for today?
+          <div class="mt-5 grid sm:grid-cols-3 gap-3">
+            <div
+              v-for="item in introSteps"
+              :key="item.title"
+              class="rounded-2xl border p-4"
+              style="background:#f4f8fe; border-color:#dce9ff;"
+            >
+              <div class="font-body" style="color:#EF6C00; font-size:10px; font-weight:800; letter-spacing:0.14em; text-transform:uppercase;">
+                {{ item.kicker }}
+              </div>
+              <div class="font-body mt-1" style="color:#0d1c2e; font-size:13px; font-weight:800;">
+                {{ item.title }}
+              </div>
+              <p class="font-body mt-1" style="color:#0d1c2e; opacity:0.65; font-size:12px; font-weight:600; line-height:1.45;">
+                {{ item.body }}
+              </p>
             </div>
+          </div>
+
+          <!-- First visit: Stage picker -->
+          <div v-if="!hasVisited" class="mt-7 rounded-3xl border-2 p-4" style="background:#fffaf4; border-color:#EF6C00;">
+            <div class="font-body mb-3" style="color:#0d1c2e; opacity:0.6; font-weight:700; font-size:11px; letter-spacing:0.15em; text-transform:uppercase;">
+              Step 1: choose the age group
+            </div>
+            <p class="font-body mb-4" style="font-size:13px; color:#0d1c2e; opacity:0.72; font-weight:700; line-height:1.5;">
+              The questions change based on this selection. Pick the closest stage before beginning.
+            </p>
             <div class="grid grid-cols-1 sm:grid-cols-5 gap-2">
               <button
                 v-for="s in STAGES"
@@ -125,13 +94,69 @@
             </div>
           </div>
 
-          <!-- Return visit: show current stage -->
-          <div v-else class="mt-7 flex items-center gap-3 p-4 rounded-2xl" style="background:#f4f8fe;">
-            <span class="font-body" style="font-weight:700; font-size:13px; color:#0d1c2e; opacity:0.7;">Caring for:</span>
-            <span class="px-3 py-1 rounded-full font-body" style="background:#0d1c2e; color:#dce9ff; font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:0.06em;">
-              {{ currentStageObj.label }}
-            </span>
-            <span class="font-body" style="font-weight:600; font-size:11px; color:#0d1c2e; opacity:0.45;">Use the chip above to change</span>
+          <!-- Return visit: prominent stage dropdown -->
+          <div v-else class="mt-7 relative rounded-3xl border-2 p-4" style="background:#fffaf4; border-color:#EF6C00;">
+            <div class="flex items-start justify-between gap-4 flex-wrap">
+              <div>
+                <div class="font-body" style="color:#EF6C00; font-weight:800; font-size:11px; letter-spacing:0.15em; text-transform:uppercase;">
+                  Step 1: confirm age group
+                </div>
+                <p class="font-body mt-1" style="font-size:13px; color:#0d1c2e; opacity:0.72; font-weight:700; line-height:1.5;">
+                  Questions are tailored to the selected stage. Click the dropdown if you need to change it.
+                </p>
+              </div>
+              <button
+                @click="introStageDropOpen = !introStageDropOpen"
+                class="inline-flex items-center gap-3 px-4 py-3 rounded-2xl border-2 font-body transition-all hover:shadow-md"
+                style="background:white; border-color:#EF6C00; color:#0d1c2e;"
+              >
+                <span class="text-left">
+                  <span class="block" style="font-weight:800; font-size:13px; text-transform:uppercase; letter-spacing:0.06em;">{{ currentStageObj.label }}</span>
+                  <span class="block" style="font-weight:700; font-size:11px; opacity:0.58;">{{ currentStageObj.sub }}</span>
+                </span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+            </div>
+
+            <Transition
+              enter-active-class="transition duration-150 ease-out"
+              enter-from-class="opacity-0 -translate-y-1 scale-95"
+              enter-to-class="opacity-100 translate-y-0 scale-100"
+              leave-active-class="transition duration-100 ease-in"
+              leave-from-class="opacity-100 translate-y-0 scale-100"
+              leave-to-class="opacity-0 -translate-y-1 scale-95"
+            >
+              <div
+                v-if="introStageDropOpen"
+                class="absolute left-4 top-[calc(100%-8px)] w-72 max-w-[calc(100%-2rem)] rounded-2xl border shadow-2xl z-30 overflow-hidden"
+                style="background:white; border-color:#EF6C00;"
+              >
+                <div class="px-4 py-2.5 border-b" style="border-color:#eef4fb;">
+                  <div class="font-body" style="font-weight:800; font-size:10px; letter-spacing:0.14em; text-transform:uppercase; color:#EF6C00;">
+                    Change age group
+                  </div>
+                </div>
+                <div class="py-1">
+                  <button
+                    v-for="s in STAGES"
+                    :key="s.id"
+                    @click="selectStage(s.id)"
+                    class="w-full flex items-center justify-between px-4 py-2.5 font-body hover:bg-[#fff7ed] transition-colors"
+                    :style="{ color:'#0d1c2e', fontWeight: modelStage === s.id ? 800 : 600, fontSize:'13px' }"
+                  >
+                    <span>
+                      {{ s.label }}
+                      <span style="opacity:0.55; font-weight:600; margin-left:8px; font-size:11px;">{{ s.sub }}</span>
+                    </span>
+                    <svg v-if="modelStage === s.id" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="#EF6C00" stroke-width="3">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </Transition>
           </div>
 
           <!-- Today completed banner -->
@@ -156,14 +181,14 @@
                 <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
               </svg>
             </button>
-            <div class="flex items-center gap-2 font-body" style="color:#0d1c2e; font-weight:700; font-size:12px; opacity:0.65;">
+            <div class="flex items-center gap-2 font-body text-center flex-wrap justify-center" style="color:#0d1c2e; font-weight:700; font-size:12px; opacity:0.65;">
               <span class="inline-block w-2 h-2 rounded-full" style="background:#7fe3c4;" />
-              <span class="flex items-center gap-2">
+              <span class="flex items-center gap-2 flex-wrap justify-center">
+                Saves on this device
+                <span class="inline-block w-1.5 h-1.5 rounded-full" style="background:currentColor; opacity:0.5;"></span>
+                You can redo today
+                <span class="inline-block w-1.5 h-1.5 rounded-full" style="background:currentColor; opacity:0.5;"></span>
                 Private
-                <span class="inline-block w-1.5 h-1.5 rounded-full" style="background:currentColor; opacity:0.5;"></span>
-                Free of Judgement
-                <span class="inline-block w-1.5 h-1.5 rounded-full" style="background:currentColor; opacity:0.5;"></span>
-                Yours
               </span>
             </div>
           </div>
@@ -177,13 +202,21 @@
               <span style="font-weight:700; font-size:11px; letter-spacing:0.14em; text-transform:uppercase; opacity:0.6;">
                 Step {{ currentIndex + 1 }} of {{ currentQuestions.length }}
               </span>
-              <span style="font-weight:700; font-size:11px; letter-spacing:0.08em; opacity:0.6;">~60 seconds</span>
+              <span style="font-weight:700; font-size:11px; letter-spacing:0.08em; opacity:0.6;">Saved after completion</span>
             </div>
             <div class="w-full h-2 rounded-full overflow-hidden" style="background:#f0f5fb;">
               <div
                 class="h-full rounded-full transition-all duration-400"
                 :style="{ width: progressPct + '%', background: 'linear-gradient(90deg, #0d1c2e, #7fe3c4)' }"
               />
+            </div>
+            <div class="mt-3 rounded-2xl border px-4 py-3 font-body flex items-start gap-3" style="background:#f4f8fe; border-color:#dce9ff; color:#0d1c2e;">
+              <svg class="w-4 h-4 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.4">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M12 3a9 9 0 110 18 9 9 0 010-18z" />
+              </svg>
+              <p style="font-size:12px; font-weight:700; line-height:1.45; opacity:0.72;">
+                Choose the answer that fits today, then press Next. Use Previous to review or change earlier answers before you finish.
+              </p>
             </div>
           </div>
 
@@ -227,7 +260,7 @@
                   <button
                     v-for="v in [1,2,3,4,5]"
                     :key="v"
-                    @click="sliderVal = v; autoAdvanceIfNeeded()"
+                    @click="sliderVal = v"
                     class="flex-1 h-14 rounded-xl border-2 flex flex-col items-center justify-center font-body transition-all"
                     :style="sliderVal === v
                       ? 'background:#0d1c2e; border-color:#0d1c2e; color:#dce9ff;'
@@ -240,14 +273,6 @@
                 <div class="text-center font-body" style="font-size:13px; color:#0d1c2e; opacity:0.5; font-weight:600;">
                   Tap a point to select
                 </div>
-                <button
-                  v-if="sliderVal !== null"
-                  @click="submitAnswer()"
-                  class="w-full py-3 rounded-2xl font-body font-bold text-sm transition-all hover:opacity-90"
-                  style="background:#0d1c2e; color:#dce9ff;"
-                >
-                  Next
-                </button>
               </div>
 
               <!-- SINGLE CHOICE -->
@@ -287,13 +312,6 @@
                   />
                   <span style="font-weight:600; font-size:14px;">{{ opt.label }}</span>
                 </label>
-                <button
-                  @click="submitAnswer()"
-                  class="w-full py-3 rounded-2xl font-body font-bold text-sm transition-all hover:opacity-90"
-                  style="background:#0d1c2e; color:#dce9ff; margin-top:8px;"
-                >
-                  Next
-                </button>
               </div>
 
               <!-- STEPPER -->
@@ -318,13 +336,6 @@
                     style="border-color:#dce9ff; color:#0d1c2e;"
                   >+</button>
                 </div>
-                <button
-                  @click="submitAnswer()"
-                  class="w-full py-3 rounded-2xl font-body font-bold text-sm transition-all hover:opacity-90"
-                  style="background:#0d1c2e; color:#dce9ff;"
-                >
-                  Next
-                </button>
               </div>
 
               <!-- ICON RATING -->
@@ -348,6 +359,30 @@
 
             </div>
           </Transition>
+
+          <div class="mt-6 flex flex-col sm:flex-row gap-3">
+            <button
+              @click="goPrevious"
+              class="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl border font-body font-bold text-sm transition-all hover:bg-[#f4f8fe]"
+              style="border-color:#dce9ff; color:#0d1c2e; background:white;"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M11 17l-5-5m0 0l5-5m-5 5h12" />
+              </svg>
+              {{ currentIndex === 0 ? 'Previous: age group' : 'Previous' }}
+            </button>
+            <button
+              @click="submitAnswer()"
+              :disabled="!canContinue"
+              class="inline-flex flex-1 items-center justify-center gap-2 px-5 py-3 rounded-2xl font-body font-bold text-sm transition-all hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
+              style="background:#0d1c2e; color:#dce9ff;"
+            >
+              {{ nextButtonLabel }}
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </button>
+          </div>
         </div>
 
         <!-- DONE phase -->
@@ -359,7 +394,7 @@
             Thank you for showing up today.
           </h3>
           <p class="font-body mt-3 max-w-md" style="font-size:15px; color:#0d1c2e; opacity:0.7; font-weight:500; line-height:1.6;">
-            Your companion felt every answer. Insights are below - gentle patterns, never pressure.
+            Your child's companion felt every answer. Today's progress is saved on this device, and insights are below - gentle patterns, never pressure.
           </p>
 
           <!-- Results summary -->
@@ -412,6 +447,7 @@ type UIType = 'slider' | 'single_choice' | 'multi_select' | 'stepper' | 'icon_ra
 interface SingleOption { label: string; exp: number }
 interface MultiOption { label: string }
 interface IconOption { label: string; icon: string; exp: number }
+type AnswerValue = number | string | string[]
 
 interface Question {
   id: string
@@ -437,6 +473,13 @@ interface Question {
   stepperExpFn?: (v: number) => number
   // icon_rating
   iconOptions?: IconOption[]
+}
+
+interface SurveyAnswer {
+  id: string
+  dimension: Question['dimension']
+  exp: number
+  value: AnswerValue
 }
 
 // --------------- Stage definitions ---------------
@@ -831,10 +874,12 @@ const emit = defineEmits<{
   'complete': [payload: { totalExp: number; maxExp: number; dimensionScores: Record<string, number>; answers: { id: string; dimension: string; exp: number }[] }]
   'redo': []
   'toggleMute': []
+  'backToIntro': []
 }>()
 
 // --------------- Local state ---------------
-const stageDropOpen = ref(false)
+const headerStageDropOpen = ref(false)
+const introStageDropOpen = ref(false)
 const currentIndex = ref(0)
 const sliderVal = ref<number | null>(null)
 const selectedSingle = ref<string | null>(null)
@@ -842,8 +887,8 @@ const multiSelected = ref<string[]>([])
 const stepperVal = ref(0)
 const selectedIconRating = ref<string | null>(null)
 
-// answers collected during survey
-const answersLog = ref<{ id: string; dimension: string; exp: number }[]>([])
+// answers collected during survey, indexed by question order so Previous can restore edits
+const answersLog = ref<SurveyAnswer[]>([])
 
 // completed dimension rollup for "done" view
 const completedDimensions = ref<{ key: string; label: string; totalExp: number }[]>([])
@@ -901,11 +946,40 @@ const headerTip = computed(() => {
 })
 
 const sliderEmojis = ['\uD83D\uDE22', '\uD83D\uDE15', '\uD83D\uDE10', '\uD83D\uDE42', '\uD83D\uDE04']
+const introSteps = [
+  {
+    kicker: '1 minute',
+    title: 'Answer seven quick prompts',
+    body: 'Pick what best matches your child today across mood, rest, movement and food.',
+  },
+  {
+    kicker: 'Editable',
+    title: 'Move back before finishing',
+    body: 'Use Previous and Next to review answers. Previous on the first question returns to the age group.',
+  },
+  {
+    kicker: 'Local',
+    title: 'Saved only when complete',
+    body: 'Your daily result and weekly insights are stored on this device after you finish.',
+  },
+]
+
+const canContinue = computed(() => {
+  const q = currentQ.value
+  if (!q) return false
+  if (q.type === 'slider') return sliderVal.value !== null
+  if (q.type === 'single_choice') return selectedSingle.value !== null
+  if (q.type === 'multi_select') return multiSelected.value.length > 0
+  if (q.type === 'icon_rating') return selectedIconRating.value !== null
+  return true
+})
+const nextButtonLabel = computed(() => currentIndex.value + 1 >= currentQuestions.value.length ? 'Finish check-in' : 'Next')
 
 // --------------- Methods ---------------
 function selectStage(id: AgeStage) {
   emit('update:stage', id)
-  stageDropOpen.value = false
+  headerStageDropOpen.value = false
+  introStageDropOpen.value = false
 }
 
 function resetAnswerState() {
@@ -916,44 +990,85 @@ function resetAnswerState() {
   selectedIconRating.value = null
 }
 
+function hydrateAnswerState() {
+  resetAnswerState()
+  const saved = answersLog.value[currentIndex.value]
+  if (!saved) return
+
+  const q = currentQ.value
+  if (q.type === 'slider' && typeof saved.value === 'number') {
+    sliderVal.value = saved.value
+  } else if (q.type === 'single_choice' && typeof saved.value === 'string') {
+    selectedSingle.value = saved.value
+  } else if (q.type === 'multi_select' && Array.isArray(saved.value)) {
+    multiSelected.value = [...saved.value]
+  } else if (q.type === 'stepper' && typeof saved.value === 'number') {
+    stepperVal.value = saved.value
+  } else if (q.type === 'icon_rating' && typeof saved.value === 'string') {
+    selectedIconRating.value = saved.value
+  }
+}
+
 function pickRandomTip() {
   const tips = healthTips[currentQ.value.dimension]
   currentTipIndex.value = Math.floor(Math.random() * tips.length)
 }
 
-function autoAdvanceIfNeeded() {
-  // slider: auto-advance only after user explicitly confirms
-}
-
 function selectSingle(opt: SingleOption) {
   selectedSingle.value = opt.label
-  const exp = opt.exp
-  recordAnswer(exp)
-  advance()
 }
 
 function selectIconRating(opt: IconOption) {
   selectedIconRating.value = opt.label
-  recordAnswer(opt.exp)
-  advance()
+}
+
+function getCurrentAnswer(): { exp: number; value: AnswerValue } | null {
+  const q = currentQ.value
+  if (q.type === 'slider' && sliderVal.value !== null) {
+    return { exp: q.sliderExpFn?.(sliderVal.value) ?? 5, value: sliderVal.value }
+  }
+  if (q.type === 'single_choice' && selectedSingle.value !== null) {
+    const opt = q.options?.find(o => o.label === selectedSingle.value)
+    return { exp: opt?.exp ?? 0, value: selectedSingle.value }
+  }
+  if (q.type === 'multi_select') {
+    return { exp: q.multiExpFn?.(multiSelected.value) ?? 5, value: [...multiSelected.value] }
+  }
+  if (q.type === 'stepper') {
+    return { exp: q.stepperExpFn?.(stepperVal.value) ?? 5, value: stepperVal.value }
+  }
+  if (q.type === 'icon_rating' && selectedIconRating.value !== null) {
+    const opt = q.iconOptions?.find(o => o.label === selectedIconRating.value)
+    return { exp: opt?.exp ?? 0, value: selectedIconRating.value }
+  }
+  return null
+}
+
+function saveCurrentAnswer() {
+  const answer = getCurrentAnswer()
+  if (!answer) return false
+
+  answersLog.value[currentIndex.value] = {
+    id: currentQ.value.id,
+    dimension: currentQ.value.dimension,
+    exp: answer.exp,
+    value: answer.value,
+  }
+  return true
 }
 
 function submitAnswer() {
-  const q = currentQ.value
-  let exp = 0
-  if (q.type === 'slider' && sliderVal.value !== null) {
-    exp = q.sliderExpFn?.(sliderVal.value) ?? 5
-  } else if (q.type === 'multi_select') {
-    exp = q.multiExpFn?.(multiSelected.value) ?? 5
-  } else if (q.type === 'stepper') {
-    exp = q.stepperExpFn?.(stepperVal.value) ?? 5
-  }
-  recordAnswer(exp)
+  if (!saveCurrentAnswer()) return
   advance()
 }
 
-function recordAnswer(exp: number) {
-  answersLog.value.push({ id: currentQ.value.id, dimension: currentQ.value.dimension, exp })
+function goPrevious() {
+  if (currentIndex.value === 0) {
+    emit('backToIntro')
+    return
+  }
+  saveCurrentAnswer()
+  currentIndex.value--
 }
 
 function advance() {
@@ -961,14 +1076,12 @@ function advance() {
   if (currentIndex.value + 1 >= total) {
     finishSurvey()
   } else {
-    setTimeout(() => {
-      currentIndex.value++ // watch(currentIndex) handles resetAnswerState
-    }, 300)
+    currentIndex.value++
   }
 }
 
 function finishSurvey() {
-  const log = answersLog.value
+  const log = answersLog.value.slice(0, currentQuestions.value.length)
   const totalExp = log.reduce((s, a) => s + a.exp, 0)
   const maxExp = currentQuestions.value.length * 20
 
@@ -1005,14 +1118,14 @@ watch(() => props.phase, (newPhase) => {
     answersLog.value = []
     completedDimensions.value = []
     pickRandomTip()
-    resetAnswerState()
+    hydrateAnswerState()
   }
 })
 
-// Reset stepper on question change
+// Refresh local inputs on question change, preserving answers when the user goes back.
 watch(currentIndex, () => {
   pickRandomTip()
-  resetAnswerState()
+  hydrateAnswerState()
 })
 
 

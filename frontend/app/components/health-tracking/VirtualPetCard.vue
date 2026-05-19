@@ -5,9 +5,6 @@
   >
     <!-- Header -->
     <div class="px-6 pt-6 flex items-center justify-between">
-      <div class="font-body" style="font-weight: 700; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: #0d1c2e; opacity: 0.6;">
-        Your companion
-      </div>
       <div
         class="px-2.5 py-1 rounded-full font-body"
         style="background: #0d1c2e; color: #dce9ff; font-weight: 700; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;"

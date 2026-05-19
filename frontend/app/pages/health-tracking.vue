@@ -32,7 +32,7 @@
           class="mt-4 mx-auto"
           style="width:576px; max-width:100%; flex-shrink:0; color:#142741; text-align:center; font-family:'Plus Jakarta Sans'; font-size:17px; font-style:normal; font-weight:500; line-height:27.2px;"
         >
-          Track seven kind habits in under a minute. Watch your little companion grow alongside the small things you already do.
+          Track seven kind habits in under a minute. Watch your child's companion grow alongside the small things you already do.
         </p>
       </section>
 
@@ -62,6 +62,7 @@
               @start="startSurvey"
               @complete="onSurveyComplete"
               @redo="redoSurvey"
+              @back-to-intro="returnToIntroFromSurvey"
               @toggle-mute="isMuted = !isMuted"
             />
           </div>
@@ -466,6 +467,11 @@ function redoSurvey() {
   surveyPhase.value = 'intro'
   petMood.value = 'idle'
   saveState()
+}
+
+function returnToIntroFromSurvey() {
+  surveyPhase.value = 'intro'
+  petMood.value = 'idle'
 }
 
 // --- Watchers ---
