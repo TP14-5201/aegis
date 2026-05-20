@@ -87,7 +87,7 @@
               :key="food.name"
               type="button"
               class="food-card"
-              @click="emit('select-food', food.name)"
+              @click="handleFoodSelect(food.name)"
             >
               <img :src="food.image" :alt="food.name" />
 
@@ -139,6 +139,28 @@ const emit = defineEmits<{
 
 function togglePart(key: string) {
   activePart.value = activePart.value === key ? null : key
+}
+
+function handleFoodSelect(foodName: string) {
+  emit('select-food', foodName)
+
+  requestAnimationFrame(() => {
+    const section = document.getElementById('food-guide')
+
+    if (!section) return
+
+    const navbarOffset = 110
+
+    const top =
+      section.getBoundingClientRect().top +
+      window.scrollY -
+      navbarOffset
+
+    window.scrollTo({
+      top,
+      behavior: 'smooth',
+    })
+  })
 }
 
 const image = {
