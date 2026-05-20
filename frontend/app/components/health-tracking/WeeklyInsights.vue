@@ -38,6 +38,31 @@
         </div>
         <div v-if="hasAnyData" class="w-full" style="height:200px; overflow:visible;">
           <svg :viewBox="`0 0 ${lineW} ${lineH}`" class="w-full h-full" preserveAspectRatio="xMidYMid meet">
+            <!-- Y-axis rotated label -->
+            <text
+              x="6"
+              :y="padT + (lineH - padT - padB) / 2"
+              text-anchor="middle"
+              font-family="Plus Jakarta Sans"
+              font-weight="700"
+              font-size="9"
+              fill="#0d1c2e"
+              opacity="0.42"
+              :transform="`rotate(-90, 6, ${padT + (lineH - padT - padB) / 2})`"
+            >pts</text>
+            <!-- Y-axis value labels -->
+            <text
+              v-for="(gl, idx) in gridLines"
+              :key="'yl-' + idx"
+              :x="padL - 5"
+              :y="gl + 3"
+              text-anchor="end"
+              font-family="Plus Jakarta Sans"
+              font-weight="700"
+              font-size="9"
+              fill="#0d1c2e"
+              opacity="0.38"
+            >{{ gridLineValues[idx] }}</text>
             <!-- Grid lines -->
             <line v-for="gl in gridLines" :key="gl" :x1="padL" :y1="gl" :x2="lineW - padR" :y2="gl" stroke="#dce9ff" stroke-dasharray="3 3" stroke-width="1" />
             <!-- Area fill -->
@@ -91,8 +116,8 @@
       </div>
     </div>
 
-    <!-- Radar + Bar + Pie row -->
-    <div class="grid lg:grid-cols-3 gap-5">
+    <!-- Radar + Today row -->
+    <div class="grid lg:grid-cols-2 gap-5">
       <!-- Radar chart - 7-day average balance -->
       <div class="rounded-3xl p-6 border shadow-xl" style="background:rgba(255,255,255,0.95); border-color:#dce9ff;">
         <div class="font-body" style="color:#0d1c2e; opacity:0.55; font-weight:700; font-size:11px; letter-spacing:0.15em; text-transform:uppercase;">
@@ -150,44 +175,7 @@
         </div>
       </div>
 
-      <!-- Bar chart - today's categories -->
-      <div class="rounded-3xl p-6 border shadow-xl" style="background:rgba(255,255,255,0.95); border-color:#dce9ff;">
-        <div class="font-body" style="color:#0d1c2e; opacity:0.55; font-weight:700; font-size:11px; letter-spacing:0.15em; text-transform:uppercase;">
-          Today by habit
-        </div>
-        <h4 class="font-display mb-4" style="color:#0d1c2e; font-size:20px; font-weight:800;">What lifted you up</h4>
-        <div v-if="hasTodayData" style="height:210px;">
-          <svg :viewBox="`0 0 ${barW} ${barH}`" class="w-full h-full" preserveAspectRatio="xMidYMid meet">
-            <!-- Bars -->
-            <g v-for="(b, i) in barItems" :key="'bar-' + i">
-              <rect
-                :x="barX(i)"
-                :y="barTop(b.value)"
-                :width="barItemW"
-                :height="barHeight(b.value)"
-                rx="4"
-                fill="#0d1c2e"
-                fill-opacity="0.85"
-              />
-              <text
-                :x="barX(i) + barItemW / 2"
-                :y="barH - 3"
-                text-anchor="middle"
-                font-family="Plus Jakarta Sans"
-                font-weight="700"
-                font-size="9"
-                fill="#0d1c2e"
-                opacity="0.6"
-              >{{ b.label }}</text>
-            </g>
-          </svg>
-        </div>
-        <div v-else class="w-full flex items-center justify-center text-center font-body" style="height:210px; color:#0d1c2e; opacity:0.45; font-weight:600; font-size:13px;">
-          Complete today's check-in to see what lifted you up.
-        </div>
-      </div>
-
-      <!-- Mood breakdown - today -->
+      <!-- Today's result -->
       <div class="rounded-3xl p-6 border shadow-xl" style="background:rgba(255,255,255,0.95); border-color:#dce9ff;">
         <div class="font-body" style="color:#0d1c2e; opacity:0.55; font-weight:700; font-size:11px; letter-spacing:0.15em; text-transform:uppercase;">
           Today's result
@@ -197,7 +185,7 @@
           <!-- EXP gauge -->
           <div>
             <div class="flex justify-between font-body mb-1" style="font-size:12px; font-weight:700; color:#0d1c2e; opacity:0.6;">
-              <span>EXP earned today</span>
+              <span>pts earned today</span>
               <span>{{ todayExpValue }} pts</span>
             </div>
             <div class="w-full h-3 rounded-full overflow-hidden" style="background:#dce9ff;">
@@ -289,8 +277,8 @@ const streak = computed(() => {
 })
 
 const stats = computed(() => [
-  { icon: Award, label: 'Total EXP', value: totalExp.value, suffix: '' },
-  { icon: TrendingUp, label: 'Daily avg', value: avgExp.value, suffix: ' EXP' },
+  { icon: Award, label: 'Total pts', value: totalExp.value, suffix: '' },
+  { icon: TrendingUp, label: 'Daily avg', value: avgExp.value, suffix: ' pts' },
   { icon: Heart, label: 'Bright days', value: happyDays.value, suffix: ' / 7' },
   { icon: Flame, label: 'Streak', value: streak.value, suffix: ' days' },
 ])
@@ -316,10 +304,13 @@ const insight = computed(() => {
 // --- Line chart ---
 const lineW = 400
 const lineH = 170
-const padL = 10
+const padL = 40
 const padR = 10
 const padT = 12
 const padB = 22
+
+const lineMaxExp = computed(() => Math.max(...props.weekData.map(d => d.exp), 10))
+const gridLineValues = computed(() => [0.25, 0.5, 0.75, 1].map(f => Math.round(lineMaxExp.value * f)))
 
 const chartPts = computed(() => {
   const maxExp = Math.max(...props.weekData.map(d => d.exp), 10)
@@ -402,53 +393,13 @@ const hasRadarData = computed(() => radarAverages.value.some(v => v > 0))
 
 const radarDataPoly = computed(() => {
   return radarDims.map((_, i) => {
-    const fraction = Math.min(1, radarAverages.value[i] / 10)
+    const fraction = Math.min(1, radarAverages.value[i] / 20)
     const p = radarPoint(i, radarRadius * fraction)
     return `${p.x},${p.y}`
   }).join(' ')
 })
 
-// --- Bar chart ---
-const barW = 260
-const barH = 170
-const barPadL = 8
-const barPadR = 8
-const barPadT = 10
-const barPadB = 22
-const barGap = 4
-
 const hasTodayData = computed(() => props.todayDimensions.length > 0)
-
-const barItems = computed(() => {
-  const dimLabelMap: Record<string, string> = {
-    mood: 'Mood', rest: 'Rest', exercise: 'Move',
-    self_discipline: 'Self', vitamin: 'Vit', protein: 'Prot', carb: 'Energy',
-  }
-  return props.todayDimensions.map(d => ({
-    label: dimLabelMap[d.key] ?? d.label,
-    value: d.exp,
-    maxExp: 10,
-  }))
-})
-
-const barItemW = computed(() => {
-  const n = barItems.value.length || 7
-  return (barW - barPadL - barPadR - (n - 1) * barGap) / n
-})
-
-function barX(i: number) {
-  return barPadL + i * (barItemW.value + barGap)
-}
-
-function barTop(v: number) {
-  const frac = Math.min(1, v / 10)
-  return barPadT + (1 - frac) * (barH - barPadT - barPadB)
-}
-
-function barHeight(v: number) {
-  const frac = Math.min(1, v / 10)
-  return frac * (barH - barPadT - barPadB)
-}
 
 // --- Today mood / EXP ---
 const todayExpValue = computed(() => props.todayExp)
@@ -485,7 +436,7 @@ const moodBgColor = computed(() => {
 const todayDimensions = computed(() =>
   props.todayDimensions.map(d => ({
     ...d,
-    pct: Math.round((d.exp / 10) * 100),
+    pct: Math.round((d.exp / 20) * 100),
   }))
 )
 </script>
