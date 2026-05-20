@@ -33,8 +33,12 @@
           </template>
         </button>
       </motion.div>
+      <div class="click-hint">
+        <img src="/images/bodymap/bm-8.webp" alt="" />
+        <span>Click on any wellness orbit bubble to explore</span>
+      </div>
     </article>
-
+    
     <aside class="tips-panel">
       <h3>Quick Tips</h3>
 
@@ -68,7 +72,26 @@
 import type { OrbitItem } from "../../data/wellnessPopups";
 import type { QuickTip } from "../../types/wellness";
 
-const ORBIT = { cx: 260, cy: 196, r: 156 } as const;
+const isMobile = ref(false)
+
+const orbitConfig = computed(() =>
+  isMobile.value
+    ? { cx: 210, cy: 160, r: 122 }
+    : { cx: 260, cy: 196, r: 156 }
+)
+
+onMounted(() => {
+  const updateMobile = () => {
+    isMobile.value = window.innerWidth <= 720
+  }
+
+  updateMobile()
+  window.addEventListener("resize", updateMobile)
+
+  onUnmounted(() => {
+    window.removeEventListener("resize", updateMobile)
+  })
+})
 
 defineProps<{
   orbitItems: OrbitItem[];
@@ -118,8 +141,9 @@ function orbitPointStyle(
       : inset + indexOnSide * step;
 
   const rad = (angleDeg * Math.PI) / 180;
-  const x = ORBIT.cx + ORBIT.r * Math.sin(rad);
-  const y = ORBIT.cy - ORBIT.r * Math.cos(rad);
+  const orbit = orbitConfig.value
+  const x = orbit.cx + orbit.r * Math.sin(rad)
+  const y = orbit.cy - orbit.r * Math.cos(rad)
   return { left: `${x}px`, top: `${y}px` };
 }
 </script>
@@ -187,11 +211,11 @@ function orbitPointStyle(
   --orbit-cy: 196px;
   --orbit-r: 156px;
 
-  position: relative;
-  z-index: 2;
   width: 520px;
   height: 390px;
   margin: 34px auto 0;
+  position: relative;
+  z-index: 2;
 }
 
 .orbit-ring {
@@ -236,8 +260,8 @@ function orbitPointStyle(
   position: absolute;
   left: 0;
   top: 0;
-  width: 42px;
-  height: 42px;
+  width: 50px;
+  height: 50px;
   border-radius: 9999px;
   display: grid;
   place-items: center;
@@ -287,6 +311,33 @@ function orbitPointStyle(
 .orbit-item:hover .orbit-icon {
   transform: translate(-50%, -50%) translateY(-2px) scale(1.05);
 }
+
+ 
+.click-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 26px;
+  transform: translateX(-50%);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #0d1c2e;
+
+  opacity: 0.78;
+  z-index: 3;
+}
+
+.click-hint img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+} 
 
 .tips-panel {
   height: 544px;
@@ -429,15 +480,60 @@ function orbitPointStyle(
 
 @media (max-width: 720px) {
   .orbit-panel {
-    padding: 24px 18px;
-    overflow-x: auto;
+    height: 420px;
+    overflow: hidden;
+    padding: 24px 12px 64px;
   }
 
   .orbit-map {
-    transform: scale(0.78);
+    --orbit-cx: 210px;
+    --orbit-cy: 160px;
+    --orbit-r: 122px;
+
+    width: 420px;
+    height: 320px;
+    transform: scale(0.82);
     transform-origin: top center;
-    margin-left: 50%;
-    translate: -50% 0;
+    margin: 56px auto 0;
+  }
+
+  .orbit-label {
+    font-size: 10px;
+    line-height: 12px;
+    max-width: 64px;
+  }
+  .orbit-item.do .orbit-label {
+    right: 28px;
+    text-align: right;
+  }
+
+  .orbit-item.dont .orbit-label {
+    left: 28px;
+    text-align: left;
+  }
+
+  .orbit-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .orbit-icon img {
+    width: 18px;
+    height: 18px;
+  }
+
+  .centre-bubble {
+    width: 82px;
+    height: 82px;
+    font-size: 16px;
+  }
+
+  .click-hint {
+    top: auto;
+    bottom: 8px;
+    left: 50%;
+    width: 360px;
+    font-size: 12px;
   }
 }
 
@@ -456,9 +552,4 @@ function orbitPointStyle(
   }
 }
 
-@media (max-width: 480px) {
-  .orbit-map {
-    transform: scale(0.64);
-  }
-}
 </style>
