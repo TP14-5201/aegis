@@ -13,23 +13,25 @@
       </div>
     </div>
 
-    <!-- Video frame -->
+    <!-- Age-group companion video -->
     <div class="relative flex-1 flex items-center justify-center px-6 py-4">
       <div
         class="absolute rounded-full blur-3xl pointer-events-none"
         :style="{ width: '280px', height: '280px', background: glowColor, opacity: 0.6 }"
       />
-      <div class="relative z-10 rounded-2xl overflow-hidden shadow-xl" style="width: 260px; height: 260px; background: #0d1c2e10;">
+      <div
+        class="relative z-10 rounded-2xl overflow-hidden shadow-xl"
+        style="width: 260px; height: 260px; background: #0d1c2e10;"
+      >
         <video
-          ref="videoEl"
           :key="videoSrc"
           :src="videoSrc"
           autoplay
           loop
           :muted="isMuted"
           playsinline
-          class="w-full h-full object-cover"
-          style="border-radius: 16px;"
+          class="w-full h-full object-contain"
+          style="border-radius: 16px; background: #f8fbff;"
         />
       </div>
       <template v-if="mood === 'happy'">
@@ -128,24 +130,30 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { computed } from 'vue'
 
 type PetMood = 'idle' | 'happy' | 'neutral' | 'sad'
+type AgeStage = 'newborns' | 'infants' | 'toddlers' | 'young_kids' | 'pre_teens'
 
 const props = defineProps<{
   mood: PetMood
   healthPct: number | null
+  stageId: AgeStage
   stageLabel: string
   isMuted: boolean
 }>()
 
-const videoEl = ref<HTMLVideoElement | null>(null)
+const VIDEO_STAGE_PREFIX: Record<AgeStage, string> = {
+  newborns: 'newborn',
+  infants: 'infant',
+  toddlers: 'toddler',
+  young_kids: 'young-child',
+  pre_teens: 'preteen',
+}
 
-const videoSrc = computed(() => {
-  if (props.mood === 'happy') return '/videos/HAPPY.mp4'
-  if (props.mood === 'sad') return '/videos/SAD.mp4'
-  return '/videos/NORMAL.mp4'
-})
+const videoMood = computed(() => props.mood === 'idle' ? 'neutral' : props.mood)
+
+const videoSrc = computed(() => `/videos/${VIDEO_STAGE_PREFIX[props.stageId]}-${videoMood.value}.mp4`)
 
 const glowColor = computed(() => {
   if (props.mood === 'happy') return 'radial-gradient(circle, #7fe3c499 0%, transparent 70%)'
@@ -254,7 +262,4 @@ const sparkles = [
   { char: '✦', style: 'right: 30%; top: 22%; color: #FFD56B; font-size: 14px; font-weight: 700;' },
 ]
 
-watch(() => props.mood, () => {
-  // Let the :key on video handle reload
-})
 </script>

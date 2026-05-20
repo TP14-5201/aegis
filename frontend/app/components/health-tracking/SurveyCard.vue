@@ -94,69 +94,28 @@
             </div>
           </div>
 
-          <!-- Return visit: prominent stage dropdown -->
-          <div v-else class="mt-7 relative rounded-3xl border-2 p-4" style="background:#fffaf4; border-color:#EF6C00;">
-            <div class="flex items-start justify-between gap-4 flex-wrap">
-              <div>
-                <div class="font-body" style="color:#EF6C00; font-weight:800; font-size:11px; letter-spacing:0.15em; text-transform:uppercase;">
-                  Step 1: confirm age group
-                </div>
-                <p class="font-body mt-1" style="font-size:13px; color:#0d1c2e; opacity:0.72; font-weight:700; line-height:1.5;">
-                  Questions are tailored to the selected stage. Click the dropdown if you need to change it.
-                </p>
-              </div>
+          <!-- Return visit: visible stage picker -->
+          <div v-else class="mt-7 rounded-3xl border-2 p-4" style="background:#fffaf4; border-color:#EF6C00;">
+            <div class="font-body" style="color:#EF6C00; font-weight:800; font-size:11px; letter-spacing:0.15em; text-transform:uppercase;">
+              Step 1: confirm age group
+            </div>
+            <p class="font-body mt-1 mb-4" style="font-size:13px; color:#0d1c2e; opacity:0.72; font-weight:700; line-height:1.5;">
+              Questions are tailored to the selected stage. Choose a button below if you need to change it.
+            </p>
+            <div class="grid grid-cols-1 sm:grid-cols-5 gap-2">
               <button
-                @click="introStageDropOpen = !introStageDropOpen"
-                class="inline-flex items-center gap-3 px-4 py-3 rounded-2xl border-2 font-body transition-all hover:shadow-md"
-                style="background:white; border-color:#EF6C00; color:#0d1c2e;"
+                v-for="s in STAGES"
+                :key="s.id"
+                @click="selectStage(s.id)"
+                class="rounded-xl border-2 px-2 py-3 text-center transition-all duration-200 hover:shadow-md"
+                :style="modelStage === s.id
+                  ? 'background:#0d1c2e; color:#dce9ff; border-color:#0d1c2e;'
+                  : 'background:white; color:#0d1c2e; border-color:#EF6C00;'"
               >
-                <span class="text-left">
-                  <span class="block" style="font-weight:800; font-size:13px; text-transform:uppercase; letter-spacing:0.06em;">{{ currentStageObj.label }}</span>
-                  <span class="block" style="font-weight:700; font-size:11px; opacity:0.58;">{{ currentStageObj.sub }}</span>
-                </span>
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-                </svg>
+                <div class="font-display" style="font-weight:800; font-size:12px; line-height:1.1;">{{ s.label }}</div>
+                <div class="font-body mt-0.5" style="font-weight:700; font-size:9px; opacity:0.7; letter-spacing:0.05em;">{{ s.sub }}</div>
               </button>
             </div>
-
-            <Transition
-              enter-active-class="transition duration-150 ease-out"
-              enter-from-class="opacity-0 -translate-y-1 scale-95"
-              enter-to-class="opacity-100 translate-y-0 scale-100"
-              leave-active-class="transition duration-100 ease-in"
-              leave-from-class="opacity-100 translate-y-0 scale-100"
-              leave-to-class="opacity-0 -translate-y-1 scale-95"
-            >
-              <div
-                v-if="introStageDropOpen"
-                class="absolute left-4 top-[calc(100%-8px)] w-72 max-w-[calc(100%-2rem)] rounded-2xl border shadow-2xl z-30 overflow-hidden"
-                style="background:white; border-color:#EF6C00;"
-              >
-                <div class="px-4 py-2.5 border-b" style="border-color:#eef4fb;">
-                  <div class="font-body" style="font-weight:800; font-size:10px; letter-spacing:0.14em; text-transform:uppercase; color:#EF6C00;">
-                    Change age group
-                  </div>
-                </div>
-                <div class="py-1">
-                  <button
-                    v-for="s in STAGES"
-                    :key="s.id"
-                    @click="selectStage(s.id)"
-                    class="w-full flex items-center justify-between px-4 py-2.5 font-body hover:bg-[#fff7ed] transition-colors"
-                    :style="{ color:'#0d1c2e', fontWeight: modelStage === s.id ? 800 : 600, fontSize:'13px' }"
-                  >
-                    <span>
-                      {{ s.label }}
-                      <span style="opacity:0.55; font-weight:600; margin-left:8px; font-size:11px;">{{ s.sub }}</span>
-                    </span>
-                    <svg v-if="modelStage === s.id" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="#EF6C00" stroke-width="3">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            </Transition>
           </div>
 
           <!-- Today completed banner -->
@@ -878,8 +837,6 @@ const emit = defineEmits<{
 }>()
 
 // --------------- Local state ---------------
-const headerStageDropOpen = ref(false)
-const introStageDropOpen = ref(false)
 const currentIndex = ref(0)
 const sliderVal = ref<number | null>(null)
 const selectedSingle = ref<string | null>(null)
@@ -978,8 +935,6 @@ const nextButtonLabel = computed(() => currentIndex.value + 1 >= currentQuestion
 // --------------- Methods ---------------
 function selectStage(id: AgeStage) {
   emit('update:stage', id)
-  headerStageDropOpen.value = false
-  introStageDropOpen.value = false
 }
 
 function resetAnswerState() {

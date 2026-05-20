@@ -44,6 +44,7 @@
             <HealthTrackingVirtualPetCard
               :mood="petMood"
               :health-pct="healthPct"
+              :stage-id="stage"
               :stage-label="currentStageObj.label"
               :is-muted="isMuted"
               class="w-full"
