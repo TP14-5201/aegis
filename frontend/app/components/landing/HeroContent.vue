@@ -27,7 +27,7 @@
             Find Food Banks
           </NuxtLink>
 
-          <NuxtLink to="/get-food" class="btn-outline">
+          <NuxtLink to="/quick-action" class="btn-outline">
             Quick Access Plan
           </NuxtLink>
         </div>

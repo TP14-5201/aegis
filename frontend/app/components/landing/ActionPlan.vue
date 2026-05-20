@@ -17,7 +17,7 @@
             in under 30 seconds.
           </p>
 
-          <NuxtLink to="/get-food" class="btn-dark mt-7">
+          <NuxtLink to="/quick-action" class="btn-dark mt-7">
             Get My Action Plan
           </NuxtLink>
         </div>

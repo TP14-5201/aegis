@@ -1,7 +1,7 @@
 <template>
   <section id="story-path" class="w-full">
     <div class="w-full bg-[linear-gradient(106deg,#131B2E_0%,#396477_100%)]">
-      <div class="section-inner pb-2 pt-20 lg:min-h-[700px] lg:pb-0 lg:pt-24">
+      <div class="section-inner pb-0 pt-20 lg:min-h-[620px] lg:pb-0 lg:pt-20">
         <div class="story-reveal max-w-[520px] pt-0">
           <h1 class="font-volkhov text-[48px] font-semibold leading-[0.95] tracking-normal text-white sm:text-[64px] lg:text-[72px]">
             Follow the
@@ -16,7 +16,7 @@
         </div>
 
         <!-- Desktop plotted journey -->
-        <div ref="storyRef" class="relative -mt-8 hidden h-[500px] w-full lg:block">
+        <div ref="storyRef" class="relative -mt-12 hidden h-[440px] w-full lg:block">
           <svg
             class="absolute inset-0 z-0 h-full w-full pointer-events-none"
             viewBox="0 0 1200 620"
@@ -25,20 +25,20 @@
           >
             <path
               class="story-path"
-              d="M120 280
-                C285 455, 355 500, 440 455"
+              d="M40 280
+                C200 400, 355 400, 440 360"
             />
 
             <path
               class="story-path"
-              d="M440 455
-                C625 415, 665 300, 700 225"
+              d="M355 375
+                C525 315, 440 360, 750 180"
             />
 
             <path
               class="story-path"
-              d="M770 225
-                C930 350, 995 405, 1095 325"
+              d="M900 150
+                C1000 180, 1100 250, 1200 325"
             />
           </svg>
 
@@ -209,8 +209,8 @@ const storyItems: StoryItem[] = [
     chapter: '01',
     title: 'Where it happens',
     img: '/images/learn-more/subject-26-1.webp',
-    cx: 120,
-    cy: 260,
+    cx: 100,
+    cy: 280,
     metricValue: '1 in 6',
     metricLabel: 'Vic households',
     eyebrow: 'Around us . Victoria',
@@ -224,7 +224,7 @@ const storyItems: StoryItem[] = [
     title: 'Who it affects',
     img: '/images/learn-more/subject-33-1.webp',
     cx: 440,
-    cy: 435,
+    cy: 375,
     metricValue: '312k',
     metricLabel: 'Children . 2024',
     eyebrow: 'Families . Children',
@@ -237,8 +237,8 @@ const storyItems: StoryItem[] = [
     chapter: '03',
     title: 'The Impact',
     img: '/images/learn-more/subject-31-1.webp',
-    cx: 720,
-    cy: 225,
+    cx: 770,
+    cy: 175,
     metricValue: '3.2x',
     metricLabel: 'Risk of anxiety',
     eyebrow: 'Long term . The impact',
