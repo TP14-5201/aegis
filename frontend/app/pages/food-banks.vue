@@ -999,6 +999,18 @@ function buildPopupHTML(s) {
     : s.is_open_now === false
     ? `<span style="background:#fff1f1;color:#f40e0e;border:1px solid #fca5a5;border-radius:99px;padding:2px 10px;font-size:11px;font-weight:700;white-space:nowrap;">CLOSED</span>`
     : ''
+  const hasLocation = !!userLocation.value
+  const dirBtn = `<button
+    onclick="window.__cherebowlDirections('${s.id}')"
+    ${hasLocation ? '' : 'disabled title="Enter your location first"'}
+    style="display:flex;align-items:center;gap:5px;width:100%;margin-top:8px;padding:7px 12px;border-radius:8px;border:none;cursor:${hasLocation ? 'pointer' : 'not-allowed'};background:${hasLocation ? '#001b3d' : '#e5e7eb'};color:${hasLocation ? 'white' : '#9ca3af'};font-size:12px;font-weight:700;font-family:inherit;justify-content:center;transition:background 0.15s;"
+    ${hasLocation ? 'onmouseover="this.style.background=\'#002f6c\'" onmouseout="this.style.background=\'#001b3d\'"' : ''}
+  >
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
+      <path d="M3 11l19-9-9 19-2-8-8-2z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+    </svg>
+    Get Directions
+  </button>`
   return `
     <div style="font-family:'Plus Jakarta Sans',sans-serif;min-width:220px;max-width:260px;">
       <p style="font-size:14px;font-weight:700;margin:0 0 5px;color:#1a1a1a;line-height:1.3;">${s.name || ''}</p>
@@ -1008,8 +1020,19 @@ function buildPopupHTML(s) {
         ${s.website ? `<a href="${s.website}" target="_blank" rel="noopener" style="font-size:12px;color:#0054cd;text-decoration:none;">Visit website ↗</a>` : '<span></span>'}
         ${status}
       </div>
+      ${dirBtn}
     </div>
   `
+}
+
+// Global handler so Leaflet popup buttons can call into Vue's reactive scope.
+window.__cherebowlDirections = (id) => {
+  const s = services.value.find(x => String(x.id) === String(id))
+  if (s) {
+    selectedService.value = s
+    getDirections(s)
+    mapInstance?.closePopup()
+  }
 }
 
 function updateMapMarkers() {
