@@ -65,70 +65,10 @@
           </div>
         </transition>
 
-        <!-- ── STEP 2: People + Days ───────────────────────────────────── -->
+        <!-- ── STEP 2: Dietary goal + restrictions + description ────────── -->
         <transition name="fade-slide" mode="out-in">
           <div v-if="step === 2" key="step2" class="mt-10">
             <p class="font-roboto text-[13px] font-bold uppercase tracking-wider text-gray-400">Step 2 of {{ TOTAL_STEPS }}</p>
-            <h3 class="mt-2 font-volkhov text-[24px] font-bold text-navy lg:text-[30px]">
-              Who are you cooking for?
-            </h3>
-            <p class="mt-2 font-roboto text-[14px] text-gray-500">Set your household size and how many days this grocery bag should last.</p>
-
-            <div class="mt-10 space-y-8">
-              <!-- People -->
-              <div>
-                <p class="font-roboto text-[15px] font-semibold text-navy">Number of people</p>
-                <div class="mt-4 flex items-center gap-5">
-                  <button
-                    type="button"
-                    @click="people = Math.max(1, people - 1)"
-                    class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gray-100 text-2xl font-bold text-navy transition hover:bg-gray-200 active:scale-95"
-                  >−</button>
-                  <div class="flex min-w-[3rem] flex-col items-center">
-                    <span class="font-volkhov text-[42px] font-bold text-navy leading-none">{{ people }}</span>
-                    <span class="mt-1 font-roboto text-[12px] text-gray-400">{{ people === 1 ? 'person' : 'people' }}</span>
-                  </div>
-                  <button
-                    type="button"
-                    @click="people = Math.min(20, people + 1)"
-                    class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gray-100 text-2xl font-bold text-navy transition hover:bg-gray-200 active:scale-95"
-                  >+</button>
-                </div>
-              </div>
-
-              <div class="border-t border-gray-100" />
-
-              <!-- Days -->
-              <div>
-                <p class="font-roboto text-[15px] font-semibold text-navy">Number of days</p>
-                <div class="mt-4 flex items-center gap-5">
-                  <button
-                    type="button"
-                    @click="days = Math.max(1, days - 1)"
-                    class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gray-100 text-2xl font-bold text-navy transition hover:bg-gray-200 active:scale-95"
-                  >−</button>
-                  <div class="flex min-w-[3rem] flex-col items-center">
-                    <span class="font-volkhov text-[42px] font-bold text-navy leading-none">{{ days }}</span>
-                    <span class="mt-1 font-roboto text-[12px] text-gray-400">{{ days === 1 ? 'day' : 'days' }}</span>
-                  </div>
-                  <button
-                    type="button"
-                    @click="days = Math.min(14, days + 1)"
-                    class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gray-100 text-2xl font-bold text-navy transition hover:bg-gray-200 active:scale-95"
-                  >+</button>
-                </div>
-                <p class="mt-3 font-roboto text-[12px] text-gray-400">
-                  Daily budget per person: <strong class="text-navy">${{ bdpp.toFixed(2) }}</strong>
-                </p>
-              </div>
-            </div>
-          </div>
-        </transition>
-
-        <!-- ── STEP 3: Dietary goal + restrictions + description ────────── -->
-        <transition name="fade-slide" mode="out-in">
-          <div v-if="step === 3" key="step3" class="mt-10">
-            <p class="font-roboto text-[13px] font-bold uppercase tracking-wider text-gray-400">Step 3 of {{ TOTAL_STEPS }}</p>
             <h3 class="mt-2 font-volkhov text-[24px] font-bold text-navy lg:text-[30px]">
               Tell us your preferences
             </h3>
@@ -205,8 +145,11 @@
                 :maxlength="DESCRIPTION_MAX"
                 rows="3"
                 placeholder="e.g. I love spicy food and prefer quick Asian-style meals..."
-                class="mt-3 w-full rounded-xl border border-gray-200 px-4 py-3 font-roboto text-[14px] text-gray-700 outline-none focus:ring-2 focus:ring-[#B8DEFF] resize-none"
+                class="mt-3 w-full rounded-xl border px-4 py-3 font-roboto text-[14px] text-gray-700 outline-none focus:ring-2 focus:ring-[#B8DEFF] resize-none"
+                :class="descriptionError ? 'border-red-400 focus:ring-red-200' : 'border-gray-200'"
+                @input="descriptionError = ''"
               />
+              <p v-if="descriptionError" class="mt-1 font-roboto text-[12px] text-red-500">{{ descriptionError }}</p>
               <div class="mt-1 flex justify-between font-roboto text-[11px] text-gray-400">
                 <button type="button" @click="descriptionInput = ''; step++" class="text-[#396477] hover:underline">Skip →</button>
                 <span>{{ descriptionInput.length }} / {{ DESCRIPTION_MAX }}</span>
@@ -215,10 +158,10 @@
           </div>
         </transition>
 
-        <!-- ── STEP 4: Summary ────────────────────────────────────────── -->
+        <!-- ── STEP 3: Summary ────────────────────────────────────────── -->
         <transition name="fade-slide" mode="out-in">
-          <div v-if="step === 4" key="step4" class="mt-10">
-            <p class="font-roboto text-[13px] font-bold uppercase tracking-wider text-gray-400">Step 4 of {{ TOTAL_STEPS }}</p>
+          <div v-if="step === 3" key="step3" class="mt-10">
+            <p class="font-roboto text-[13px] font-bold uppercase tracking-wider text-gray-400">Step 3 of {{ TOTAL_STEPS }}</p>
             <h3 class="mt-2 font-volkhov text-[24px] font-bold text-navy lg:text-[30px]">
               Ready to build your bag?
             </h3>
@@ -233,14 +176,6 @@
                 <div class="flex justify-between">
                   <span class="text-gray-500">Budget</span>
                   <strong>${{ budget }} AUD</strong>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-gray-500">People</span>
-                  <strong>{{ people }}</strong>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-gray-500">Days</span>
-                  <strong>{{ days }}</strong>
                 </div>
                 <div class="flex justify-between">
                   <span class="text-gray-500">Goal</span>
@@ -267,14 +202,14 @@
             @click="handleBack"
             class="font-roboto text-[14px] font-semibold text-gray-500 hover:text-navy transition"
           >
-            ← {{ props.showingResults && step === 4 ? 'Edit selections' : 'Back' }}
+            ← {{ props.showingResults && step === 3 ? 'Edit selections' : 'Back' }}
           </button>
           <div v-else />
 
           <button
             v-if="step < TOTAL_STEPS"
             type="button"
-            @click="step++"
+            @click="handleContinue"
             class="flex items-center gap-2 h-[52px] px-8 rounded-[16px] bg-navy text-white font-roboto font-bold text-[15px] transition-all hover:-translate-y-0.5 hover:bg-[#182d47] active:translate-y-0"
           >
             Continue →
@@ -288,6 +223,14 @@
             ✦ Suggest options
           </button>
         </div>
+
+        <!-- Loading feedback — shown after submit until user scrolls to results -->
+        <p
+          v-if="props.showingResults"
+          class="mt-3 text-center font-roboto text-[13px] text-[#396477]"
+        >
+          ✦ Building your bag… scroll down to see your results ↓
+        </p>
       </form>
     </div>
   </section>
@@ -302,13 +245,12 @@ const props = defineProps<{
 
 const BUDGET_MIN = 1
 const BUDGET_MAX = 50
-const TOTAL_STEPS = 4
+const TOTAL_STEPS = 3
 
 const step = ref(1)
 const budget = ref(30)
-const people = ref(2)
-const days = ref(4)
 const descriptionInput = ref('')
+const descriptionError = ref('')
 const dietaryGoal = ref<string | null>(null)
 const dietaryNeeds = ref<string[]>([])
 
@@ -348,11 +290,8 @@ const TIERS = [
 const currentTier = computed(() => TIERS.find(t => budget.value <= t.max) ?? TIERS[TIERS.length - 1])
 const currentTierLabel = computed(() => currentTier.value.label)
 const currentTierHint = computed(() => currentTier.value.hint)
+
 const tierBadgeClass = computed(() => currentTier.value.badge)
-
-// ── Per-person per-dish budget ─────────────────────────────────────────────
-
-const bdpp = computed(() => budget.value / Math.max(people.value, 1) / Math.max(days.value, 1))
 
 // ── Description chip helper ────────────────────────────────────────────────
 
@@ -395,13 +334,35 @@ const handleBack = () => {
   }
 }
 
+// ── Description validation ─────────────────────────────────────────────────
+
+function validateDescription(text: string): boolean {
+  const words = text.trim().split(/\s+/).filter(w => w.length > 0)
+  if (words.length === 0) return true
+  const hasVowel = (w: string) => /[aeiouAEIOU]/.test(w)
+  const noVowelCount = words.filter(w => !hasVowel(w)).length
+  const shortCount = words.filter(w => w.length < 3).length
+  if (noVowelCount / words.length > 0.6) return false
+  if (words.length > 5 && shortCount / words.length > 0.6) return false
+  return true
+}
+
+function handleContinue() {
+  if (step.value === 2 && descriptionInput.value.trim()) {
+    if (!validateDescription(descriptionInput.value)) {
+      descriptionError.value = "Please describe your food preferences in plain language (e.g. 'I love spicy Asian meals')."
+      return
+    }
+  }
+  descriptionError.value = ''
+  step.value++
+}
+
 // ── Submit ─────────────────────────────────────────────────────────────────
 
 const handleSubmit = () => {
   emit('submitPlanner', {
     budget: budget.value,
-    people: people.value,
-    days: days.value,
     dietaryNeeds: dietaryNeeds.value,
     dietaryGoal: dietaryGoal.value,
     description: descriptionInput.value.trim() || null,

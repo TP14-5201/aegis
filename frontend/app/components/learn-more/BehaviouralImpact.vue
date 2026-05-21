@@ -270,7 +270,7 @@ const impactCards = {
     why: 'Many low-income areas lack nearby supermarkets or fresh food stores. Without reliable transport, people rely on whatever is closest - often convenience stores or fast food outlets.',
     action: 'Small daily habits add up over time. Explore simple swaps and healthy routines that fit your lifestyle without overhauling everything at once.',
     button: 'Explore Wellness Guide',
-    link: '/nutrition-guide',
+    link: '/nutrition-guide#wellness-guide',
     color: '#6E927B'
   },
 

@@ -1,7 +1,7 @@
 <template>
   <section id="story-path" class="w-full">
     <div class="w-full bg-[linear-gradient(106deg,#131B2E_0%,#396477_100%)]">
-      <div class="section-inner pb-12 pt-16 lg:min-h-[940px] lg:pb-0 lg:pt-20">
+      <div class="section-inner pb-0 pt-20 lg:min-h-[620px] lg:pb-0 lg:pt-20">
         <div class="story-reveal max-w-[520px] pt-0">
           <h1 class="font-volkhov text-[48px] font-semibold leading-[0.95] tracking-normal text-white sm:text-[64px] lg:text-[72px]">
             Follow the
@@ -16,7 +16,7 @@
         </div>
 
         <!-- Desktop plotted journey -->
-        <div ref="storyRef" class="relative -mt-24 hidden h-[760px] w-full lg:block">
+        <div ref="storyRef" class="relative -mt-12 hidden h-[440px] w-full lg:block">
           <svg
             class="absolute inset-0 z-0 h-full w-full pointer-events-none"
             viewBox="0 0 1200 620"
@@ -25,20 +25,20 @@
           >
             <path
               class="story-path"
-              d="M120 280
-                C285 455, 355 500, 440 455"
+              d="M40 280
+                C200 400, 355 400, 440 360"
             />
 
             <path
               class="story-path"
-              d="M440 455
-                C625 415, 665 300, 700 225"
+              d="M355 375
+                C525 315, 440 360, 750 180"
             />
 
             <path
               class="story-path"
-              d="M770 225
-                C930 350, 995 405, 1095 325"
+              d="M900 150
+                C1000 180, 1100 250, 1200 325"
             />
           </svg>
 
@@ -46,7 +46,7 @@
             v-for="(item, index) in storyItems"
             :key="item.title"
             type="button"
-            class="story-node group absolute z-10 flex w-[245px] -translate-x-1/2 -translate-y-1/2 flex-col items-center text-center outline-none"
+            class="story-node group absolute z-10 flex w-[190px] -translate-x-1/2 -translate-y-1/2 flex-col items-center text-center outline-none"
             :class="selectedItem?.title === item.title ? 'is-selected' : ''"
             :style="{
               left: `${(item.cx / 1200) * 100}%`,
@@ -63,7 +63,7 @@
                 {{ item.chapter }}
               </span>
               <span
-                class="font-volkhov text-[19px] font-bold leading-none transition-colors"
+                class="whitespace-nowrap font-volkhov text-[19px] font-bold leading-none transition-colors"
                 :class="selectedItem?.title === item.title ? 'text-white drop-shadow-[0_0_10px_rgba(223,105,81,0.75)]' : 'text-[#DF6951] group-hover:text-white'"
               >
                 {{ item.title }}
@@ -71,17 +71,17 @@
             </span>
 
             <span
-              class="flex h-[196px] w-[196px] items-center justify-center rounded-full bg-[#7C9DBA] transition duration-300 group-hover:scale-[1.03]"
+              class="flex h-[145px] w-[145px] items-center justify-center rounded-full bg-[#7C9DBA] transition duration-300 group-hover:scale-[1.03]"
               :class="selectedItem?.title === item.title ? 'scale-[1.08] ring-[6px] ring-[#DF6951] ring-offset-4 ring-offset-[#27475b] shadow-[0_0_34px_rgba(223,105,81,0.46)]' : 'shadow-none'"
             >
               <span
-                class="flex h-[132px] w-[132px] items-center justify-center rounded-full bg-[#0D1C2E]/15 shadow-[0_12px_18px_rgba(0,0,0,0.26)] transition duration-300"
+                class="flex h-[98px] w-[98px] items-center justify-center rounded-full bg-[#0D1C2E]/15 shadow-[0_12px_18px_rgba(0,0,0,0.26)] transition duration-300"
                 :class="selectedItem?.title === item.title ? 'ring-2 ring-white' : ''"
               >
                 <img
                   :src="item.img"
                   :alt="item.title"
-                  class="h-[118px] w-[118px] rounded-full object-cover"
+                  class="h-[88px] w-[88px] rounded-full object-cover"
                 />
               </span>
             </span>
@@ -147,7 +147,7 @@
         ref="detailRef"
         class="w-full bg-[#FFFFFF]/80"
       >
-        <div class="section-inner grid gap-8 py-9 lg:grid-cols-[130px_minmax(0,1fr)_250px] lg:items-center">
+        <div class="section-inner grid gap-6 py-4 lg:grid-cols-[100px_minmax(0,1fr)_220px] lg:items-center">
           <div class="flex items-center gap-7">
             <p class="font-volkhov text-[58px] font-bold leading-none text-black lg:text-[64px]">
               {{ selectedItem.chapter }}
@@ -209,7 +209,7 @@ const storyItems: StoryItem[] = [
     chapter: '01',
     title: 'Where it happens',
     img: '/images/learn-more/subject-26-1.webp',
-    cx: 120,
+    cx: 100,
     cy: 280,
     metricValue: '1 in 6',
     metricLabel: 'Vic households',
@@ -224,7 +224,7 @@ const storyItems: StoryItem[] = [
     title: 'Who it affects',
     img: '/images/learn-more/subject-33-1.webp',
     cx: 440,
-    cy: 405,
+    cy: 375,
     metricValue: '312k',
     metricLabel: 'Children . 2024',
     eyebrow: 'Families . Children',
@@ -237,8 +237,8 @@ const storyItems: StoryItem[] = [
     chapter: '03',
     title: 'The Impact',
     img: '/images/learn-more/subject-31-1.webp',
-    cx: 720,
-    cy: 225,
+    cx: 770,
+    cy: 175,
     metricValue: '3.2x',
     metricLabel: 'Risk of anxiety',
     eyebrow: 'Long term . The impact',
@@ -265,24 +265,8 @@ const storyItems: StoryItem[] = [
 
 const selectedItem = ref<StoryItem | null>(storyItems[0])
 
-async function selectItem(item: StoryItem) {
+function selectItem(item: StoryItem) {
   selectedItem.value = item
-  await nextTick()
-  scrollToDetailPanel()
-}
-
-function scrollToDetailPanel() {
-  const el = detailRef.value
-  if (!el) return
-
-  const rect = el.getBoundingClientRect()
-  const absoluteTop = rect.top + window.pageYOffset
-  const panelFitsInViewport = rect.height <= window.innerHeight
-  const top = panelFitsInViewport
-    ? absoluteTop + rect.height - window.innerHeight
-    : absoluteTop - 80
-
-  window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' })
 }
 
 function jumpToSection(targetId: string) {

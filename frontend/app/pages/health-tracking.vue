@@ -32,7 +32,7 @@
           class="mt-4 mx-auto"
           style="width:576px; max-width:100%; flex-shrink:0; color:#142741; text-align:center; font-family:'Plus Jakarta Sans'; font-size:17px; font-style:normal; font-weight:500; line-height:27.2px;"
         >
-          Track seven kind habits in under a minute. Watch your little companion grow alongside the small things you already do.
+          Track seven kind habits in under a minute. Watch your child's companion grow alongside the small things you already do.
         </p>
       </section>
 
@@ -40,12 +40,11 @@
       <section class="max-w-[1200px] mx-auto px-6 lg:px-10 pb-16">
         <div class="grid lg:grid-cols-12 gap-6 items-stretch">
           <!-- Virtual pet card -->
-          <div class="lg:col-span-4 flex" style="min-height:560px;">
+          <div class="lg:col-span-4 flex" style="min-height:620px;">
             <HealthTrackingVirtualPetCard
               :mood="petMood"
-              :level="petLevel"
-              :exp="petExp"
-              :exp-to-next="EXP_TO_NEXT"
+              :health-pct="healthPct"
+              :stage-id="stage"
               :stage-label="currentStageObj.label"
               :is-muted="isMuted"
               class="w-full"
@@ -53,7 +52,7 @@
           </div>
 
           <!-- Survey card -->
-          <div class="lg:col-span-8 flex" style="min-height:560px;">
+          <div class="lg:col-span-8 flex" style="min-height:620px;">
             <HealthTrackingSurveyCard
               v-model:stage="stage"
               :has-visited="hasVisited"
@@ -64,6 +63,7 @@
               @start="startSurvey"
               @complete="onSurveyComplete"
               @redo="redoSurvey"
+              @back-to-intro="returnToIntroFromSurvey"
               @toggle-mute="isMuted = !isMuted"
             />
           </div>
@@ -194,6 +194,11 @@ const todayCompleted = ref(false)
 
 // --- Computed ---
 const currentStageObj = computed(() => STAGES.find(s => s.id === stage.value) ?? STAGES[0])
+
+const healthPct = computed(() => {
+  if (!todayCompleted.value || todayMaxExp.value === 0) return null
+  return Math.min(1, todayExp.value / todayMaxExp.value)
+})
 
 // -- Helpers --
 function todayKey(): string {
@@ -351,7 +356,7 @@ function onSurveyComplete(payload: {
 
   // Classify mood from EXP percentage
   const pct = maxExp > 0 ? totalExp / maxExp : 0
-  const mood: 'happy' | 'neutral' | 'sad' = pct >= 0.7 ? 'happy' : pct >= 0.4 ? 'neutral' : 'sad'
+  const mood: 'happy' | 'neutral' | 'sad' = pct >= 0.667 ? 'happy' : pct >= 0.333 ? 'neutral' : 'sad'
 
   // EXP snapshot: save baseline before first submission; restore it on any redo
   const savedBase = ls(LS_BASE_EXP)
@@ -463,6 +468,11 @@ function redoSurvey() {
   surveyPhase.value = 'intro'
   petMood.value = 'idle'
   saveState()
+}
+
+function returnToIntroFromSurvey() {
+  surveyPhase.value = 'intro'
+  petMood.value = 'idle'
 }
 
 // --- Watchers ---

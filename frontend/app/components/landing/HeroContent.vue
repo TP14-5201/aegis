@@ -27,16 +27,16 @@
             Find Food Banks
           </NuxtLink>
 
-          <NuxtLink to="/get-food" class="btn-outline">
+          <NuxtLink to="/quick-action" class="btn-outline">
             Quick Access Plan
           </NuxtLink>
         </div>
       </div>
 
       <!-- Image -->
-      <div class="relative mx-auto h-[340px] w-full max-w-[520px] lg:ml-auto">
+      <div class="relative mx-auto h-[390px] w-full max-w-[580px] lg:ml-auto">
         <img src="/images/landing/landing-1.webp" alt="Supportive parent and child"
-          class="absolute right-0 top-0 h-[319px] w-[428px] max-w-full object-contain" />
+          class="absolute right-0 top-0 h-[460px] w-[640px] max-w-full object-contain" />
       </div>
     </div>
   </section>

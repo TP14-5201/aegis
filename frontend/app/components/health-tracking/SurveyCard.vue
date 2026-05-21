@@ -1,7 +1,7 @@
 ﻿<template>
   <div
     class="w-full rounded-3xl border shadow-xl flex flex-col overflow-hidden"
-    style="background: #ffffff; border-color: #dce9ff; min-height: 560px;"
+    style="background: #ffffff; border-color: #dce9ff; min-height: 620px;"
   >
     <!-- Card header -->
     <div
@@ -35,59 +35,6 @@
           </svg>
           <span style="font-size: 11px; font-weight: 700; letter-spacing: 0.06em;">{{ isMuted ? 'Sound off' : 'Sound on' }}</span>
         </button>
-
-        <!-- Stage chip (return visits, not during survey) -->
-        <div v-if="hasVisited && phase !== 'survey'" class="relative">
-          <button
-            @click="stageDropOpen = !stageDropOpen"
-            class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border font-body"
-            style="background:#dce9ff; color:#0d1c2e; border-color:#0d1c2e; font-weight:700; font-size:12px; letter-spacing:0.06em;"
-          >
-            <span style="text-transform:uppercase;">{{ currentStageObj.label }}</span>
-            <span style="opacity:0.6; font-weight:700; font-size:10px;">{{ currentStageObj.sub }}</span>
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
-
-          <Transition
-            enter-active-class="transition duration-150 ease-out"
-            enter-from-class="opacity-0 -translate-y-1 scale-95"
-            enter-to-class="opacity-100 translate-y-0 scale-100"
-            leave-active-class="transition duration-100 ease-in"
-            leave-from-class="opacity-100 translate-y-0 scale-100"
-            leave-to-class="opacity-0 -translate-y-1 scale-95"
-          >
-            <div
-              v-if="stageDropOpen"
-              class="absolute right-0 mt-2 w-60 rounded-2xl border shadow-2xl z-30 overflow-hidden"
-              style="background:white; border-color:#dce9ff;"
-            >
-              <div class="px-4 py-2.5 border-b" style="border-color:#eef4fb;">
-                <div class="font-body" style="font-weight:700; font-size:10px; letter-spacing:0.14em; text-transform:uppercase; color:#0d1c2e; opacity:0.55;">
-                  Change age stage
-                </div>
-              </div>
-              <div class="py-1">
-                <button
-                  v-for="s in STAGES"
-                  :key="s.id"
-                  @click="selectStage(s.id)"
-                  class="w-full flex items-center justify-between px-4 py-2 font-body hover:bg-[#f4f8fe] transition-colors"
-                  :style="{ color:'#0d1c2e', fontWeight: modelStage === s.id ? 800 : 600, fontSize:'13px' }"
-                >
-                  <span>
-                    {{ s.label }}
-                    <span style="opacity:0.55; font-weight:600; margin-left:8px; font-size:11px;">{{ s.sub }}</span>
-                  </span>
-                  <svg v-if="modelStage === s.id" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-          </Transition>
-        </div>
       </div>
     </div>
 
@@ -101,14 +48,36 @@
             Ready when you are.
           </h3>
           <p class="font-body mt-3 max-w-lg" style="font-size:15px; color:#0d1c2e; opacity:0.7; font-weight:500; line-height:1.6;">
-            No right answers - just a soft check-in with how today actually felt. Your companion grows alongside you.
+            No right answers - just a soft check-in with how today actually felt. Your child's companion grows with each completed check-in.
           </p>
 
-          <!-- First visit: Stage picker -->
-          <div v-if="!hasVisited" class="mt-7">
-            <div class="font-body mb-3" style="color:#0d1c2e; opacity:0.6; font-weight:700; font-size:11px; letter-spacing:0.15em; text-transform:uppercase;">
-              Who are we caring for today?
+          <div class="mt-5 grid sm:grid-cols-3 gap-3">
+            <div
+              v-for="item in introSteps"
+              :key="item.title"
+              class="rounded-2xl border p-4"
+              style="background:#f4f8fe; border-color:#dce9ff;"
+            >
+              <div class="font-body" style="color:#EF6C00; font-size:10px; font-weight:800; letter-spacing:0.14em; text-transform:uppercase;">
+                {{ item.kicker }}
+              </div>
+              <div class="font-body mt-1" style="color:#0d1c2e; font-size:13px; font-weight:800;">
+                {{ item.title }}
+              </div>
+              <p class="font-body mt-1" style="color:#0d1c2e; opacity:0.65; font-size:12px; font-weight:600; line-height:1.45;">
+                {{ item.body }}
+              </p>
             </div>
+          </div>
+
+          <!-- First visit: Stage picker -->
+          <div v-if="!hasVisited" class="mt-7 rounded-3xl border-2 p-4" style="background:#fffaf4; border-color:#EF6C00;">
+            <div class="font-body mb-3" style="color:#0d1c2e; opacity:0.6; font-weight:700; font-size:11px; letter-spacing:0.15em; text-transform:uppercase;">
+              Step 1: choose the age group
+            </div>
+            <p class="font-body mb-4" style="font-size:13px; color:#0d1c2e; opacity:0.72; font-weight:700; line-height:1.5;">
+              The questions change based on this selection. Pick the closest stage before beginning.
+            </p>
             <div class="grid grid-cols-1 sm:grid-cols-5 gap-2">
               <button
                 v-for="s in STAGES"
@@ -125,13 +94,28 @@
             </div>
           </div>
 
-          <!-- Return visit: show current stage -->
-          <div v-else class="mt-7 flex items-center gap-3 p-4 rounded-2xl" style="background:#f4f8fe;">
-            <span class="font-body" style="font-weight:700; font-size:13px; color:#0d1c2e; opacity:0.7;">Caring for:</span>
-            <span class="px-3 py-1 rounded-full font-body" style="background:#0d1c2e; color:#dce9ff; font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:0.06em;">
-              {{ currentStageObj.label }}
-            </span>
-            <span class="font-body" style="font-weight:600; font-size:11px; color:#0d1c2e; opacity:0.45;">Use the chip above to change</span>
+          <!-- Return visit: visible stage picker -->
+          <div v-else class="mt-7 rounded-3xl border-2 p-4" style="background:#fffaf4; border-color:#EF6C00;">
+            <div class="font-body" style="color:#EF6C00; font-weight:800; font-size:11px; letter-spacing:0.15em; text-transform:uppercase;">
+              Step 1: confirm age group
+            </div>
+            <p class="font-body mt-1 mb-4" style="font-size:13px; color:#0d1c2e; opacity:0.72; font-weight:700; line-height:1.5;">
+              Questions are tailored to the selected stage. Choose a button below if you need to change it.
+            </p>
+            <div class="grid grid-cols-1 sm:grid-cols-5 gap-2">
+              <button
+                v-for="s in STAGES"
+                :key="s.id"
+                @click="selectStage(s.id)"
+                class="rounded-xl border-2 px-2 py-3 text-center transition-all duration-200 hover:shadow-md"
+                :style="modelStage === s.id
+                  ? 'background:#0d1c2e; color:#dce9ff; border-color:#0d1c2e;'
+                  : 'background:white; color:#0d1c2e; border-color:#EF6C00;'"
+              >
+                <div class="font-display" style="font-weight:800; font-size:12px; line-height:1.1;">{{ s.label }}</div>
+                <div class="font-body mt-0.5" style="font-weight:700; font-size:9px; opacity:0.7; letter-spacing:0.05em;">{{ s.sub }}</div>
+              </button>
+            </div>
           </div>
 
           <!-- Today completed banner -->
@@ -156,14 +140,14 @@
                 <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
               </svg>
             </button>
-            <div class="flex items-center gap-2 font-body" style="color:#0d1c2e; font-weight:700; font-size:12px; opacity:0.65;">
+            <div class="flex items-center gap-2 font-body text-center flex-wrap justify-center" style="color:#0d1c2e; font-weight:700; font-size:12px; opacity:0.65;">
               <span class="inline-block w-2 h-2 rounded-full" style="background:#7fe3c4;" />
-              <span class="flex items-center gap-2">
+              <span class="flex items-center gap-2 flex-wrap justify-center">
+                Saves on this device
+                <span class="inline-block w-1.5 h-1.5 rounded-full" style="background:currentColor; opacity:0.5;"></span>
+                You can redo today
+                <span class="inline-block w-1.5 h-1.5 rounded-full" style="background:currentColor; opacity:0.5;"></span>
                 Private
-                <span class="inline-block w-1.5 h-1.5 rounded-full" style="background:currentColor; opacity:0.5;"></span>
-                Free of Judgement
-                <span class="inline-block w-1.5 h-1.5 rounded-full" style="background:currentColor; opacity:0.5;"></span>
-                Yours
               </span>
             </div>
           </div>
@@ -177,13 +161,21 @@
               <span style="font-weight:700; font-size:11px; letter-spacing:0.14em; text-transform:uppercase; opacity:0.6;">
                 Step {{ currentIndex + 1 }} of {{ currentQuestions.length }}
               </span>
-              <span style="font-weight:700; font-size:11px; letter-spacing:0.08em; opacity:0.6;">~60 seconds</span>
+              <span style="font-weight:700; font-size:11px; letter-spacing:0.08em; opacity:0.6;">Saved after completion</span>
             </div>
             <div class="w-full h-2 rounded-full overflow-hidden" style="background:#f0f5fb;">
               <div
                 class="h-full rounded-full transition-all duration-400"
                 :style="{ width: progressPct + '%', background: 'linear-gradient(90deg, #0d1c2e, #7fe3c4)' }"
               />
+            </div>
+            <div class="mt-3 rounded-2xl border px-4 py-3 font-body flex items-start gap-3" style="background:#f4f8fe; border-color:#dce9ff; color:#0d1c2e;">
+              <svg class="w-4 h-4 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.4">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M12 3a9 9 0 110 18 9 9 0 010-18z" />
+              </svg>
+              <p style="font-size:12px; font-weight:700; line-height:1.45; opacity:0.72;">
+                Choose the answer that fits today, then press Next. Use Previous to review or change earlier answers before you finish.
+              </p>
             </div>
           </div>
 
@@ -227,7 +219,7 @@
                   <button
                     v-for="v in [1,2,3,4,5]"
                     :key="v"
-                    @click="sliderVal = v; autoAdvanceIfNeeded()"
+                    @click="sliderVal = v"
                     class="flex-1 h-14 rounded-xl border-2 flex flex-col items-center justify-center font-body transition-all"
                     :style="sliderVal === v
                       ? 'background:#0d1c2e; border-color:#0d1c2e; color:#dce9ff;'
@@ -240,14 +232,6 @@
                 <div class="text-center font-body" style="font-size:13px; color:#0d1c2e; opacity:0.5; font-weight:600;">
                   Tap a point to select
                 </div>
-                <button
-                  v-if="sliderVal !== null"
-                  @click="submitAnswer()"
-                  class="w-full py-3 rounded-2xl font-body font-bold text-sm transition-all hover:opacity-90"
-                  style="background:#0d1c2e; color:#dce9ff;"
-                >
-                  Next
-                </button>
               </div>
 
               <!-- SINGLE CHOICE -->
@@ -264,7 +248,7 @@
                 >
                   <span>{{ opt.label }}</span>
                   <span style="font-weight:700; font-size:12px; color:#0d1c2e; opacity:0.5; white-space:nowrap; margin-left:12px;">
-                    +{{ opt.exp }} EXP
+                    +{{ opt.exp }} pts
                   </span>
                 </button>
               </div>
@@ -287,13 +271,6 @@
                   />
                   <span style="font-weight:600; font-size:14px;">{{ opt.label }}</span>
                 </label>
-                <button
-                  @click="submitAnswer()"
-                  class="w-full py-3 rounded-2xl font-body font-bold text-sm transition-all hover:opacity-90"
-                  style="background:#0d1c2e; color:#dce9ff; margin-top:8px;"
-                >
-                  Next
-                </button>
               </div>
 
               <!-- STEPPER -->
@@ -318,13 +295,6 @@
                     style="border-color:#dce9ff; color:#0d1c2e;"
                   >+</button>
                 </div>
-                <button
-                  @click="submitAnswer()"
-                  class="w-full py-3 rounded-2xl font-body font-bold text-sm transition-all hover:opacity-90"
-                  style="background:#0d1c2e; color:#dce9ff;"
-                >
-                  Next
-                </button>
               </div>
 
               <!-- ICON RATING -->
@@ -341,13 +311,37 @@
                   >
                     <span style="font-size:28px;">{{ opt.icon }}</span>
                     <span style="font-weight:700; font-size:12px; text-align:center; line-height:1.2;">{{ opt.label }}</span>
-                    <span style="font-weight:700; font-size:11px; opacity:0.6;">+{{ opt.exp }} EXP</span>
+                    <span style="font-weight:700; font-size:11px; opacity:0.6;">+{{ opt.exp }} pts</span>
                   </button>
                 </div>
               </div>
 
             </div>
           </Transition>
+
+          <div class="mt-6 flex flex-col sm:flex-row gap-3">
+            <button
+              @click="goPrevious"
+              class="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl border font-body font-bold text-sm transition-all hover:bg-[#f4f8fe]"
+              style="border-color:#dce9ff; color:#0d1c2e; background:white;"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M11 17l-5-5m0 0l5-5m-5 5h12" />
+              </svg>
+              {{ currentIndex === 0 ? 'Previous: age group' : 'Previous' }}
+            </button>
+            <button
+              @click="submitAnswer()"
+              :disabled="!canContinue"
+              class="inline-flex flex-1 items-center justify-center gap-2 px-5 py-3 rounded-2xl font-body font-bold text-sm transition-all hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
+              style="background:#0d1c2e; color:#dce9ff;"
+            >
+              {{ nextButtonLabel }}
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </button>
+          </div>
         </div>
 
         <!-- DONE phase -->
@@ -359,7 +353,7 @@
             Thank you for showing up today.
           </h3>
           <p class="font-body mt-3 max-w-md" style="font-size:15px; color:#0d1c2e; opacity:0.7; font-weight:500; line-height:1.6;">
-            Your companion felt every answer. Insights are below - gentle patterns, never pressure.
+            Your child's companion felt every answer. Today's progress is saved on this device, and insights are below - gentle patterns, never pressure.
           </p>
 
           <!-- Results summary -->
@@ -376,7 +370,7 @@
               <div class="font-display mt-1" style="font-size:22px; font-weight:800; color:#0d1c2e;">
                 +{{ dim.totalExp }}
               </div>
-              <div class="font-body" style="font-size:10px; font-weight:700; color:#0d1c2e; opacity:0.4;">EXP</div>
+              <div class="font-body" style="font-size:10px; font-weight:700; color:#0d1c2e; opacity:0.4;">pts</div>
             </div>
           </div>
 
@@ -412,6 +406,7 @@ type UIType = 'slider' | 'single_choice' | 'multi_select' | 'stepper' | 'icon_ra
 interface SingleOption { label: string; exp: number }
 interface MultiOption { label: string }
 interface IconOption { label: string; icon: string; exp: number }
+type AnswerValue = number | string | string[]
 
 interface Question {
   id: string
@@ -439,6 +434,13 @@ interface Question {
   iconOptions?: IconOption[]
 }
 
+interface SurveyAnswer {
+  id: string
+  dimension: Question['dimension']
+  exp: number
+  value: AnswerValue
+}
+
 // --------------- Stage definitions ---------------
 const STAGES = [
   { id: 'newborns' as AgeStage, label: 'Newborns', sub: '0-3 months' },
@@ -449,7 +451,7 @@ const STAGES = [
 ]
 
 // --------------- Helper for standard slider EXP ---------------
-const stdSlider = (v: number) => v >= 4 ? 10 : v === 3 ? 5 : 2
+const stdSlider = (v: number) => (v - 1) * 5
 
 // --------------- Survey questions per stage ---------------
 const SURVEYS: Record<AgeStage, Question[]> = {
@@ -458,16 +460,16 @@ const SURVEYS: Record<AgeStage, Question[]> = {
       id: 'nb_mood1', dimension: 'mood', dimensionLabel: 'Mood', icon: Smile,
       question: 'How was your baby\'s overall temperament today?',
       type: 'slider', sliderMin: 'Very tearful', sliderMax: 'Very calm',
-      sliderExpFn: (v) => v === 5 ? 10 : v === 4 ? 8 : v === 3 ? 5 : v === 2 ? 3 : 2,
+      sliderExpFn: stdSlider,
     },
     {
       id: 'nb_mood2', dimension: 'mood', dimensionLabel: 'Mood', icon: Heart,
       question: 'How did they respond to your comforting?',
       type: 'single_choice',
       options: [
-        { label: 'Settled quickly in my arms', exp: 10 },
-        { label: 'Took a little while, but we got there', exp: 5 },
-        { label: 'Very hard to soothe today', exp: 2 },
+        { label: 'Settled quickly in my arms', exp: 20 },
+        { label: 'Took a little while, but we got there', exp: 10 },
+        { label: 'Very hard to soothe today', exp: 0 },
       ],
     },
     {
@@ -475,25 +477,25 @@ const SURVEYS: Record<AgeStage, Question[]> = {
       question: 'How would you rate their daytime naps?',
       type: 'icon_rating',
       iconOptions: [
-        { label: 'Solid long naps', icon: '🔋', exp: 10 },
-        { label: 'Short catnaps', icon: '🌗', exp: 5 },
-        { label: 'Fought sleep all day', icon: '😴', exp: 2 },
+        { label: 'Solid long naps', icon: '\uD83D\uDD0B', exp: 20 },
+        { label: 'Short catnaps', icon: '\uD83C\uDF17', exp: 10 },
+        { label: 'Fought sleep all day', icon: '\uD83D\uDE34', exp: 0 },
       ],
     },
     {
       id: 'nb_rest2', dimension: 'rest', dimensionLabel: 'Rest', icon: Moon,
       question: 'Roughly how many hours did they sleep last night?',
       type: 'stepper', stepperMin: 0, stepperMax: 12, stepperStep: 1, stepperUnit: 'hours',
-      stepperExpFn: (v) => v >= 9 ? 10 : v >= 5 ? 5 : 2,
+      stepperExpFn: (v) => v >= 9 ? 20 : v >= 5 ? 10 : 0,
     },
     {
       id: 'nb_ex1', dimension: 'exercise', dimensionLabel: 'Exercise', icon: Activity,
       question: 'Did we manage to do some Tummy Time today?',
       type: 'single_choice',
       options: [
-        { label: 'Yes, great sessions!', exp: 10 },
-        { label: 'Tried a little bit', exp: 5 },
-        { label: 'Skipped it for rest', exp: 2 },
+        { label: 'Yes, great sessions!', exp: 20 },
+        { label: 'Tried a little bit', exp: 10 },
+        { label: 'Skipped it for rest', exp: 0 },
       ],
     },
     {
@@ -507,9 +509,9 @@ const SURVEYS: Record<AgeStage, Question[]> = {
       question: 'How comfortable was their digestion and tummy today?',
       type: 'icon_rating',
       iconOptions: [
-        { label: 'Very comfortable', icon: '😊', exp: 10 },
-        { label: 'A bit gassy', icon: '😐', exp: 5 },
-        { label: 'Lots of discomfort', icon: '😣', exp: 2 },
+        { label: 'Very comfortable', icon: '\uD83D\uDE0A', exp: 20 },
+        { label: 'A bit gassy', icon: '\uD83D\uDE10', exp: 10 },
+        { label: 'Lots of discomfort', icon: '\uD83D\uDE23', exp: 0 },
       ],
     },
     {
@@ -523,9 +525,9 @@ const SURVEYS: Record<AgeStage, Question[]> = {
       question: 'How alert was baby during their awake windows?',
       type: 'single_choice',
       options: [
-        { label: 'Bright-eyed and looking around', exp: 10 },
-        { label: 'A bit drowsy but awake', exp: 5 },
-        { label: 'Very lethargic or instantly fussy', exp: 2 },
+        { label: 'Bright-eyed and looking around', exp: 20 },
+        { label: 'A bit drowsy but awake', exp: 10 },
+        { label: 'Very lethargic or instantly fussy', exp: 0 },
       ],
     },
   ],
@@ -543,9 +545,9 @@ const SURVEYS: Record<AgeStage, Question[]> = {
       multiExpFn: (sel) => {
         const neg = ['Tearful', 'Overwhelmed']
         const pos = ['Smiley', 'Babbling', 'Curious']
-        if (sel.some(s => neg.includes(s))) return 2
-        if (pos.filter(p => sel.includes(p)).length >= 2) return 10
-        return 5
+        if (sel.some(s => neg.includes(s))) return 0
+        if (pos.filter(p => sel.includes(p)).length >= 2) return 20
+        return 10
       },
     },
     {
@@ -558,7 +560,7 @@ const SURVEYS: Record<AgeStage, Question[]> = {
       id: 'in_rest1', dimension: 'rest', dimensionLabel: 'Rest', icon: Moon,
       question: 'How many times did they wake up last night?',
       type: 'stepper', stepperMin: 0, stepperMax: 5, stepperStep: 1, stepperUnit: 'wake-ups',
-      stepperExpFn: (v) => v <= 1 ? 10 : v <= 3 ? 5 : 2,
+      stepperExpFn: (v) => v <= 1 ? 20 : v <= 3 ? 10 : 0,
     },
     {
       id: 'in_ex1', dimension: 'exercise', dimensionLabel: 'Exercise', icon: Activity,
@@ -567,32 +569,32 @@ const SURVEYS: Record<AgeStage, Question[]> = {
       multiOptions: [
         { label: 'Rolling' }, { label: 'Crawling' }, { label: 'Sitting up' }, { label: 'Reaching for objects' },
       ],
-      multiExpFn: (sel) => sel.length >= 3 ? 10 : sel.length >= 1 ? 5 : 2,
+      multiExpFn: (sel) => sel.length >= 3 ? 20 : sel.length >= 1 ? 10 : 0,
     },
     {
       id: 'in_self1', dimension: 'self_discipline', dimensionLabel: 'Self-discipline', icon: BookOpen,
       question: 'How smoothly did they handle the bedtime routine?',
       type: 'single_choice',
       options: [
-        { label: 'Calmly accepted the routine', exp: 10 },
-        { label: 'Fussy but settled eventually', exp: 5 },
-        { label: 'Lots of resistance', exp: 2 },
+        { label: 'Calmly accepted the routine', exp: 20 },
+        { label: 'Fussy but settled eventually', exp: 10 },
+        { label: 'Lots of resistance', exp: 0 },
       ],
     },
     {
       id: 'in_vit1', dimension: 'vitamin', dimensionLabel: 'Vitamin intake', icon: Apple,
       question: 'How many colours of natural food (purees or solids) did they eat?',
       type: 'stepper', stepperMin: 0, stepperMax: 4, stepperStep: 1, stepperUnit: 'colours',
-      stepperExpFn: (v) => v >= 2 ? 10 : v === 1 ? 5 : 2,
+      stepperExpFn: (v) => v >= 2 ? 20 : v === 1 ? 10 : 0,
     },
     {
       id: 'in_pro1', dimension: 'protein', dimensionLabel: 'Protein intake', icon: Milk,
       question: 'Did they have a good source of protein (milk, pureed meats, yogurt)?',
       type: 'single_choice',
       options: [
-        { label: 'Yes, a healthy portion', exp: 10 },
-        { label: 'Just a little bit', exp: 5 },
-        { label: 'Struggled to get protein in', exp: 2 },
+        { label: 'Yes, a healthy portion', exp: 20 },
+        { label: 'Just a little bit', exp: 10 },
+        { label: 'Struggled to get protein in', exp: 0 },
       ],
     },
     {
@@ -615,9 +617,9 @@ const SURVEYS: Record<AgeStage, Question[]> = {
       question: 'How was their social mood?',
       type: 'single_choice',
       options: [
-        { label: 'Affectionate and playful', exp: 10 },
-        { label: 'A bit shy or independent', exp: 5 },
-        { label: 'Easily frustrated with others', exp: 2 },
+        { label: 'Affectionate and playful', exp: 20 },
+        { label: 'A bit shy or independent', exp: 10 },
+        { label: 'Easily frustrated with others', exp: 0 },
       ],
     },
     {
@@ -625,32 +627,32 @@ const SURVEYS: Record<AgeStage, Question[]> = {
       question: 'Did they get a daytime nap or quiet time?',
       type: 'single_choice',
       options: [
-        { label: 'Yes, rested perfectly', exp: 10 },
-        { label: 'Short rest, woke up grumpy', exp: 5 },
-        { label: 'Refused to rest completely', exp: 2 },
+        { label: 'Yes, rested perfectly', exp: 20 },
+        { label: 'Short rest, woke up grumpy', exp: 10 },
+        { label: 'Refused to rest completely', exp: 0 },
       ],
     },
     {
       id: 'td_ex1', dimension: 'exercise', dimensionLabel: 'Exercise', icon: Activity,
       question: 'How much outdoor or active indoor play did they get?',
       type: 'stepper', stepperMin: 0, stepperMax: 60, stepperStep: 15, stepperUnit: 'minutes',
-      stepperExpFn: (v) => v >= 45 ? 10 : v >= 15 ? 5 : 2,
+      stepperExpFn: (v) => v >= 45 ? 20 : v >= 15 ? 10 : 0,
     },
     {
       id: 'td_self1', dimension: 'self_discipline', dimensionLabel: 'Self-discipline', icon: BookOpen,
       question: 'How well did they listen to simple instructions?',
       type: 'icon_rating',
       iconOptions: [
-        { label: 'Listened well', icon: '👍', exp: 10 },
-        { label: 'Needed reminders', icon: '😐', exp: 5 },
-        { label: 'Ignored completely', icon: '👎', exp: 2 },
+        { label: 'Listened well', icon: '\uD83D\uDC4D', exp: 20 },
+        { label: 'Needed reminders', icon: '\uD83D\uDE10', exp: 10 },
+        { label: 'Ignored completely', icon: '\uD83D\uDC4E', exp: 0 },
       ],
     },
     {
       id: 'td_vit1', dimension: 'vitamin', dimensionLabel: 'Vitamin intake', icon: Salad,
       question: 'How many portions of fruits and veggies did they eat?',
       type: 'stepper', stepperMin: 0, stepperMax: 5, stepperStep: 1, stepperUnit: 'portions',
-      stepperExpFn: (v) => v >= 2 ? 10 : v === 1 ? 5 : 2,
+      stepperExpFn: (v) => v >= 2 ? 20 : v === 1 ? 10 : 0,
     },
     {
       id: 'td_pro1', dimension: 'protein', dimensionLabel: 'Protein intake', icon: Beef,
@@ -663,9 +665,9 @@ const SURVEYS: Record<AgeStage, Question[]> = {
       question: 'Did they eat healthy grains (wholewheat bread, rice, oats)?',
       type: 'single_choice',
       options: [
-        { label: 'Yes, healthy energy sources', exp: 10 },
-        { label: 'Mostly white carbs (crackers, white bread)', exp: 5 },
-        { label: 'Only wanted sugary snacks', exp: 2 },
+        { label: 'Yes, healthy energy sources', exp: 20 },
+        { label: 'Mostly white carbs (crackers, white bread)', exp: 10 },
+        { label: 'Only wanted sugary snacks', exp: 0 },
       ],
     },
   ],
@@ -682,25 +684,25 @@ const SURVEYS: Record<AgeStage, Question[]> = {
       question: 'What was their general attitude towards the day?',
       type: 'icon_rating',
       iconOptions: [
-        { label: 'Great day!', icon: '😊', exp: 10 },
-        { label: 'Mixed day', icon: '😐', exp: 5 },
-        { label: 'Tough day', icon: '😢', exp: 2 },
+        { label: 'Great day!', icon: '\uD83D\uDE0A', exp: 20 },
+        { label: 'Mixed day', icon: '\uD83D\uDE10', exp: 10 },
+        { label: 'Tough day', icon: '\uD83D\uDE22', exp: 0 },
       ],
     },
     {
       id: 'yk_rest1', dimension: 'rest', dimensionLabel: 'Rest', icon: Moon,
       question: 'How many hours of sleep did they get last night?',
       type: 'stepper', stepperMin: 0, stepperMax: 12, stepperStep: 1, stepperUnit: 'hours',
-      stepperExpFn: (v) => v >= 9 ? 10 : v >= 7 ? 5 : 2,
+      stepperExpFn: (v) => v >= 9 ? 20 : v >= 7 ? 10 : 0,
     },
     {
       id: 'yk_ex1', dimension: 'exercise', dimensionLabel: 'Exercise', icon: Activity,
       question: 'Did they engage in any active outdoor play?',
       type: 'single_choice',
       options: [
-        { label: 'Yes, played outside nicely', exp: 10 },
-        { label: 'Played actively, but indoors', exp: 5 },
-        { label: 'Mostly screens or sedentary today', exp: 2 },
+        { label: 'Yes, played outside nicely', exp: 20 },
+        { label: 'Played actively, but indoors', exp: 10 },
+        { label: 'Mostly screens or sedentary today', exp: 0 },
       ],
     },
     {
@@ -718,16 +720,16 @@ const SURVEYS: Record<AgeStage, Question[]> = {
         { label: 'Tried something new' },
         { label: 'Drank lots of water' },
       ],
-      multiExpFn: (sel) => sel.length >= 2 ? 10 : sel.length === 1 ? 5 : 2,
+      multiExpFn: (sel) => sel.length >= 2 ? 20 : sel.length === 1 ? 10 : 0,
     },
     {
       id: 'yk_pro1', dimension: 'protein', dimensionLabel: 'Protein intake', icon: Beef,
       question: 'Did they feel full and satisfied after meals?',
       type: 'single_choice',
       options: [
-        { label: 'Yes, stayed full until the next meal', exp: 10 },
-        { label: 'Asked for snacks shortly after', exp: 5 },
-        { label: 'Always hungry, meals were not filling', exp: 2 },
+        { label: 'Yes, stayed full until the next meal', exp: 20 },
+        { label: 'Asked for snacks shortly after', exp: 10 },
+        { label: 'Always hungry, meals were not filling', exp: 0 },
       ],
     },
     {
@@ -735,9 +737,9 @@ const SURVEYS: Record<AgeStage, Question[]> = {
       question: 'What did they mostly drink today?',
       type: 'single_choice',
       options: [
-        { label: 'Mostly water or milk', exp: 10 },
-        { label: 'Mix of water and juice', exp: 5 },
-        { label: 'Mostly sugary drinks or soda', exp: 2 },
+        { label: 'Mostly water or milk', exp: 20 },
+        { label: 'Mix of water and juice', exp: 10 },
+        { label: 'Mostly sugary drinks or soda', exp: 0 },
       ],
     },
   ],
@@ -754,9 +756,9 @@ const SURVEYS: Record<AgeStage, Question[]> = {
       question: 'How would you describe their stress levels regarding school or friends?',
       type: 'icon_rating',
       iconOptions: [
-        { label: 'Relaxed', icon: '😌', exp: 10 },
-        { label: 'Slightly worried', icon: '😟', exp: 5 },
-        { label: 'Very anxious', icon: '😰', exp: 2 },
+        { label: 'Relaxed', icon: '\uD83D\uDE0C', exp: 20 },
+        { label: 'Slightly worried', icon: '\uD83D\uDE1F', exp: 10 },
+        { label: 'Very anxious', icon: '\uD83D\uDE30', exp: 0 },
       ],
     },
     {
@@ -764,9 +766,9 @@ const SURVEYS: Record<AgeStage, Question[]> = {
       question: 'Were screens put away before bedtime last night?',
       type: 'single_choice',
       options: [
-        { label: 'Yes, screens away - slept well', exp: 10 },
-        { label: 'Looked at screens, but slept okay', exp: 5 },
-        { label: 'Stayed up late on devices, exhausted today', exp: 2 },
+        { label: 'Yes, screens away - slept well', exp: 20 },
+        { label: 'Looked at screens, but slept okay', exp: 10 },
+        { label: 'Stayed up late on devices, exhausted today', exp: 0 },
       ],
     },
     {
@@ -779,7 +781,7 @@ const SURVEYS: Record<AgeStage, Question[]> = {
         { label: 'Walking outside' },
         { label: 'Stretching or yoga' },
       ],
-      multiExpFn: (sel) => sel.length >= 2 ? 10 : sel.length === 1 ? 5 : 2,
+      multiExpFn: (sel) => sel.length >= 2 ? 20 : sel.length === 1 ? 10 : 0,
     },
     {
       id: 'pt_self1', dimension: 'self_discipline', dimensionLabel: 'Self-discipline', icon: BookOpen,
@@ -792,9 +794,9 @@ const SURVEYS: Record<AgeStage, Question[]> = {
       question: 'Did they independently choose to eat fruits, veggies or drink water?',
       type: 'single_choice',
       options: [
-        { label: 'Yes, made healthy choices willingly', exp: 10 },
-        { label: 'Ate or drank them only when reminded', exp: 5 },
-        { label: 'Actively avoided them or snuck junk food', exp: 2 },
+        { label: 'Yes, made healthy choices willingly', exp: 20 },
+        { label: 'Ate or drank them only when reminded', exp: 10 },
+        { label: 'Actively avoided them or snuck junk food', exp: 0 },
       ],
     },
     {
@@ -802,9 +804,9 @@ const SURVEYS: Record<AgeStage, Question[]> = {
       question: 'Did they eat a solid, protein-rich breakfast to start the day?',
       type: 'single_choice',
       options: [
-        { label: 'Yes (eggs, yogurt, beans, meat)', exp: 10 },
-        { label: 'Just a quick carb (cereal, toast)', exp: 5 },
-        { label: 'Skipped breakfast entirely', exp: 2 },
+        { label: 'Yes (eggs, yogurt, beans, meat)', exp: 20 },
+        { label: 'Just a quick carb (cereal, toast)', exp: 10 },
+        { label: 'Skipped breakfast entirely', exp: 0 },
       ],
     },
     {
@@ -831,10 +833,10 @@ const emit = defineEmits<{
   'complete': [payload: { totalExp: number; maxExp: number; dimensionScores: Record<string, number>; answers: { id: string; dimension: string; exp: number }[] }]
   'redo': []
   'toggleMute': []
+  'backToIntro': []
 }>()
 
 // --------------- Local state ---------------
-const stageDropOpen = ref(false)
 const currentIndex = ref(0)
 const sliderVal = ref<number | null>(null)
 const selectedSingle = ref<string | null>(null)
@@ -842,8 +844,8 @@ const multiSelected = ref<string[]>([])
 const stepperVal = ref(0)
 const selectedIconRating = ref<string | null>(null)
 
-// answers collected during survey
-const answersLog = ref<{ id: string; dimension: string; exp: number }[]>([])
+// answers collected during survey, indexed by question order so Previous can restore edits
+const answersLog = ref<SurveyAnswer[]>([])
 
 // completed dimension rollup for "done" view
 const completedDimensions = ref<{ key: string; label: string; totalExp: number }[]>([])
@@ -900,12 +902,39 @@ const headerTip = computed(() => {
   return tips[currentTipIndex.value] ?? tips[0]
 })
 
-const sliderEmojis = ['😢', '😕', '😐', '🙂', '😄']
+const sliderEmojis = ['\uD83D\uDE22', '\uD83D\uDE15', '\uD83D\uDE10', '\uD83D\uDE42', '\uD83D\uDE04']
+const introSteps = [
+  {
+    kicker: '1 minute',
+    title: 'Answer seven quick prompts',
+    body: 'Pick what best matches your child today across mood, rest, movement and food.',
+  },
+  {
+    kicker: 'Editable',
+    title: 'Move back before finishing',
+    body: 'Use Previous and Next to review answers. Previous on the first question returns to the age group.',
+  },
+  {
+    kicker: 'Local',
+    title: 'Saved only when complete',
+    body: 'Your daily result and weekly insights are stored on this device after you finish.',
+  },
+]
+
+const canContinue = computed(() => {
+  const q = currentQ.value
+  if (!q) return false
+  if (q.type === 'slider') return sliderVal.value !== null
+  if (q.type === 'single_choice') return selectedSingle.value !== null
+  if (q.type === 'multi_select') return multiSelected.value.length > 0
+  if (q.type === 'icon_rating') return selectedIconRating.value !== null
+  return true
+})
+const nextButtonLabel = computed(() => currentIndex.value + 1 >= currentQuestions.value.length ? 'Finish check-in' : 'Next')
 
 // --------------- Methods ---------------
 function selectStage(id: AgeStage) {
   emit('update:stage', id)
-  stageDropOpen.value = false
 }
 
 function resetAnswerState() {
@@ -916,44 +945,85 @@ function resetAnswerState() {
   selectedIconRating.value = null
 }
 
+function hydrateAnswerState() {
+  resetAnswerState()
+  const saved = answersLog.value[currentIndex.value]
+  if (!saved) return
+
+  const q = currentQ.value
+  if (q.type === 'slider' && typeof saved.value === 'number') {
+    sliderVal.value = saved.value
+  } else if (q.type === 'single_choice' && typeof saved.value === 'string') {
+    selectedSingle.value = saved.value
+  } else if (q.type === 'multi_select' && Array.isArray(saved.value)) {
+    multiSelected.value = [...saved.value]
+  } else if (q.type === 'stepper' && typeof saved.value === 'number') {
+    stepperVal.value = saved.value
+  } else if (q.type === 'icon_rating' && typeof saved.value === 'string') {
+    selectedIconRating.value = saved.value
+  }
+}
+
 function pickRandomTip() {
   const tips = healthTips[currentQ.value.dimension]
   currentTipIndex.value = Math.floor(Math.random() * tips.length)
 }
 
-function autoAdvanceIfNeeded() {
-  // slider: auto-advance only after user explicitly confirms
-}
-
 function selectSingle(opt: SingleOption) {
   selectedSingle.value = opt.label
-  const exp = opt.exp
-  recordAnswer(exp)
-  advance()
 }
 
 function selectIconRating(opt: IconOption) {
   selectedIconRating.value = opt.label
-  recordAnswer(opt.exp)
-  advance()
+}
+
+function getCurrentAnswer(): { exp: number; value: AnswerValue } | null {
+  const q = currentQ.value
+  if (q.type === 'slider' && sliderVal.value !== null) {
+    return { exp: q.sliderExpFn?.(sliderVal.value) ?? 5, value: sliderVal.value }
+  }
+  if (q.type === 'single_choice' && selectedSingle.value !== null) {
+    const opt = q.options?.find(o => o.label === selectedSingle.value)
+    return { exp: opt?.exp ?? 0, value: selectedSingle.value }
+  }
+  if (q.type === 'multi_select') {
+    return { exp: q.multiExpFn?.(multiSelected.value) ?? 5, value: [...multiSelected.value] }
+  }
+  if (q.type === 'stepper') {
+    return { exp: q.stepperExpFn?.(stepperVal.value) ?? 5, value: stepperVal.value }
+  }
+  if (q.type === 'icon_rating' && selectedIconRating.value !== null) {
+    const opt = q.iconOptions?.find(o => o.label === selectedIconRating.value)
+    return { exp: opt?.exp ?? 0, value: selectedIconRating.value }
+  }
+  return null
+}
+
+function saveCurrentAnswer() {
+  const answer = getCurrentAnswer()
+  if (!answer) return false
+
+  answersLog.value[currentIndex.value] = {
+    id: currentQ.value.id,
+    dimension: currentQ.value.dimension,
+    exp: answer.exp,
+    value: answer.value,
+  }
+  return true
 }
 
 function submitAnswer() {
-  const q = currentQ.value
-  let exp = 0
-  if (q.type === 'slider' && sliderVal.value !== null) {
-    exp = q.sliderExpFn?.(sliderVal.value) ?? 5
-  } else if (q.type === 'multi_select') {
-    exp = q.multiExpFn?.(multiSelected.value) ?? 5
-  } else if (q.type === 'stepper') {
-    exp = q.stepperExpFn?.(stepperVal.value) ?? 5
-  }
-  recordAnswer(exp)
+  if (!saveCurrentAnswer()) return
   advance()
 }
 
-function recordAnswer(exp: number) {
-  answersLog.value.push({ id: currentQ.value.id, dimension: currentQ.value.dimension, exp })
+function goPrevious() {
+  if (currentIndex.value === 0) {
+    emit('backToIntro')
+    return
+  }
+  saveCurrentAnswer()
+  currentIndex.value--
 }
 
 function advance() {
@@ -961,16 +1031,14 @@ function advance() {
   if (currentIndex.value + 1 >= total) {
     finishSurvey()
   } else {
-    setTimeout(() => {
-      currentIndex.value++ // watch(currentIndex) handles resetAnswerState
-    }, 300)
+    currentIndex.value++
   }
 }
 
 function finishSurvey() {
-  const log = answersLog.value
+  const log = answersLog.value.slice(0, currentQuestions.value.length)
   const totalExp = log.reduce((s, a) => s + a.exp, 0)
-  const maxExp = currentQuestions.value.length * 10
+  const maxExp = currentQuestions.value.length * 20
 
   // Aggregate by dimension
   const dimMap: Record<string, number[]> = {}
@@ -981,7 +1049,7 @@ function finishSurvey() {
 
   const dimensionScores: Record<string, number> = {}
   for (const [k, vals] of Object.entries(dimMap)) {
-    dimensionScores[k] = Math.round(vals.reduce((a, b) => a + b, 0) / vals.length * 10)
+    dimensionScores[k] = Math.round(vals.reduce((a, b) => a + b, 0) / vals.length)
   }
 
   // Dimension label map
@@ -1005,14 +1073,14 @@ watch(() => props.phase, (newPhase) => {
     answersLog.value = []
     completedDimensions.value = []
     pickRandomTip()
-    resetAnswerState()
+    hydrateAnswerState()
   }
 })
 
-// Reset stepper on question change
+// Refresh local inputs on question change, preserving answers when the user goes back.
 watch(currentIndex, () => {
   pickRandomTip()
-  resetAnswerState()
+  hydrateAnswerState()
 })
 
 

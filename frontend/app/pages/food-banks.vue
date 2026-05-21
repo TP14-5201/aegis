@@ -99,6 +99,9 @@
           </button>
         </div>
 
+        <!-- Geocode error message -->
+        <p v-if="locationError" class="mt-2 font-body text-[13px] text-red-600">{{ locationError }}</p>
+
         <!-- Category filters + Open Now toggle -->
         <div class="flex flex-wrap items-center gap-2 pb-5">
           <button
@@ -565,6 +568,23 @@
       <div class="map-panel">
         <div ref="mapEl" style="position:absolute; inset:0;" />
 
+        <!-- Map placeholder overlay — shown before any search is performed -->
+        <div
+          v-if="!hasSearched"
+          class="pointer-events-none absolute inset-0 z-[500] flex flex-col items-center justify-center gap-4 bg-white/90 backdrop-blur-[2px]"
+        >
+          <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#e8f0fb]">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+              <path d="M12 21C12 21 4 13.5 4 9a8 8 0 1 1 16 0c0 4.5-8 12-8 12z" stroke="#0054cd" stroke-width="1.8"/>
+              <circle cx="12" cy="9" r="2.5" stroke="#0054cd" stroke-width="1.8"/>
+            </svg>
+          </div>
+          <div class="text-center px-8">
+            <p class="font-display text-[18px] font-bold text-[#001b3d]">Search to explore services</p>
+            <p class="mt-1.5 font-body text-[13px] leading-relaxed text-[#74777f]">Enter a suburb or address above to find food banks and relief services near you.</p>
+          </div>
+        </div>
+
         <!-- Route info bar -->
         <div
           v-if="directionsInfo"
@@ -720,6 +740,8 @@ const searchQuery = ref('')
 const activeFilter = ref('both')
 const openNowFilter = ref(false)
 const loading = ref(false)
+const hasSearched = ref(false)
+const locationError = ref('')
 const locating = ref(false)
 const services = ref([])
 const selectedService = ref(null)
@@ -797,7 +819,7 @@ function getStatusLabel(s) {
   if (s.is_open_now === false) return 'Closed'
   const hasHours = s.opening_hours && Object.keys(s.opening_hours).length > 0
   if (!hasHours) return 'Hours not listed'
-  return null
+  return 'Hours not listed'
 }
 function serviceBadgeClass(s) {
   if (s.beds_available != null || s.is_open_now === true) return 'bg-[#f0fdf4] text-[#15803d]'
@@ -882,6 +904,7 @@ function locateMe() {
   navigator.geolocation.getCurrentPosition(
     ({ coords: { latitude: lat, longitude: lon } }) => {
       locating.value = false
+      hasSearched.value = true
       userLocation.value = { lat, lon }
       fetchWeather(lat, lon)
       locationLabel.value = 'your location'
@@ -901,6 +924,7 @@ async function searchByAddress() {
   if (!q) return
   clearDirections()
   loading.value = true
+  locationError.value = ''
   try {
     const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q + ', Victoria, Australia')}&format=json&limit=1&countrycodes=au`
     const res = await fetch(url, { headers: { 'User-Agent': 'OpenDoorVictoria/1.0 (university project)' } })
@@ -909,6 +933,7 @@ async function searchByAddress() {
     const lat = parseFloat(data[0].lat)
     const lon = parseFloat(data[0].lon)
     const label = data[0].display_name.split(',')[0]
+    hasSearched.value = true
     userLocation.value = { lat, lon }
     locationLabel.value = label
     fetchWeather(lat, lon)
@@ -917,7 +942,7 @@ async function searchByAddress() {
     sortByDistance(lat, lon)
     updateMapMarkers()
   } catch {
-    // Geocode failed — list stays sorted as-is
+    locationError.value = "We couldn't find that location. Try a suburb name or postcode (e.g. 'Fitzroy' or '3065')."
   } finally {
     loading.value = false
   }
@@ -1056,6 +1081,8 @@ async function selectSuggestion(s) {
   addressSuggestions.value = []
   clearDirections()
   loading.value = true
+  hasSearched.value = true
+  locationError.value = ''
   try {
     const place = new window.google.maps.places.Place({ id: s.place_id })
     await place.fetchFields({ fields: ['location'] })

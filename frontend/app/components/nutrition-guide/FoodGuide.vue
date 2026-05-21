@@ -113,29 +113,28 @@ const previousFood = () => {
 .food-guide {
   width: min(1120px, calc(100% - 48px));
   margin: 0 auto;
-  padding: 56px 0 72px;
-  min-height: 820px;
+  padding: 48px 0 56px;
 }
 
 .guide-heading {
-  margin-bottom: 32px;
+  margin-bottom: 26px;
 }
 
 .guide-heading h2 {
   margin: 0;
   font-family: "Playfair Display", Georgia, serif;
-  font-size: clamp(32px, 3.4vw, 42px);
+  font-size: clamp(30px, 3vw, 38px);
   font-weight: 700;
   line-height: 1.15;
-  letter-spacing: -0.96px;
+  letter-spacing: -0.6px;
   color: #000;
 }
 
 .guide-heading p {
-  margin: 14px 0 0;
+  margin: 10px 0 0;
   font-family: "Plus Jakarta Sans", sans-serif;
-  font-size: 18px;
-  line-height: 1.55;
+  font-size: 16px;
+  line-height: 1.5;
   color: #45464d;
 }
 
@@ -144,17 +143,16 @@ const previousFood = () => {
   grid-template-columns: 0.95fr 1.35fr;
   gap: 22px;
   align-items: stretch;
-  min-height: 642px;
 }
 
 /* LEFT FEATURE CARD */
 .featured-card {
   position: relative;
-  height: 642px;
+  min-height: 500px;
   overflow: hidden;
   border-radius: 12px;
   background: #d5e3fc;
-  padding: 56px 28px 48px;
+  padding: 36px 26px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -169,8 +167,8 @@ const previousFood = () => {
 }
 
 .blur-top {
-  width: 256px;
-  height: 256px;
+  width: 220px;
+  height: 220px;
   right: -80px;
   top: -80px;
   background: #e6eeff;
@@ -178,8 +176,8 @@ const previousFood = () => {
 }
 
 .blur-bottom {
-  width: 192px;
-  height: 192px;
+  width: 160px;
+  height: 160px;
   left: -40px;
   bottom: -40px;
   background: #bae6fd;
@@ -189,11 +187,11 @@ const previousFood = () => {
 .featured-card h3 {
   position: relative;
   z-index: 2;
-  height: 150px;
-  max-width: 340px;
-  margin: 0 0 18px;
+  min-height: 92px;
+  max-width: 320px;
+  margin: 0 0 14px;
   font-family: "Playfair Display", Georgia, serif;
-  font-size: clamp(34px, 3.3vw, 48px);
+  font-size: clamp(30px, 3vw, 40px);
   font-weight: 700;
   line-height: 1.12;
   color: #0d1c2e;
@@ -208,10 +206,10 @@ const previousFood = () => {
 .food-image-ring {
   position: relative;
   z-index: 2;
-  width: 260px;
-  height: 260px;
-  flex: 0 0 260px;
-  padding: 16px;
+  width: 220px;
+  height: 220px;
+  flex: 0 0 220px;
+  padding: 14px;
   border-radius: 9999px;
   background: #fff;
   border: 1px solid #bae6fd;
@@ -228,21 +226,21 @@ const previousFood = () => {
 .tag-row {
   position: relative;
   z-index: 2;
-  min-height: 40px;
+  min-height: 36px;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 16px;
-  margin-top: 26px;
+  gap: 12px;
+  margin-top: 22px;
 }
 
 .tag-row span {
-  padding: 8px 16px;
+  padding: 7px 14px;
   border-radius: 9999px;
   background: #fff;
   border: 1px solid #bae6fd;
   font-family: "Plus Jakarta Sans", sans-serif;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: #3d687c;
 }
@@ -251,13 +249,13 @@ const previousFood = () => {
   position: absolute;
   top: 50%;
   z-index: 5;
-  width: 46px;
-  height: 46px;
+  width: 40px;
+  height: 40px;
   border: 1px solid #bae6fd;
   border-radius: 9999px;
   background: #ffffff;
   color: #0d1c2e;
-  font-size: 34px;
+  font-size: 30px;
   line-height: 1;
   cursor: pointer;
   transform: translateY(-50%);
@@ -278,19 +276,18 @@ const previousFood = () => {
 }
 
 .arrow-left {
-  left: 24px;
+  left: 20px;
 }
 
 .arrow-right {
-  right: 24px;
+  right: 20px;
 }
 
 /* RIGHT SIDE */
 .content-stack {
-  height: 642px;
   display: grid;
-  grid-template-rows: 320px 152px 136px;
-  gap: 18px;
+  grid-template-rows: auto auto auto;
+  gap: 16px;
 }
 
 .profile-card,
@@ -300,7 +297,7 @@ const previousFood = () => {
 }
 
 .profile-card {
-  padding: 24px;
+  padding: 22px;
   border-radius: 12px;
   background: #fff;
   border: 1px solid #c6c6cd;
@@ -310,16 +307,16 @@ const previousFood = () => {
 .profile-title {
   display: flex;
   align-items: baseline;
-  gap: 14px;
-  padding-bottom: 18px;
-  margin-bottom: 24px;
+  gap: 12px;
+  padding-bottom: 14px;
+  margin-bottom: 18px;
   border-bottom: 1px solid #c6c6cd;
 }
 
 .profile-title h4 {
   margin: 0;
   font-family: "Playfair Display", Georgia, serif;
-  font-size: clamp(26px, 2.5vw, 30px);
+  font-size: clamp(24px, 2.3vw, 28px);
   font-weight: 700;
   line-height: 1.25;
   color: #0d1c2e;
@@ -327,7 +324,7 @@ const previousFood = () => {
 
 .profile-title span {
   font-family: "Plus Jakarta Sans", sans-serif;
-  font-size: 14px;
+  font-size: 13px;
   color: #45464d;
 }
 
@@ -338,31 +335,31 @@ const previousFood = () => {
 }
 
 .macro-card {
-  min-height: 150px;
-  border-radius: 4px;
+  min-height: 118px;
+  border-radius: 6px;
   border: 1px solid #d5e3fc;
   background: #f8f9ff;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 18px;
-  padding: 18px;
+  gap: 14px;
+  padding: 14px;
 }
 
 .macro-card strong {
   font-family: "Playfair Display", Georgia, serif;
-  font-size: clamp(42px, 4vw, 56px);
+  font-size: clamp(34px, 3.4vw, 46px);
   font-weight: 700;
   line-height: 0.9;
   color: #0d1c2e;
 }
 
-.macro-card>span {
+.macro-card > span {
   font-family: "Plus Jakarta Sans", sans-serif;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
-  letter-spacing: 0.7px;
+  letter-spacing: 0.5px;
   color: #45464d;
 }
 
@@ -373,96 +370,22 @@ const previousFood = () => {
   font-weight: 700;
   line-height: 1;
   margin-left: 2px;
-  transform: translateY(8px);
-}
-
-.swap-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 18px;
-}
-
-.swap-card {
-  min-height: 210px;
-  padding: 20px;
-  border-radius: 12px;
-  border: 1px solid #c6c6cd;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.swap-card.budget {
-  background: #eff4ff;
-}
-
-.swap-card.optimal {
-  background: #dce9ff;
-}
-
-.swap-label {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.swap-icon {
-  width: 22px;
-  height: 22px;
-  object-fit: contain;
-  flex-shrink: 0;
-}
-
-.icon-dot {
-  width: 20px;
-  height: 20px;
-  border-radius: 9999px;
-  display: grid;
-  place-items: center;
-  background: #3d687c;
-  color: #fff;
-  font-size: 10px;
-}
-
-.swap-card h5 {
-  margin: 0;
-  font-family: "Playfair Display", Georgia, serif;
-  font-size: 22px;
-  font-weight: 600;
-  color: #0d1c2e;
-}
-
-.swap-card h6 {
-  margin: 0;
-  font-family: "Playfair Display", Georgia, serif;
-  font-size: clamp(34px, 3.4vw, 42px);
-  font-weight: 700;
-  line-height: 1.1;
-  color: #131b2e;
-}
-
-.swap-card p {
-  margin: 0;
-  font-family: "Plus Jakarta Sans", sans-serif;
-  font-size: 15px;
-  line-height: 1.5;
-  color: #45464d;
+  transform: translateY(6px);
 }
 
 .recommendation-card {
   display: flex;
   align-items: center;
-  gap: 20px;
-  padding: 20px;
+  gap: 18px;
+  padding: 18px 20px;
   border-radius: 12px;
   background: #131b2e;
-  height: 100%;
 }
 
 .calendar-icon {
   flex: 0 0 auto;
-  width: 58px;
-  height: 58px;
+  width: 52px;
+  height: 52px;
   border-radius: 9999px;
   display: grid;
   place-items: center;
@@ -470,15 +393,15 @@ const previousFood = () => {
 }
 
 .calendar-icon img {
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   object-fit: contain;
 }
 
 .recommendation-card h4 {
-  margin: 0 0 8px;
+  margin: 0 0 6px;
   font-family: "Playfair Display", Georgia, serif;
-  font-size: 22px;
+  font-size: 21px;
   font-weight: 600;
   color: #fff;
 }
@@ -486,8 +409,8 @@ const previousFood = () => {
 .recommendation-card p {
   margin: 0;
   font-family: "Plus Jakarta Sans", sans-serif;
-  font-size: 15px;
-  line-height: 1.5;
+  font-size: 14px;
+  line-height: 1.45;
   color: #d5e3fc;
 }
 
@@ -508,15 +431,15 @@ const previousFood = () => {
 .food-guide-cta h4 {
   margin: 0;
   font-family: "Playfair Display", Georgia, serif;
-  font-size: 22px;
+  font-size: 21px;
   font-weight: 700;
   color: #0d1c2e;
 }
 
 .food-guide-cta p {
-  margin: 6px 0 0;
+  margin: 5px 0 0;
   font-family: "Plus Jakarta Sans", sans-serif;
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1.4;
   color: #45464d;
 }
@@ -526,13 +449,13 @@ const previousFood = () => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 44px;
-  padding: 0 24px;
+  min-height: 40px;
+  padding: 0 20px;
   border-radius: 8px;
   background: #000000;
   color: #ffffff;
   font-family: "Plus Jakarta Sans", sans-serif;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
 }
 
@@ -547,28 +470,34 @@ const previousFood = () => {
   }
 
   .featured-card {
-    min-height: 520px;
+    min-height: 460px;
   }
 }
 
 @media (max-width: 720px) {
   .food-guide {
     width: calc(100% - 32px);
-    padding: 48px 0;
+    padding: 42px 0 48px;
   }
 
   .guide-heading {
-    margin-bottom: 28px;
+    margin-bottom: 24px;
   }
 
   .featured-card {
-    min-height: 500px;
-    padding: 64px 20px;
+    min-height: auto;
+    padding: 56px 20px 40px;
+  }
+
+  .featured-card h3 {
+    min-height: auto;
+    font-size: clamp(28px, 8vw, 34px);
   }
 
   .food-image-ring {
-    width: 220px;
-    height: 220px;
+    width: 190px;
+    height: 190px;
+    flex-basis: 190px;
   }
 
   .profile-card {
@@ -580,17 +509,25 @@ const previousFood = () => {
     gap: 4px;
   }
 
-  .macro-grid,
-  .swap-grid {
+  .macro-grid {
     grid-template-columns: 1fr;
   }
 
   .macro-card {
-    min-height: 130px;
+    min-height: 112px;
   }
 
   .recommendation-card {
     align-items: flex-start;
+  }
+
+  .food-guide-cta {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .food-guide-cta span {
+    width: 100%;
   }
 }
 </style>

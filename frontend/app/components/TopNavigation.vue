@@ -1,37 +1,8 @@
 <template>
-  <!-- Floating notch -->
-  <div
-    v-if="isNavHidden"
-    class="fixed left-1/2 top-0 z-[1300] flex -translate-x-1/2 items-center justify-center"
-    @mouseenter="isNavHidden = false"
-  >
-    <div
-      class="flex h-6 w-14 items-end justify-center rounded-b-full border border-[#e5e7eb] bg-[#f8f9ff]/95 pb-1 shadow-md backdrop-blur"
-    >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        class="h-4 w-4 text-[#396477]"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-        stroke-width="2"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M19 9l-7 7-7-7"
-        />
-      </svg>
-    </div>
-  </div>
-
   <!-- Desktop -->
   <header
-    class="fixed left-0 right-0 top-0 z-[1300] border-b border-[#e5e7eb] bg-[#f8f9ff]/95 backdrop-blur transition-transform duration-300"
-    :class="[
-      menuOpen ? 'h-auto' : 'h-[72px]',
-      isNavHidden ? '-translate-y-full' : 'translate-y-0',
-    ]"
+    class="fixed left-0 right-0 top-0 z-[1300] border-b border-[#e5e7eb] bg-[#f8f9ff]/95 backdrop-blur"
+    :class="menuOpen ? 'h-auto' : 'h-[72px]'"
   >
     <div class="mx-auto flex h-[72px] max-w-[1200px] items-center justify-between px-6 lg:px-10">
       <NuxtLink
@@ -115,7 +86,6 @@
 
 <script setup lang="ts">
 const menuOpen = ref(false)
-const isNavHidden = ref(false)
 const route = useRoute()
 
 watch(
@@ -124,28 +94,6 @@ watch(
     menuOpen.value = false
   }
 )
-
-function handleScroll() {
-  isNavHidden.value = window.scrollY > 80
-}
-
-function handleMouseMove(event: MouseEvent) {
-  if (event.clientY <= 28) {
-    isNavHidden.value = false
-  } else if (window.scrollY > 80) {
-    isNavHidden.value = true
-  }
-}
-
-onMounted(() => {
-  window.addEventListener('scroll', handleScroll)
-  window.addEventListener('mousemove', handleMouseMove)
-})
-
-onUnmounted(() => {
-  window.removeEventListener('scroll', handleScroll)
-  window.removeEventListener('mousemove', handleMouseMove)
-})
 </script>
 
 <style scoped>

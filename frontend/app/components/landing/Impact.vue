@@ -61,11 +61,16 @@ const stats = [
   left: 40px;
   top: clamp(72px, 14vh, 120px);
   z-index: 3;
-  width: 360px;
+  width: 400px;
+}
+
+.impact-copy h2 {
+  margin-bottom: 34px;
+  line-height: 1.08;
 }
 
 .impact-button {
-  margin-top: 42px;
+  margin-top: 0;
 }
 
 /* Bottom image */
@@ -75,8 +80,8 @@ const stats = [
   left: 43%;
   bottom: 0;
   z-index: 1;
-  width: clamp(500px, 42vw, 620px);
-  height: clamp(500px, 60vh, 640px);
+  width: clamp(600px, 42vw, 720px);
+  height: clamp(600px, 60vh, 740px);
   transform: translateX(-50%);
 }
 
@@ -84,7 +89,7 @@ const stats = [
   position: absolute;
   left: 50%;
   bottom: -6px;
-  width: clamp(500px, 42vw, 620px);
+  width: clamp(600px, 42vw, 720px);
   max-width: none;
   transform: translateX(-50%);
   object-fit: contain;
@@ -102,7 +107,7 @@ const stats = [
 }
 
 .stat-card {
-  width: 337px;
+  width: 320px;
   min-height: 126px;
   border: 1px solid #ffffff33;
   border-radius: 12px;

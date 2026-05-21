@@ -97,7 +97,7 @@ const nutritionItems = [
 .marquee-wrap {
   pointer-events: none;
   position: absolute;
-  right: 8%;
+  right: 36%;
   top: 50%;
   z-index: 0;
   width: 760px;
@@ -141,8 +141,8 @@ const nutritionItems = [
 }
 
 .nutrition-image {
-  width: clamp(440px, 40vw, 560px);
-  height: clamp(440px, 40vw, 560px);
+  width: clamp(500px, 40vw, 620px);
+  height: clamp(500px, 40vw, 620px);
   border-radius: 9999px;
   object-fit: cover;
   transform: translateX(24px);
