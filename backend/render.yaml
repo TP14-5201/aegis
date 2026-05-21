@@ -6,8 +6,6 @@ services:
     buildCommand: pip install -r requirements.txt && python -m src.services.data_seeding
     startCommand: uvicorn src.main:app --host 0.0.0.0 --port $PORT
     envVars:
-      - key: DATABASE_URL
-        value: sqlite:///./app.db
       - key: PYTHON_VERSION
         value: 3.11.0
       - key: LOGIN_PASSWORD_HASH

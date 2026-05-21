@@ -672,6 +672,8 @@ class ScoredIngredient(BaseModel):
     product_name: str
     sub_category: str
     retail_price: float
+    unit_price: Optional[float] = None
+    unit_price_unit: Optional[str] = None
     health_score: float
     rec_score: float
     nutrient_badges: List[str] = []
@@ -739,6 +741,8 @@ def get_recommendations(
             "product_name":    row["product_name"],
             "sub_category":    row["sub_category"] or "",
             "retail_price":    float(row["retail_price"]),
+            "unit_price":      (lambda v: float(v) if (v is not None and v == v) else None)(row.get("unit_price")),
+            "unit_price_unit": row.get("unit_price_unit") or None,
             "health_score":    float(row["final_health_score"] or 0.0) / 100.0,
             "rec_score":       float(row[score_col]),
             "nutrient_badges": row["nutrient_badges"],

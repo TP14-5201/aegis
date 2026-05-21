@@ -182,7 +182,10 @@ class Ingredient(Base):
     ingredient_code = Column(String, primary_key=True, index=True)
     product_name = Column(String, nullable=False)
     sub_category = Column(String, nullable=False)
-    retail_price = Column(Float, nullable=False)
+    retail_price = Column(Float, nullable=True)
+    unit_price = Column(Float, nullable=True)
+    unit_price_unit = Column(String(10), nullable=True)
+    unit_price_adjusted = Column(Float, nullable=True)
 
     ingredient_nutrition = relationship("IngredientNutrition", back_populates="ingredient", uselist=False)
     health_rating = relationship("IngredientHealthRating", back_populates="ingredient", uselist=False)
