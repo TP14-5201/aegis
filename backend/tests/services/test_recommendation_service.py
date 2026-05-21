@@ -263,9 +263,9 @@ class TestWarmPercentilesAndLoadIngredients:
 
     def test_load_ingredients_df_builds_dataframe_and_filters_missing_or_non_positive_prices(self):
         rows = [
-            ("A1", "Apple", "Fruit", 2.0, "a", 1, 90.0, 0.3, 2.4, 0.1, 10.0),
-            ("A2", "Free sample", "Fruit", 0.0, "b", 1, 80.0, 1.0, 1.0, 1.0, 1.0),
-            ("A3", "Missing price", "Fruit", None, "c", 1, 70.0, 1.0, 1.0, 1.0, 1.0),
+            ("A1", "Apple", "Fruit", 2.0, 0.20, "100G", 0.25, "a", 1, 90.0, 0.3, 2.4, 0.1, 10.0),
+            ("A2", "Free sample", "Fruit", 0.0, 0.10, "100G", 0.12, "b", 1, 80.0, 1.0, 1.0, 1.0, 1.0),
+            ("A3", "Missing price", "Fruit", None, None, None, None, "c", 1, 70.0, 1.0, 1.0, 1.0, 1.0),
         ]
         query = MagicMock()
         query.outerjoin.return_value = query
@@ -281,6 +281,9 @@ class TestWarmPercentilesAndLoadIngredients:
             "product_name",
             "sub_category",
             "retail_price",
+            "unit_price",
+            "unit_price_unit",
+            "unit_price_adjusted",
             "nutriscore_grade",
             "nova_score",
             "final_health_score",
