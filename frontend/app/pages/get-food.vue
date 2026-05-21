@@ -23,8 +23,6 @@ useHead({ title: 'ChereBowl - Get Food' })
 
 export type PlannerData = {
   budget: number
-  people: number
-  days: number
   dietaryNeeds: string[]
   dietaryGoal: string | null
   description: string | null

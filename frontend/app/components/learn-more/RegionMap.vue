@@ -73,6 +73,7 @@
               This place does not exist in our Victorian region list. Try another name.
             </li>
           </ul>
+
         </div>
 
         <button
@@ -95,6 +96,9 @@
           Reset
         </button>
       </div>
+
+      <!-- Search error message -->
+      <p v-if="searchError" class="mt-2 font-roboto text-[12px] text-red-500">{{ searchError }}</p>
 
       <div class="mt-6 grid grid-cols-1 gap-x-5 gap-y-4 lg:grid-cols-[230px_minmax(0,1fr)]">
         <aside class="flex h-full flex-col justify-between lg:row-span-2">
@@ -167,6 +171,22 @@
               <div class="absolute inset-0 animate-spin rounded-full border-[3px] border-t-[#0052FF]" />
             </div>
             <p class="font-roboto font-bold text-[#131B2E]">Mapping Victoria...</p>
+          </div>
+
+          <!-- Hint overlay — shown after map loads, before any region is selected -->
+          <div
+            v-if="!isMapLoading && !selectedLgaName"
+            class="pointer-events-none absolute bottom-[80px] left-1/2 z-20 -translate-x-1/2"
+          >
+            <div class="flex items-center gap-2 rounded-full bg-[#131B2E]/80 px-4 py-2 shadow-lg backdrop-blur-sm">
+              <span class="relative flex h-2 w-2 shrink-0">
+                <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#B5DCFF] opacity-75" />
+                <span class="relative inline-flex h-2 w-2 rounded-full bg-white" />
+              </span>
+              <p class="whitespace-nowrap font-roboto text-[12px] font-semibold text-white">
+                Click a region to explore local food insecurity data
+              </p>
+            </div>
           </div>
 
           <div ref="mapEl" class="h-full w-full" />
@@ -355,6 +375,7 @@ const filteredLgas = ref([])
 const showDropdown = ref(false)
 const searchIndex = ref([])
 const isLoadingLocation = ref(false)
+const searchError = ref('')
 const isMapLoading = ref(true)
 const isStatsLoading = ref(true)
 
@@ -428,19 +449,34 @@ function setMetric(key) {
 }
 
 function filterLgas() {
-  const q = searchQuery.value.trim().toLowerCase()
+  const q = searchQuery.value.trim()
+  searchError.value = ''
   if (!q) {
     filteredLgas.value = []
     showDropdown.value = false
     return
   }
-  filteredLgas.value = searchIndex.value.filter(l => l.toLowerCase().includes(q)).slice(0, 12)
-  showDropdown.value = true
+
+  const hasVowel = /[aeiouAEIOU]/.test(q)
+  const hasAlpha = /[a-zA-Z]/.test(q)
+  if (!hasVowel || !hasAlpha) {
+    filteredLgas.value = []
+    showDropdown.value = false
+    searchError.value = "No matching region found. Try a Victorian suburb or LGA name (e.g. 'Ballarat', 'Wyndham')."
+    return
+  }
+
+  filteredLgas.value = searchIndex.value.filter(l => l.toLowerCase().includes(q.toLowerCase())).slice(0, 12)
+  showDropdown.value = filteredLgas.value.length > 0
+  if (!showDropdown.value) {
+    searchError.value = "No matching region found. Try a Victorian suburb or LGA name (e.g. 'Ballarat', 'Wyndham')."
+  }
 }
 
 function selectLgaFromSearch(lga) {
   searchQuery.value = lga
   showDropdown.value = false
+  searchError.value = ''
   selectLga(lga)
 }
 
@@ -493,6 +529,7 @@ function selectLga(lgaName) {
 function resetMap() {
   selectedLgaName.value = null
   searchQuery.value = ''
+  searchError.value = ''
   if (mapInstance && mapInstance.isStyleLoaded()) {
     mapInstance.flyTo({ center: [144.5, -36.5], zoom: 5.5, duration: 1000, essential: true })
     mapInstance.setPaintProperty('lga-fills', 'fill-opacity', [
