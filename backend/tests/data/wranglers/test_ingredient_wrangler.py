@@ -86,6 +86,11 @@ class TestFixRetailPrice:
         result = _fix_retail_price(df)
         assert result["retail_price"].iloc[0] == pytest.approx(1.50)
 
+    def test_unknown_unit_falls_back_to_unit_price_directly(self):
+        df = pd.DataFrame({"retail_price": [None], "unit_price": [2.50], "unit_price_unit": ["1Ea"]})
+        result = _fix_retail_price(df)
+        assert result["retail_price"].iloc[0] == pytest.approx(2.50)
+
 
 # ---------------------------------------------------------------------------
 # _deduplicate_keeping_cheapest
