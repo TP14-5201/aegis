@@ -8,14 +8,13 @@
           <div>
             <p class="text-sm font-bold uppercase tracking-widest text-[#396477]">Your Grocery Bag</p>
             <h2 class="mt-1 font-volkhov text-[28px] font-bold text-navy lg:text-[38px]">
-              <span class="italic text-coral">One wholesome shop</span>
-              <span> for {{ props.plannerData?.days ?? 4 }} days</span>
+              <span class="italic text-coral">One wholesome shop,</span>
+              <span> built for you</span>
             </h2>
           </div>
         </div>
         <p class="mt-1 font-roboto text-[14px] text-gray-500">
-          Top picks globally ranked for
-          {{ props.plannerData?.people ?? 2 }} {{ (props.plannerData?.people ?? 2) === 1 ? 'person' : 'people' }} over {{ props.plannerData?.days ?? 4 }} days.
+          Top picks globally ranked for your budget.
           <template v-if="props.plannerData?.dietaryGoal"> Goal: <strong>{{ props.plannerData.dietaryGoal }}</strong>.</template>
           Hit <strong>Swap</strong> to pick an alternative for any slot.
         </p>
@@ -266,8 +265,8 @@ const { data: apiData, pending, error: fetchError, refresh } = await useFetch<{
   query: { bag_size: 15 },
   body: {
     budget: props.plannerData?.budget ?? 60,
-    people: props.plannerData?.people ?? 2,
-    days: props.plannerData?.days ?? 4,
+    people: 1,
+    days: 4,
     dietary_needs: (props.plannerData?.dietaryNeeds ?? []).map(n => n.toLowerCase()),
     description: props.plannerData?.description ?? null,
     dietary_goal: props.plannerData?.dietaryGoal ?? null,
@@ -324,13 +323,16 @@ const categoryInitial = (cat: string): string =>
 
 // ── Price tier helpers ─────────────────────────────────────────────────────
 
+// Reference = total budget ÷ 5 items, so tiers scale with the user's budget.
+const budgetPerItem = computed(() => (props.plannerData?.budget ?? 30) / 5)
+
 const priceTier = (price: number): string => {
-  if (price < 5)   return 'Very Low'
-  if (price < 10)  return 'Low'
-  if (price < 15)  return 'Medium-Low'
-  if (price < 25)  return 'Medium-High'
-  if (price < 40)  return 'High'
-  return 'Very High'
+  const b = budgetPerItem.value
+  if (price < b * 0.4)  return 'Very Low'
+  if (price < b * 0.7)  return 'Low'
+  if (price < b)        return 'Medium-Low'
+  if (price < b * 1.4)  return 'Medium-High'
+  return 'High'
 }
 
 const tierBadgeClass = (tier: string): string => {
@@ -340,18 +342,16 @@ const tierBadgeClass = (tier: string): string => {
     'Medium-Low':  'bg-yellow-100 text-yellow-700',
     'Medium-High': 'bg-orange-100 text-orange-700',
     'High':        'bg-red-100 text-red-700',
-    'Very High':   'bg-purple-100 text-purple-700',
   }
   return map[tier] ?? 'bg-gray-100 text-gray-600'
 }
 
 const priceTierGuide = [
-  { label: 'Very Low',    description: 'Pantry staples & long-life basics — easy on any budget.' },
-  { label: 'Low',         description: 'Everyday affordable picks for most families.' },
-  { label: 'Medium-Low',  description: 'A small step up — still gentle on the shop.' },
-  { label: 'Medium-High', description: 'A balanced splurge — fits a comfortable budget.' },
-  { label: 'High',        description: 'Premium ingredients — best as occasional features.' },
-  { label: 'Very High',   description: 'Luxury or specialty items — consider swaps to save.' },
+  { label: 'Very Low',    description: 'Well under budget — maximum value for your spend.' },
+  { label: 'Low',         description: 'Affordable pick — comfortably within your budget.' },
+  { label: 'Medium-Low',  description: 'A small step up — still fits your budget.' },
+  { label: 'Medium-High', description: 'Uses most of your per-item budget — consider swapping.' },
+  { label: 'High',        description: 'At the top of your budget range — best as a feature item.' },
 ]
 
 // ── Nutrient badge helpers ─────────────────────────────────────────────────
