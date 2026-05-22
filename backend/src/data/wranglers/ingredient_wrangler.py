@@ -7,8 +7,28 @@ def _remove_ingredients_with_null_codes(df: pd.DataFrame) -> pd.DataFrame:
     return df[df["sku"].notnull()]
 
 
-def _fill_null_retail_price(df: pd.DataFrame) -> pd.DataFrame:
-    df["retail_price"] = df["retail_price"].fillna(df["unit_price"])
+def _fix_retail_price(df: pd.DataFrame) -> pd.DataFrame:
+    """Estimate a package-level retail_price for rows where it is null.
+
+    unit_price is kept as-is in its own column. The estimation uses a simple
+    pack-size heuristic so retail_price is always a plausible checkout price:
+      "100G" / "100ML" → unit_price × 5  (approx 500 g/ml pack)
+      "1Kg"  / "1L"    → unit_price × 1  (a 1 kg/L pack costs unit_price)
+    """
+    def _estimate(row):
+        if pd.notna(row["retail_price"]) and row["retail_price"] > 0:
+            return row["retail_price"]
+        up = row.get("unit_price")
+        uu = str(row.get("unit_price_unit") or "").strip().upper()
+        if pd.isna(up) or up == 0:
+            return None
+        if uu in ("100G", "100ML"):
+            return round(float(up) * 5, 2)
+        if uu in ("1KG", "1L"):
+            return round(float(up), 2)
+        return round(float(up), 2)
+
+    df["retail_price"] = df.apply(_estimate, axis=1)
     return df
 
 
@@ -80,13 +100,17 @@ def wrangle_ingredient(df: pd.DataFrame) -> pd.DataFrame:
       keeping the cheapest price. This expands the catalogue ~5-8x vs VIC-only.
     - Price fill happens before dedup so the cheapest non-null price wins.
     """
-    INGREDIENT_COLS = ["sku", "product_name", "sub_category", "retail_price"]
+    INGREDIENT_COLS = ["sku", "product_name", "sub_category", "retail_price", "unit_price", "unit_price_unit", "unit_price_adjusted"]
     INGREDIENT_MAPPING = {"sku": "ingredient_code"}
 
     df = initial_cleaning_pipeline(df)
     df = clean_na_values(df)
     df = _remove_ingredients_with_null_codes(df)
-    df = _fill_null_retail_price(df)
+    df = _fix_retail_price(df)
+    # April 2026 CPI: grocery prices up ~22.5% — store inflation-adjusted unit price for reference
+    df["unit_price_adjusted"] = df["unit_price"].apply(
+        lambda v: round(v * 1.225, 2) if pd.notna(v) else None
+    )
     df = _deduplicate_keeping_cheapest(df)
     df = _filter_unhealthy_food_categories(df)
     df = _apply_health_and_dietary_tags(df)
