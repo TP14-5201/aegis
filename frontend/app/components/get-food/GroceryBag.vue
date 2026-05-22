@@ -65,8 +65,14 @@
         <span class="font-bold text-green-600">▼▼</span> means it's cheaper.
       </p>
 
+      <!-- ── LOW BUDGET ────────────────────────────────────────────── -->
+      <div v-if="(props.plannerData?.budget ?? 0) <= 2" class="rounded-2xl bg-amber-50 px-6 py-8 text-center">
+        <p class="font-roboto text-[15px] font-semibold text-amber-700">Budget too low for recommendations</p>
+        <p class="mt-1 text-[13px] text-amber-600">A budget of $2 or under doesn't cover any grocery items. Please increase your budget to see recommendations.</p>
+      </div>
+
       <!-- ── LOADING ─────────────────────────────────────────────────── -->
-      <div v-if="pending" class="space-y-4">
+      <div v-else-if="pending" class="space-y-4">
         <div v-for="i in 6" :key="i" class="animate-pulse rounded-3xl bg-white p-6 shadow-sm">
           <div class="mb-3 h-4 w-24 rounded bg-gray-200" />
           <div class="h-6 w-3/4 rounded bg-gray-200" />
@@ -221,6 +227,15 @@
             </a>
           </span>
         </div>
+        <p class="mt-4 text-[10px] text-black/40 leading-relaxed">
+          Grocery prices are sourced from a 2022 Australian supermarket dataset and have been adjusted to reflect 2026 prices
+          using the Consumer Price Index for food and non-alcoholic beverages, as published by the Australian Bureau of Statistics
+          (<a href="http://abs.gov.au/statistics/economy/price-indexes-and-inflation/consumer-price-index-australia/latest-release"
+            target="_blank" rel="noopener"
+            class="underline decoration-black/20 underline-offset-2 hover:text-[#396477] transition-colors">
+            ABS CPI Report, April 2026
+          </a>).
+        </p>
       </div>
     </div>
   </section>
@@ -241,6 +256,8 @@ type ScoredIngredient = {
   product_name: string
   sub_category: string
   retail_price: number
+  unit_price: number | null
+  unit_price_unit: string | null
   health_score: number
   rec_score: number
   nutrient_badges: string[]

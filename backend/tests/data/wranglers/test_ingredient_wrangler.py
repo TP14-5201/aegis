@@ -3,7 +3,7 @@ import pytest
 
 from src.data.wranglers.ingredient_wrangler import (
     _remove_ingredients_with_null_codes,
-    _fill_null_retail_price,
+    _fix_retail_price,
     _deduplicate_keeping_cheapest,
     _filter_unhealthy_food_categories,
     _apply_health_and_dietary_tags,
@@ -18,6 +18,7 @@ def _make_ingredient_df(**overrides):
         "sub_category": "Vegetables",
         "retail_price": 2.99,
         "unit_price": 2.99,
+        "unit_price_unit": "1Kg",
     }
     row.update(overrides)
     return pd.DataFrame([row])
@@ -46,24 +47,49 @@ class TestRemoveIngredientsWithNullCodes:
 
 
 # ---------------------------------------------------------------------------
-# _fill_null_retail_price
+# _fix_retail_price
 # ---------------------------------------------------------------------------
 
-class TestFillNullRetailPrice:
-    def test_fills_null_retail_price_from_unit_price(self):
-        df = pd.DataFrame({"retail_price": [5.99, None], "unit_price": [5.99, 2.99]})
-        result = _fill_null_retail_price(df)
-        assert result["retail_price"].iloc[1] == 2.99
-
-    def test_non_null_retail_price_unchanged(self):
-        df = pd.DataFrame({"retail_price": [3.49], "unit_price": [9.99]})
-        result = _fill_null_retail_price(df)
+class TestFixRetailPrice:
+    def test_existing_retail_price_unchanged(self):
+        df = pd.DataFrame({"retail_price": [3.49], "unit_price": [9.99], "unit_price_unit": ["1Kg"]})
+        result = _fix_retail_price(df)
         assert result["retail_price"].iloc[0] == 3.49
 
-    def test_remains_null_when_both_prices_null(self):
-        df = pd.DataFrame({"retail_price": [None], "unit_price": [None]})
-        result = _fill_null_retail_price(df)
-        assert pd.isna(result["retail_price"].iloc[0])
+    def test_null_retail_price_100g_unit_multiplied_by_5(self):
+        df = pd.DataFrame({"retail_price": [None], "unit_price": [0.20], "unit_price_unit": ["100G"]})
+        result = _fix_retail_price(df)
+        assert result["retail_price"].iloc[0] == pytest.approx(1.00)
+
+    def test_null_retail_price_100ml_unit_multiplied_by_5(self):
+        df = pd.DataFrame({"retail_price": [None], "unit_price": [0.14], "unit_price_unit": ["100ML"]})
+        result = _fix_retail_price(df)
+        assert result["retail_price"].iloc[0] == pytest.approx(0.70)
+
+    def test_null_retail_price_1kg_unit_used_directly(self):
+        df = pd.DataFrame({"retail_price": [None], "unit_price": [6.50], "unit_price_unit": ["1Kg"]})
+        result = _fix_retail_price(df)
+        assert result["retail_price"].iloc[0] == pytest.approx(6.50)
+
+    def test_null_retail_price_1l_unit_used_directly(self):
+        df = pd.DataFrame({"retail_price": [None], "unit_price": [3.20], "unit_price_unit": ["1L"]})
+        result = _fix_retail_price(df)
+        assert result["retail_price"].iloc[0] == pytest.approx(3.20)
+
+    def test_remains_none_when_both_prices_null(self):
+        df = pd.DataFrame({"retail_price": [None], "unit_price": [None], "unit_price_unit": [None]})
+        result = _fix_retail_price(df)
+        assert result["retail_price"].iloc[0] is None
+
+    def test_unit_matching_is_case_insensitive(self):
+        df = pd.DataFrame({"retail_price": [None], "unit_price": [0.30], "unit_price_unit": ["100g"]})
+        result = _fix_retail_price(df)
+        assert result["retail_price"].iloc[0] == pytest.approx(1.50)
+
+    def test_unknown_unit_falls_back_to_unit_price_directly(self):
+        df = pd.DataFrame({"retail_price": [None], "unit_price": [2.50], "unit_price_unit": ["1Ea"]})
+        result = _fix_retail_price(df)
+        assert result["retail_price"].iloc[0] == pytest.approx(2.50)
 
 
 # ---------------------------------------------------------------------------
@@ -157,10 +183,15 @@ class TestApplyHealthAndDietaryTags:
 # ---------------------------------------------------------------------------
 
 class TestWrangleIngredient:
+    EXPECTED_COLUMNS = {
+        "ingredient_code", "product_name", "sub_category",
+        "retail_price", "unit_price", "unit_price_unit", "unit_price_adjusted",
+    }
+
     def test_pipeline_returns_expected_columns(self):
         df = _make_ingredient_df()
         result = wrangle_ingredient(df)
-        assert set(result.columns) == {"ingredient_code", "product_name", "sub_category", "retail_price"}
+        assert set(result.columns) == self.EXPECTED_COLUMNS
 
     def test_sku_renamed_to_ingredient_code(self):
         df = _make_ingredient_df(sku="X999")
@@ -168,18 +199,39 @@ class TestWrangleIngredient:
         assert "ingredient_code" in result.columns
         assert result.iloc[0]["ingredient_code"] == "X999"
 
+    def test_unit_price_preserved(self):
+        df = _make_ingredient_df(unit_price=4.50, unit_price_unit="1Kg")
+        result = wrangle_ingredient(df)
+        assert result.iloc[0]["unit_price"] == pytest.approx(4.50)
+        assert result.iloc[0]["unit_price_unit"] == "1Kg"
+
+    def test_unit_price_adjusted_is_22_5_percent_increase(self):
+        df = _make_ingredient_df(unit_price=4.00, unit_price_unit="1Kg")
+        result = wrangle_ingredient(df)
+        assert result.iloc[0]["unit_price_adjusted"] == pytest.approx(4.90)
+
+    def test_unit_price_adjusted_null_when_unit_price_null(self):
+        df = _make_ingredient_df(unit_price=None, unit_price_unit=None)
+        result = wrangle_ingredient(df)
+        assert pd.isna(result.iloc[0]["unit_price_adjusted"])
+
+    def test_retail_price_estimated_from_100g_unit(self):
+        df = _make_ingredient_df(retail_price=None, unit_price=0.20, unit_price_unit="100G")
+        result = wrangle_ingredient(df)
+        assert result.iloc[0]["retail_price"] == pytest.approx(1.00)
+
     def test_unhealthy_category_filtered_out(self):
         df = pd.DataFrame([
             {"sku": "A001", "product_name": "Cola", "sub_category": "Soft drinks",
-             "retail_price": 1.99, "unit_price": 1.99},
+             "retail_price": 1.99, "unit_price": 1.99, "unit_price_unit": "1L"},
             {"sku": "A002", "product_name": "Broccoli", "sub_category": "Vegetables",
-             "retail_price": 2.99, "unit_price": 2.99},
+             "retail_price": 2.99, "unit_price": 2.99, "unit_price_unit": "1Kg"},
         ])
         result = wrangle_ingredient(df)
         assert "Soft drinks" not in result["sub_category"].values
         assert "Vegetables" in result["sub_category"].values
 
     def test_empty_input_returns_empty(self):
-        df = pd.DataFrame(columns=["sku", "product_name", "sub_category", "retail_price", "unit_price"])
+        df = pd.DataFrame(columns=["sku", "product_name", "sub_category", "retail_price", "unit_price", "unit_price_unit"])
         result = wrangle_ingredient(df)
         assert result.empty

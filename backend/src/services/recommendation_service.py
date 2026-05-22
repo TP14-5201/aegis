@@ -124,6 +124,9 @@ def _load_ingredients_df(db: Session) -> pd.DataFrame:
             Ingredient.product_name,
             Ingredient.sub_category,
             Ingredient.retail_price,
+            Ingredient.unit_price,
+            Ingredient.unit_price_unit,
+            Ingredient.unit_price_adjusted,
             IngredientHealthRating.nutriscore_grade,
             IngredientHealthRating.nova_score,
             IngredientHealthRating.final_health_score,
@@ -141,6 +144,7 @@ def _load_ingredients_df(db: Session) -> pd.DataFrame:
 
     df = pd.DataFrame(rows, columns=[
         "ingredient_code", "product_name", "sub_category", "retail_price",
+        "unit_price", "unit_price_unit", "unit_price_adjusted",
         "nutriscore_grade", "nova_score", "final_health_score",
         "protein_g", "fibre_g", "fat_g", "sugars_g",
     ])
@@ -155,7 +159,9 @@ def _compute_rec_score(
     dietary_needs: list[str],
 ) -> float:
     sub_cat = str(row.get("sub_category") or "")
-    price   = float(row["retail_price"])
+
+    adj = row.get("unit_price_adjusted")
+    price = float(adj) if (adj is not None and adj == adj) else float(row["retail_price"])
 
     if _dietary_vetoed(sub_cat, dietary_needs):
         return 0.0
@@ -212,7 +218,8 @@ def score_ingredients(
     """
     df = _load_ingredients_df(db)
     price_cap = budget / 5.0
-    cat_median_prices = df.groupby("sub_category")["retail_price"].median().to_dict()
+    price_col = "unit_price_adjusted" if "unit_price_adjusted" in df.columns and df["unit_price_adjusted"].notna().any() else "retail_price"
+    cat_median_prices = df.groupby("sub_category")[price_col].median().to_dict()
 
     df["rec_score"] = df.apply(
         _compute_rec_score,
@@ -253,7 +260,8 @@ def score_ingredients_with_preferences(
         df = df[~df["sub_category"].apply(_is_avoided)].copy()
 
     price_cap = budget / 5.0
-    cat_median_prices = df.groupby("sub_category")["retail_price"].median().to_dict()
+    price_col = "unit_price_adjusted" if "unit_price_adjusted" in df.columns and df["unit_price_adjusted"].notna().any() else "retail_price"
+    cat_median_prices = df.groupby("sub_category")[price_col].median().to_dict()
 
     df["rec_score"] = df.apply(
         _compute_rec_score,
